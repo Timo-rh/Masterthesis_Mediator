@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "Mediator_V1": "./src/agent/graph.py:graph"
+  },
+  "env": ".env"
+}
