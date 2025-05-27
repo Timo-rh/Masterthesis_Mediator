@@ -1,155 +1,55 @@
-"""LangGraph single-node graph template.
+from langgraph.constants import START
 
-Returns a predefined response. Replace logic and configuration as needed.
-"""
-
-from __future__ import annotations
-from langchain_core.runnables import RunnableConfig
-from typing import TypedDict, List, Optional, Dict, Any, Union
+from src.agent.states import NL2PlanState
 from langgraph.graph import StateGraph, START, END
+from src.agent.nodes_and_edges import *
 
 
-class Configuration(TypedDict):
-    """Configurable parameters for the agent.
+graph =  StateGraph(NL2PlanState) #TODO:Config hinzufügen
 
-    Set these when creating assistants OR when invoking the graph.
-    See: https://langchain-ai.github.io/langgraph/cloud/how-tos/configuration_cloud/
-    """
-
-    my_configurable_param: str
-
-
-
-class NL2PlanState(TypedDict):
-    # === INPUT ===
-    natural_language_task: str
-
-    # === ZWISCHENERGEBNISSE (Pipeline-Outputs) ===
-    types: Optional[List[Dict[str, str]]]  # Step 1 output
-    type_hierarchy: Optional[Dict[str, Any]]  # Step 2 output
-    actions_nl: Optional[List[Dict[str, str]]]  # Step 3 output
-    pddl_domain: Optional[str]  # Step 4 output
-    pddl_problem: Optional[str]  # Step 5 output
-
-    # === FINAL OUTPUT ===
-    plan: Optional[List[str]]  # Success case   #TODO: Output sollte sich aus Domänenbeschreibung mit Aufgaben zusammensetzen (Node mit Konkatenierung des States am Ende?)
-    error_message: Optional[str]  # Failure case
-
-    # === PROCESS CONTROL ===
-    current_step: str
-    is_complete: bool
-
-# =============================================================================
-# PRIVATE STATES für Feedback-Schleifen (nur innerhalb Subgraphen)
-# =============================================================================
+#Nodes
+graph.add_node("Initialization", initialize_mediator)
+graph.add_node("Type Extraction", do_type_extraction)
+graph.add_node("Type Extraction Feedback", give_type_extraction_feedback)
+graph.add_node("Hierarchy Construction", do_hierarchy_construction)
+graph.add_node("Hierarchy Construction Feedback", give_hierarchy_construction_feedback)
+graph.add_node("Action Extraction", do_action_extraction)
+graph.add_node("Action Extraction Feedback", give_action_extraction_feedback)
+graph.add_node("Action Construction", do_action_construction)
+graph.add_node("Action Construction Automatic Validation", validate_actions) #6 Teilfunktionen
+graph.add_node("Action Construction Feedback", give_action_construction_feedback)
+graph.add_node("Task Extraction", do_task_extraction)
+graph.add_node("Task Extraction Automatic Validation", validate_task) #7 Teilfunktionen
+graph.add_node("Task Extration Feedback", give_task_extraction_feedback)
+graph.add_node("PDDL Creation", create_pddl)
+#graph.add_node("Automatic Planner", generate_plan)
 
 
-class TypeExtractionState(TypedDict):
-    # Input für diesen Schritt (komplette Task-Beschreibung)
-    natural_language_task: str
+#Edges
+graph.add_edge(START, "Initialization")
+graph.add_edge("Initialization", "Type Extraction")
+graph.add_edge("Type Extraction", "Type Extraction Feedback")
+graph.add_conditional_edges("Type Extraction Feedback", route_to_hierarchy_construction,{"No Feedback": "Type Extraction", "Feedback Done": "Hierarchy Construction"})
+#graph.add_edge("Type Extraction Feedback", "Hierarchy Construction")
+graph.add_edge("Hierarchy Construction", "Hierarchy Construction Feedback")
+graph.add_edge("Hierarchy Construction Feedback", "Action Extraction")
+graph.add_edge("Action Extraction", "Action Extraction Feedback")
+graph.add_edge("Action Extraction Feedback", "Action Construction")
+graph.add_edge("Action Construction", "Action Construction Automatic Validation")
+graph.add_edge("Action Construction Automatic Validation", "Action Construction Feedback")
+graph.add_edge("Action Construction Feedback", "Task Extraction")
+graph.add_edge("Task Extraction", "Task Extraction Automatic Validation")
+graph.add_edge("Task Extraction Automatic Validation", "Task Extration Feedback")
+graph.add_edge("Task Extration Feedback", "PDDL Creation")
+graph.add_edge("PDDL Creation", END)
 
-    # Arbeits-State für Feedback-Schleife
-    current_attempt: Optional[List[Dict[str, str]]]  # [{"name": "City", "description": "A city contains locations"}]
-    feedback_received: Optional[str]
-    feedback_round: int         #TODO: notwendig?
-    max_feedback_rounds: int    #TODO: notwendig?
+#Compile
+graph.compile(name="Mediator")
 
-    # Output dieses Schritts - strukturierte Type-Liste
-    final_types: Optional[List[Dict[str, str]]]
-    is_step_complete: bool
-
-
-class HierarchyConstructionState(TypedDict):
-    # Input für diesen Schritt
-    types: List[Dict[str, str]]
-
-    # Arbeits-State für Feedback-Schleife
-    current_attempt: Optional[Dict[str, Any]]
-    feedback_received: Optional[str]    #TODO: notwendig?
-    feedback_round: int                 #TODO: notwendig?
-    max_feedback_rounds: int
-
-    # Output dieses Schritts
-    final_hierarchy: Optional[Dict[str, Any]]
-    is_step_complete: bool
-
-
-class ActionExtractionState(TypedDict):
-    # Inputs für diesen Schritt
-    natural_language_task: str
-    types: List[Dict[str, str]]  # Von Schritt 1
-    type_hierarchy: Dict[str, Any]  # Von Schritt 2
-
-    # Arbeits-State für Feedback-Schleife
-    current_attempt: Optional[List[Dict[str, Any]]]  # Strukturierte Action-Liste
-    feedback_received: Optional[str]        #TODO: notwendig?
-    feedback_round: int                     #TODO: notwendig?
-    max_feedback_rounds: int
-
-    # Output dieses Schritts - Natural Language Actions mit Kategorien
-    final_actions_nl: Optional[List[Dict[str, Any]]]
-    is_step_complete: bool
-
-
-class ActionConstructionState(TypedDict):
-    # Inputs für diesen Schritt
-    actions_nl: List[Dict[str, str]]
-    types: List[Dict[str, str]]
-    type_hierarchy: Dict[str, Any]
-
-    # Arbeits-State für Feedback-Schleife + Validation
-    current_attempt: Optional[str]  # PDDL domain string
-    validation_errors: Optional[List[str]]
-    feedback_received: Optional[str]
-    feedback_round: int
-    max_feedback_rounds: int
-    max_validation_rounds: int
-    validation_round: int
-
-    # Output dieses Schritts
-    final_pddl_domain: Optional[str]
-    is_step_complete: bool
-
-
-class TaskExtractionState(TypedDict):
-    # Inputs für diesen Schritt
-    natural_language_task: str
-    pddl_domain: str
-
-    # Arbeits-State für Feedback-Schleife + Validation
-    current_attempt: Optional[str]  # PDDL problem string
-    validation_errors: Optional[List[str]]
-    feedback_received: Optional[str]
-    feedback_round: int
-    max_feedback_rounds: int
-    max_validation_rounds: int
-    validation_round: int
-
-    # Output dieses Schritts
-    final_pddl_problem: Optional[str]
-    is_step_complete: bool
-
-
-
-
-
-async def call_model(state: NL2PlanState, config: RunnableConfig) -> Dict[str, Any]:
-    """Process input and returns output.
-
-    Can use runtime configuration to alter behavior.
-    """
-    configuration = config["configurable"]
-    return {
-        "changeme": "output from call_model. "
-        f'Configured with {configuration.get("my_configurable_param")}'
-    }
-
-
-# Define the graph
-graph = (
-    StateGraph(NL2PlanState, config_schema=Configuration)
-    .add_node(call_model)
-    .add_edge("__start__", "call_model")
-    .compile(name="New Graph")
-)
-
+# # Define the graph
+# graph = (
+#     StateGraph(NL2PlanState, config_schema=Config_Schema)
+#     .add_node(call_model)
+#     .add_edge("__start__", "call_model")
+#     .compile(name="New Graph")
+# )
