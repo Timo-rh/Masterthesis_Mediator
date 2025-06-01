@@ -9,7 +9,7 @@ graph =  StateGraph(NL2PlanState) #TODO:Config hinzufügen
 
 #Nodes
 graph.add_node("Initialization", initialize_mediator)
-graph.add_node("Type Extraction", do_type_extraction)
+graph.add_node("Type Extraction", regular_type_extraction)
 graph.add_node("Type Extraction Feedback", give_type_extraction_feedback)
 graph.add_node("Hierarchy Construction", do_hierarchy_construction)
 graph.add_node("Hierarchy Construction Feedback", give_hierarchy_construction_feedback)

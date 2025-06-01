@@ -1,9 +1,11 @@
 from __future__ import annotations
 from typing import Dict, Any
-from langchain_openai import ChatOpenAI
+from langchain import chat_models
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableConfig
-# Relativen Import verwenden
-from src.agent.states import NL2PlanState, Type, ObjectInstances, InitialState, GoalState, Predicate
+from utils.paths import type_extraction_prompts as prompt_dir
+from src.agent.states import *
+import os
 
 # class Config_Schema(TypedDict): #TODO: aus Obsidian übernehmen & Config festlegen für init_chat_model (.with_config-Methode?)
 #     """Configurable parameters for the agent.
@@ -30,8 +32,11 @@ from src.agent.states import NL2PlanState, Type, ObjectInstances, InitialState, 
 # Initialisierung
 # =============================================================================
 
-#Output des Feedback-LLMs bleibt immer gleich
-feedback_llm = ChatOpenAI(model="gpt-4.1-2025-04-14", temperature=0) #TODO: Ein Feedback LLM für alle Steps?
+#Initalisierung des Mediator-LLMs (Temperatur = 0, Timeout nach 300 Sekunden)
+mediator_llm = chat_models.init_chat_model("gpt-4o", temperature=0, timeout=300)
+
+#Initalisierung des Feedback-LLMs (Temperatur = 0, Timeout nach 300 Sekunden)
+feedback_llm = chat_models.init_chat_model("gpt-4o", temperature=0, timeout=300)
 
 def initialize_mediator():
     pass
@@ -69,71 +74,90 @@ goal_state = GoalState(
 )
 
 
-#TODO: Initialisierungsfunktion erstellen (
+#TODO: Initialisierungsfunktion erstellen
 example_question = NL2PlanState(
-    natural_language_task="What is the type of the city of Berlin?",
-    types=[],                          # Leere Liste für types
-    type_hierarchy=[],                 # Leere Liste für type_hierarchy
-    nominated_actions=[],              # Leere Liste für nominated_actions
-    predicates=[],                     # Leere Liste für predicates
-    actions=[],                        # Leere Liste für actions
-    object_instances=object_instances,             # None für object_instances
-    initial_state=initial_state,                # None für initial_state
-    goal_state=goal_state,                   # None für goal_state
-    feedback_type="llm_feedback",      # Standard-Feedback-Typ
-    feedback={0: "blue"}                        # Leeres Dictionary für feedback
+    natural_language_task="Currently I've got five packages to ship, 3 in a storage in Ado and the rest in Betar's storage. Those from Ado should be sent 1 to Bal Street in Betar, 2 to Cli Promenade in Colin. Those from Betar should be moved to the Ado storage. The only plane is currently in Duran's airport, but each city has it's own truck and airport.",
+    domain_desc="The AI agent here is a logistics planner that has to plan to transport packages within the locations in a city through a truck and between cities through an airplane. Within a city, the locations are directly linked, allowing trucks to travel between any two of these locations. Similarly, cities are directly connected to each other allowing airplanes to travel between any two cities. Also, there is no limit to how many packages a truck or plane can carry (so in theory a truck or plane can carry an infinite number of packages).",
+    types=[],                               # Leere Liste für types
+    type_hierarchy=[],                      # Leere Liste für type_hierarchy
+    nominated_actions=[],                   # Leere Liste für nominated_actions
+    predicates=[],                          # Leere Liste für predicates
+    actions=[],                             # Leere Liste für actions
+    object_instances=object_instances,      # None für object_instances
+    initial_state=initial_state,            # None für initial_state
+    goal_state=goal_state,                  # None für goal_state
+    feedback_type="llm_feedback",           # Standard-Feedback-Typ
+    feedback=None                           # Leeres Dictionary für feedback
 )
 
 # =============================================================================
 # Type-Extraction Schritt
 # =============================================================================
-
-# #Type_Extraction_LLMs mit strukturiertem Output
-llm = ChatOpenAI(model="gpt-4.1-2025-04-14", temperature=0)
-mediator_llm = llm.with_structured_output(Type)
-
-
 #TODO: Few_shot_prompt - Beispiele für structured_output erzeugen (siehe :https://python.langchain.com/docs/how_to/structured_output/)
 
 #Type Extraction - Node
-def do_type_extraction(state: NL2PlanState):
+def regular_type_extraction(state: NL2PlanState):  #TODO: domain_and_task ist variabel und wird bei Start angegeben
     """Führt Type_Extraction-Generierung aus."""
-    if not state.feedback.get(0):
-        msg = mediator_llm.invoke(f"This is a test. Please answer my question: Can you hear me?")
-    else:
-        msg = mediator_llm.invoke(f"What color has the feedback? Hint: {state.feedback}")
-    return {"type_name": msg.name, "type_description": msg.description}
+    with open(os.path.join(prompt_dir, "main.txt")) as f:
+        system_message = f.read().strip()
+    type_extraction_llm = mediator_llm.with_structured_output(Type_List)
+    input_prompt = ChatPromptTemplate([("system", "{system_message}"),("human", "{domain_desc}{task}")])
+    type_extraction_chain = input_prompt | type_extraction_llm
+    type_extraction_call = type_extraction_chain.invoke(
+        {"system_message": system_message,
+         "domain_desc": state.domain_desc,
+         "task": state.natural_language_task})
+    #Gibt Liste an types zurück
+    return {"types": type_extraction_call.types}
 
 
+def give_type_extraction_feedback(state: NL2PlanState):
+    """Führt Feedback für Type_Extraction aus."""
+    with open(os.path.join(prompt_dir, "feedback.txt")) as f:
+        system_message = f.read().strip()
+    type_extraction_llm = feedback_llm.with_structured_output(Feedback)
+    input_prompt = ChatPromptTemplate([("system", "{system_message}"),("human", "{domain_desc}{task}{first_solution}")])
+    type_extraction_chain = input_prompt | type_extraction_llm
+    feedback_call = type_extraction_chain.invoke(
+        {"system_message": system_message,
+         "domain_desc": state.domain_desc,
+         "task": state.natural_language_task,
+         "first_solution": state.types
+        }
+    )
+    #Gibt Feedback für Schritt "0" zurück
+    return {"step": 0, "feedback": feedback_call.feedback}
 
 
+def type_extraction_with_feedback(state:NL2PlanState):
+    """Führt Type_Extraction-Generierung mit Feedback aus."""
+    with open(os.path.join(prompt_dir, "main.txt")) as f:
+        system_message = f.read().strip()
+    type_extraction_llm = mediator_llm.with_structured_output(Type_List)
+    input_prompt = ChatPromptTemplate([("system", "{system_message}"),("human", "{domain_desc}{task}{first_solution}{feedback}")])
+    type_extraction_chain = input_prompt | type_extraction_llm
+    type_extraction_call = type_extraction_chain.invoke(
+        {"system_message": system_message,
+         "domain_desc": state.domain_desc,
+         "task": state.natural_language_task,
+         "first_solution": state.types,
+         "feedback": state.feedback.get(0)})
+    #Gibt Liste an types zurück
+    return {"types": type_extraction_call.types}
 
 
-test_call = do_type_extraction(state=example_question)
-print(f"Ergebnis des Test_calls: {test_call}")
-#Ergebnis des Test_calls: {'type_name': 'Color', 'type_description': 'The feedback color is blue.'}
-
-
-        #falls noch kein Feedback existiert soll nur invoke ausgeführt werden. Sonst soll das Feedback in den Input übernommen werden.
-    #conditional_edge prüft dann, ob feedback_durchgeführt wahr ist und leitet an den Node für Hierarchy_Construction weiter (TODO: feedback_state erweitern)
-
-
-def give_type_extraction_feedback():
-    pass
-
-# Conditional_Edge
-def route_to_hierarchy_construction(state: NL2PlanState):
-    """Weiterleiten zum Hierarchy_Construction-Node oder mediator_llm-Node."""
-    if state.feedback.get(0) == "blue":
-        return "Hierarchy_Construction"
-    else:
-        return "mediator_llm"
+# # Conditional_Edge
+# def route_to_hierarchy_construction(state: NL2PlanState):
+#     """Weiterleiten zum Hierarchy_Construction-Node oder mediator_llm-Node."""
+#     if state.feedback.get(0) == "blue":
+#         return "Hierarchy_Construction"
+#     else:
+#         return "mediator_llm"
 
 
 # =============================================================================
 # Hierarchy-Construction Schritt
 # =============================================================================
-
 
 def do_hierarchy_construction():
     pass

@@ -1,7 +1,6 @@
 from __future__ import annotations
 from langchain_core.runnables import RunnableConfig
 from typing import TypedDict, List, Optional, Dict, Any, Union, Literal
-from langgraph.graph import StateGraph, START, END
 from pydantic import BaseModel, Field
 
 
@@ -12,18 +11,19 @@ from pydantic import BaseModel, Field
 class NL2PlanState(BaseModel):
     # === INPUT ===
     natural_language_task: str  #TODO: Prüfen ob die Aufteilung in domain_desc, task, etc. mehr Sinn ergibt
+    domain_desc: str
 
     # === ZWISCHENERGEBNISSE (Pipeline-Outputs) ===
-    types: List[Type]                           # Step 1
-    type_hierarchy: List[Hierarchy_Object]      # Step 2
-    nominated_actions: List[Nominated_Action]   # Step 3
-    predicates: List[Predicate]                 # Step 4
-    actions: List[Action]                       # Step 4
-    object_instances: ObjectInstances           # Step 5
-    initial_state: InitialState                 # Step 5
-    goal_state: GoalState                       # Step 5
-    feedback_type: Literal["llm_feedback", "human_feedback"] = Field(description="The type of feedback received.") #TODO: Wäre das nicht eher für die config relevant?
-    feedback: Dict[int, str] = Field(description="A dictionary with the feedback received from for each step.")
+    types: Optional[List[Type]] = None                          # Step 1
+    type_hierarchy: Optional[List[Hierarchy_Object]] = None     # Step 2
+    nominated_actions: Optional[List[Nominated_Action]] = None  # Step 3
+    predicates: Optional[List[Predicate]] = None                # Step 4
+    actions: Optional[List[Action]] = None                      # Step 4
+    object_instances: Optional[ObjectInstances] = None          # Step 5
+    initial_state: Optional[InitialState] = None                # Step 5
+    goal_state: Optional[GoalState] = None                      # Step 5
+    feedback_type: Optional[Literal["llm_feedback", "human_feedback"]] = Field(default= None, description="The type of feedback received.") #TODO: Wäre das nicht eher für die config relevant?
+    feedback: Optional[Feedback] = None
 
 #TODO: Alle felder auf optional setzen?
 
@@ -94,7 +94,10 @@ class GoalState(BaseModel):
     goal_state_description: str = Field(description="A natural language description of the goal state of the world, e.g., 'The goal is for L1 to go to Addr1 and for L2 to be delivered to Addr2, as well as for both P1 and P2 to be transported to London storage. Here’s how we can define the goal'.")
     goal_state_predicates: Dict[str, List[Predicate]] = Field(description="{'and': [Predicate(name='at', parameters={'package': 'L1', 'location': 'Addr1'}, description='L1 is delivered'), Predicate(name='at', parameters={'package': 'L2', 'location': 'Addr2'}, description='L2 is delivered')]}")
 
-#TODO: Klasse für das Feedback entfällt, da nur ein string mit Feedback
+#Klasse für das Feedback
+class Feedback(BaseModel):
+    step: int = Field(description="The step number for which the feedback is received. Starts at 0 for Type Extraction.")
+    feedback: str = Field(description="Description of the feedback received for the current step.")
 
 
 #TODO: Klären, ob sich der Inputprompt dynamisch in den Schritten ändert. -> eher statisch, aber domain_desc, task und type_extraction/main sind alles einzelne Dateien
