@@ -14,5 +14,13 @@ action_extraction_prompts = path.join(prompt_dir, '3_action_extraction')
 action_construction_prompts = path.join(prompt_dir, '4_action_construction')
 state_goal_extraction_prompts = path.join(prompt_dir, '5_task_extraction')
 
+# Domains (with underlying tasks)
+blocksworld = path.join(ips_dir, 'blocksworld')
+household = path.join(ips_dir, 'household')
+isr = path.join(ips_dir, 'isr')
+isr_assisted = path.join(ips_dir, 'isr_assisted')
+logistics = path.join(ips_dir, 'logistics')
+tyreworld = path.join(ips_dir, 'tyreworld')
+
 # External tools
 scorpion_dir = path.join(root_dir, 'scorpion')

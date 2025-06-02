@@ -12,6 +12,7 @@ class NL2PlanState(BaseModel):
     # === INPUT ===
     natural_language_task: str  #TODO: Prüfen ob die Aufteilung in domain_desc, task, etc. mehr Sinn ergibt
     domain_desc: str
+    feedback_type: Optional[Literal["llm_feedback", "human_feedback"]] = Field(default=None, description="The type of feedback received.")  # TODO: Wäre das nicht eher für die config relevant?
 
     # === ZWISCHENERGEBNISSE (Pipeline-Outputs) ===
     types: Optional[List[Type]] = None                          # Step 1
@@ -22,17 +23,15 @@ class NL2PlanState(BaseModel):
     object_instances: Optional[ObjectInstances] = None          # Step 5
     initial_state: Optional[InitialState] = None                # Step 5
     goal_state: Optional[GoalState] = None                      # Step 5
-    feedback_type: Optional[Literal["llm_feedback", "human_feedback"]] = Field(default= None, description="The type of feedback received.") #TODO: Wäre das nicht eher für die config relevant?
     feedback: Optional[Feedback] = None
 
-#TODO: Alle felder auf optional setzen?
 
 # =============================================================================
 # Schemata für Strukturierung der Outputs (Types, Hierarchie etc.)
 # =============================================================================
 
 class Type(BaseModel):
-    name: str = Field(description="The name of the type, e.g., 'City', 'Truck', etc.")
+    name: str = Field(description="The name of the type, e.g., 'city', 'truck', etc.")
     description: str = Field(description="A description of the type, e.g., 'A city contains locations'.")
 
 #Diese Klasse ist nur für die Ausstattung des LLMs mit einem strukturierten Output
@@ -68,16 +67,17 @@ class Nominated_Action_List(BaseModel):
 #Klasse für Prädikate
 class Predicate(BaseModel):
     name: str = Field(description="The name of the predicate, e.g., 'at'.")
-    parameters: Dict[str, str] = Field(description="The parameters of the predicate, e.g., '{param_name (?o): param_type (object)}'")
-    description: str = Field(description="A description of the predicate, e.g., 'true if the object is at the location.'.")
+    predicate_parameters: Dict[str, str] #= Field(description="The parameters of the predicate, e.g., '{param_name (?o): param_type (object)}'")
+    description: str #= Field(description="A description of the predicate, e.g., 'true if the object is at the location.'.")
 
 #Klasse für Beschreibung einer Aktion (Action Construction Step) #TODO: "Key-Tuple" durch einzelnen Wert ersetzen (Erklärung des Operators (add etc.) fällt dann weg. -> In Doku aufnehmen
 class Action(BaseModel):
     name: str = Field(description="The name of the action, e.g., 'drive'.")
     description: str = Field(description="A description of the action. Includes what is required to take that action, e.g., 'A package is loaded onto a vehicle at a location. Requires that the package and the truck to be at the same location.'.")
-    parameters: Dict[str, str] = Field(description="The parameters of the action, e.g., '{param_name: param_type}'")
-    preconditions: Dict[str, List[Predicate]] = Field(description="All preconditions for the action, e.g., {'and': [Predicate(name='at', parameters={'object': '?p', 'location': '?l'}, description='The package is at the location'), Predicate(name='at', parameters={'object': '?v', 'location': '?l'}, description='The vehicle is at the location')]}")
-    effects: Dict[str, List[Predicate]] = Field(description="All effects for the action, e.g., {'and': [Predicate(name='at', parameters={'object': '?p', 'location': '?l'}, description='The package is at the location'), Predicate(name='at', parameters={'object': '?v', 'location': '?l'}, description='The vehicle is at the location')]}")
+    action_parameters: Dict[str, str] #= Field(description="The parameters of the action, e.g., '{param_name: param_type}'")
+    preconditions: Dict[str, List[Predicate]] #= Field(description="All preconditions for the action, e.g., {'and': [Predicate(name='at', parameters={'object': '?p', 'location': '?l'}, description='The package is at the location'), Predicate(name='at', parameters={'object': '?v', 'location': '?l'}, description='The vehicle is at the location')]}")
+    effects: Dict[str, List[Predicate]] #= Field(description="All effects for the action, e.g., {'and': [Predicate(name='at', parameters={'object': '?p', 'location': '?l'}, description='The package is at the location'), Predicate(name='at', parameters={'object': '?v', 'location': '?l'}, description='The vehicle is at the location')]}")
+
 
 #Klasse für alle Objektinstanzen
 class ObjectInstances(BaseModel):
@@ -93,6 +93,12 @@ class InitialState(BaseModel):
 class GoalState(BaseModel):
     goal_state_description: str = Field(description="A natural language description of the goal state of the world, e.g., 'The goal is for L1 to go to Addr1 and for L2 to be delivered to Addr2, as well as for both P1 and P2 to be transported to London storage. Here’s how we can define the goal'.")
     goal_state_predicates: Dict[str, List[Predicate]] = Field(description="{'and': [Predicate(name='at', parameters={'package': 'L1', 'location': 'Addr1'}, description='L1 is delivered'), Predicate(name='at', parameters={'package': 'L2', 'location': 'Addr2'}, description='L2 is delivered')]}")
+
+##Diese Klasse ist nur für die Ausstattung des LLMs mit einem strukturierten Output (für die Taskgenerierung)
+class Task_Description(BaseModel):
+    object_instances: ObjectInstances = Field(description="Grounded objects for the task.")
+    initial_state: InitialState = Field(description="Grounded Initial state of the world.")
+    goal_state: GoalState = Field(description="Grounded Goal state of the world.")
 
 #Klasse für das Feedback
 class Feedback(BaseModel):
