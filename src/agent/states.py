@@ -1,6 +1,6 @@
 from __future__ import annotations
-from langchain_core.runnables import RunnableConfig
-from typing import TypedDict, List, Optional, Dict, Any, Union, Literal
+import operator
+from typing import List, Optional, Dict, Literal, Annotated
 from pydantic import BaseModel, Field
 
 
@@ -23,7 +23,7 @@ class NL2PlanState(BaseModel):
     object_instances: Optional[ObjectInstances] = None          # Step 5
     initial_state: Optional[InitialState] = None                # Step 5
     goal_state: Optional[GoalState] = None                      # Step 5
-    feedback: Optional[Feedback] = None
+    feedback: Annotated[list, operator.add]                     # Entspricht dem Feedback-Schema
 
 
 # =============================================================================
@@ -102,7 +102,6 @@ class Task_Description(BaseModel):
 
 #Klasse für das Feedback
 class Feedback(BaseModel):
-    step: int = Field(description="The step number for which the feedback is received. Starts at 0 for Type Extraction.")
     feedback: str = Field(description="Description of the feedback received for the current step.")
 
 

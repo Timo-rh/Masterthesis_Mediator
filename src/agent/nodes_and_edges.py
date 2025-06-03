@@ -3,6 +3,8 @@ from typing import Dict, Any
 from langchain import chat_models
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableConfig
+from langgraph.types import Command
+
 from utils.paths import *
 from src.agent.states import *
 import os
@@ -36,24 +38,11 @@ from operator import add
 #https://python.langchain.com/api_reference/langchain/chat_models/langchain.chat_models.base.init_chat_model.html#langchain.chat_models.base.init_chat_model
 #Initalisierung des Mediator-LLMs (Temperatur = 0, Timeout nach 300 Sekunden)
 mediator_llm = chat_models.init_chat_model("anthropic:claude-3-5-sonnet-latest", temperature=0, timeout=300)
+#mediator_llm = chat_models.init_chat_model("gpt-4o", temperature=0, timeout=300)
 
 #Initalisierung des Feedback-LLMs (Temperatur = 0, Timeout nach 300 Sekunden)
-feedback_llm = chat_models.init_chat_model("gpt-4o", temperature=0, timeout=300)
-
-#TODO: llms in initialisierungsfunktion aufnehmen
-def initialize_mediator(state: NL2PlanState, domain_name: str, task_name, feedback_type=Literal["llm_feedback", "human_feedback"]):
-    #Domäne setzen (Variable aus paths.py)
-    with open(os.path.join(domain_name, "desc.txt")) as f:
-        domain = f.read().strip()
-
-    #task setzen (Variable aus paths.py)
-    with open(os.path.join(task_name, "task1.txt")) as f:   #TODO: auf mehrere Tasks ausweiten
-        task = f.read().strip()
-
-    #feedback_type festlegen
-    feedback_type = feedback_type
-
-    return {"domain_desc": domain, "task": task, "feedback_type": feedback_type}
+feedback_llm = chat_models.init_chat_model("anthropic:claude-3-5-sonnet-latest", temperature=0, timeout=300)
+#feedback_llm = chat_models.init_chat_model("gpt-4o", temperature=0, timeout=300)
 
 
 
@@ -92,8 +81,10 @@ def give_type_extraction_feedback(state: NL2PlanState):
          "first_solution": state.types
         }
     )
+
     #Gibt Feedback für Schritt "0" zurück
-    return {"feedback": {0: feedback_call.feedback}}
+    new_feedback_dict = feedback_call.get("feedback", {}) #TODO: Generiertes Feedback richtig extrahieren und als liste anhängen
+    return {"feedback": new_feedback_dict}
 
 
 def type_extraction_with_feedback(state:NL2PlanState):
@@ -103,7 +94,7 @@ def type_extraction_with_feedback(state:NL2PlanState):
     type_extraction_llm = mediator_llm.with_structured_output(Type_List)
     input_prompt = ChatPromptTemplate([("system", "{system_message}"),("human", "{domain_desc}\n{task}\n{first_solution}\n{feedback}")])
     type_extraction_chain = input_prompt | type_extraction_llm
-    feedback = state.feedback.get(0)
+    feedback = state.feedback[0]
     type_extraction_call = type_extraction_chain.invoke(
         {"system_message": system_message,
          "domain_desc": state.domain_desc,
@@ -160,7 +151,7 @@ def give_hierarchy_construction_feedback(state: NL2PlanState):
          "first_solution": state.type_hierarchy})
 
     #Gibt Feedback für Schritt "1" zurück
-    return {"step": 1, "feedback": feedback_call.feedback}
+    return {"feedback": [feedback_call.feedback]}
 
 
 def hierarchy_construction_with_feedback(state: NL2PlanState):
@@ -170,40 +161,41 @@ def hierarchy_construction_with_feedback(state: NL2PlanState):
     hierarchy_construction_llm = mediator_llm.with_structured_output(Hierarchy)
     input_prompt = ChatPromptTemplate([("system", "{system_message}"),("human", "{domain_desc}\n{task}\n{types}\n{first_solution}\n{feedback}")])
     hierarchy_construction_chain = input_prompt | hierarchy_construction_llm
+    feedback = state.feedback[1]
     hierarchy_construction_call = hierarchy_construction_chain.invoke(
         {"system_message": system_message,
          "domain_desc": state.domain_desc,
          "task": state.natural_language_task,
          "types": state.types,
          "first_solution": state.type_hierarchy,
-         "feedback": state.feedback.get(1)})
+         "feedback": feedback})
 
     #Gibt Hierarchie zurück
     return {"type_hierarchy": hierarchy_construction_call.hierarchy}
 
 
-def validate_hierarchy(state: NL2PlanState):
-    """Validiert die Hierarchie auf Vollständigkeit und Duplikate der Typen."""
-    # Sammle alle Typnamen aus der Hierarchie
-    hierarchy_type_names = []
-    for h_obj in state.type_hierarchy:
-        hierarchy_type_names.append(h_obj.parent_type.name)
-        if h_obj.child_types:
-            for child in h_obj.child_types:
-                hierarchy_type_names.append(child.name)
-
-    # Prüfe, ob alle Typen aus state.types in der Hierarchie vorkommen
-    for type_obj in state.types:
-        if type_obj.name not in hierarchy_type_names:
-            raise KeyError(f"Type '{type_obj.name}' is not in the hierarchy.")
-
-    # Prüfe auf Duplikate in der Hierarchie
-    for type_name in hierarchy_type_names:
-        if hierarchy_type_names.count(type_name) > 1:
-            raise ValueError(f"Type '{type_name}' appears multiple times in the hierarchy.")
-
-    # Gibt den unveränderten State zurück
-    return state
+# def validate_hierarchy(state: NL2PlanState):
+#     """Validiert die Hierarchie auf Vollständigkeit und Duplikate der Typen."""
+#     # Sammle alle Typnamen aus der Hierarchie
+#     hierarchy_type_names = []
+#     for h_obj in state.type_hierarchy:
+#         hierarchy_type_names.append(h_obj.parent_type.name)
+#         if h_obj.child_types:
+#             for child in h_obj.child_types:
+#                 hierarchy_type_names.append(child.name)
+#
+#     # Prüfe, ob alle Typen aus state.types in der Hierarchie vorkommen
+#     for type_obj in state.types:
+#         if type_obj.name not in hierarchy_type_names:
+#             raise KeyError(f"Type '{type_obj.name}' is not in the hierarchy.")
+#
+#     # Prüfe auf Duplikate in der Hierarchie
+#     for type_name in hierarchy_type_names:
+#         if hierarchy_type_names.count(type_name) > 1:
+#             raise ValueError(f"Type '{type_name}' appears multiple times in the hierarchy.")
+#
+#     # Gibt den unveränderten State zurück
+#     return state
 
 
 # =============================================================================
@@ -242,7 +234,7 @@ def give_action_extraction_feedback(state: NL2PlanState):
          "first_solution": state.nominated_actions})
 
     #Gibt Feedback für Schritt "2" zurück
-    return {"step": 2, "feedback": feedback_call.feedback}
+    return {"feedback": [feedback_call.feedback]}
 
 
 def action_extraction_with_feedback(state: NL2PlanState):
@@ -252,13 +244,14 @@ def action_extraction_with_feedback(state: NL2PlanState):
     action_extraction_llm = mediator_llm.with_structured_output(Nominated_Action_List)
     input_prompt = ChatPromptTemplate([("system", "{system_message}"), ("human", "{domain_desc}\n{task}\n{type_hierarchy}\n{first_solution}\n{feedback}")])
     action_extraction_chain = input_prompt | action_extraction_llm
+    feedback = state.feedback[2]
     action_extraction_call = action_extraction_chain.invoke(
         {"system_message": system_message,
          "domain_desc": state.domain_desc,
          "task": state.natural_language_task,
          "type_hierarchy": state.type_hierarchy,
          "first_solution": state.nominated_actions,
-         "feedback": state.feedback.get(2)})
+         "feedback": feedback})
 
     # Gibt Liste an benötigten Aktionen zurück
     return {"nominated_actions": action_extraction_call.actions}
@@ -329,7 +322,7 @@ def give_action_construction_feedback(state: NL2PlanState):
          "generated_predicates": state.predicates})
 
     # Gibt Feedback für Schritt "3" zurück
-    return {"step": 3, "feedback": feedback_call.feedback}
+    return {"feedback": {3: feedback_call.feedback}}
 
 
 def construct_one_action_with_feedback(state: NL2PlanState, action: Nominated_Action):
@@ -339,6 +332,7 @@ def construct_one_action_with_feedback(state: NL2PlanState, action: Nominated_Ac
     action_construction_llm = mediator_llm.with_structured_output(Action)
     input_prompt = ChatPromptTemplate([("system", "{system_message}"), ("human", "{domain_desc}\n{task}\n{type_hierarchy}\nThe following actions will be defined later and together they make up the entire domain:{nominated_actions}\n ## Action {action_to_create}\n ### Available Predicates {predicates}\n {feedback}")])
     action_construction_chain = input_prompt | action_construction_llm
+    feedback = state.feedback.get(3)
     action_construction_call = action_construction_chain.invoke(
         {"system_message": system_message,
          "domain_desc": state.domain_desc,
@@ -347,7 +341,7 @@ def construct_one_action_with_feedback(state: NL2PlanState, action: Nominated_Ac
          "nominated_actions": state.nominated_actions,
          "action_to_create": action,
          "predicates": state.predicates,
-         "feedback": state.feedback.get(3)})
+         "feedback": feedback})
 
     return action_construction_call
 
@@ -411,7 +405,7 @@ def give_task_extraction_feedback(state: NL2PlanState):
          "goal_state": state.goal_state})
 
     # Gibt Feedback für Schritt "4" zurück
-    return {"step": 4, "feedback": feedback_call.feedback}
+    return {"feedback": {4: feedback_call.feedback}}
 
 
 def task_extraction_with_feedback(state: NL2PlanState):
@@ -422,13 +416,14 @@ def task_extraction_with_feedback(state: NL2PlanState):
     input_prompt = ChatPromptTemplate(
         [("system", "{system_message}"), ("human", "{domain_desc}\n{task}\n{type_hierarchy}\n{predicates}\n{feedback}")])
     action_extraction_chain = input_prompt | task_extraction_llm
+    feedback = state.feedback.get(4)
     action_extraction_call = action_extraction_chain.invoke(
         {"system_message": system_message,
          "domain_desc": state.domain_desc,
          "task": state.natural_language_task,
          "type_hierarchy": state.type_hierarchy,
          "predicates": state.predicates,
-         "feedback": state.feedback.get(4)})
+         "feedback": feedback})
 
     # Gibt Liste an benötigten Aktionen zurück
     return {"object_instances": action_extraction_call.object_instances,
