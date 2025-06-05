@@ -202,3 +202,45 @@ For the goal, we remove the "truck1" location predicate, but still check that al
 
 ## Domain
 {domain_desc}
+
+
+#Klasse für alle Objektinstanzen
+class ObjectInstances(BaseModel):
+    objects: Dict[str, str] = Field(description="A dictionary of object instances with object name and description, e.g., {'L1': 'The first London package', 'L2': 'The second London package'.")
+
+#Klasse für den Ausgangszustand
+class InitialState(BaseModel):
+    initial_state_predicates: List[Predicate] = Field(description="A list of predicates describing the initial state of the world, e.g., [{'at', {'L1': 'LStorage'}, The first London package location}, {'at', {'L2': 'LStorage'}, The second London package location}")
+
+#Klasse für den Zielzustand
+class GoalState(BaseModel):
+    goal_state_predicates: Dict[str, List[Predicate]] = Field(description="{'and': [Predicate(name='at', parameters={'package': 'L1', 'location': 'Addr1'}, description='L1 is delivered'), Predicate(name='at', parameters={'package': 'L2', 'location': 'Addr2'}, description='L2 is delivered')]}")
+
+##Diese Klasse ist nur für die Ausstattung des LLMs mit einem strukturierten Output (für die Taskgenerierung)
+class Task_Description(BaseModel):
+    object_instances: ObjectInstances = Field(description="Grounded objects for the task.")
+    initial_state: InitialState = Field(description="Grounded Initial state of the world.")
+    goal_state: GoalState = Field(description="Grounded Goal state of the world.")
+
+    WICHTIG: Achten Sie genau auf das Ausgabeformat:
+
+    1. object_instances muss eine Struktur haben mit einem 'objects' Feld, das ein Dictionary enthält:
+       {
+         "object_instances": {
+           "objects": {
+             "key1": "value1",
+             "key2": "value2"
+           }
+         },
+         ...
+       }
+
+    2. goal_state muss eine Struktur haben mit einem 'goal_state_predicates' Feld, das ein Dictionary ist:
+       {
+         "goal_state": {
+           "goal_state_predicates": {
+             "and": [predicate1, predicate2, ...]
+           }
+         },
+         ...
+       }

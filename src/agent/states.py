@@ -81,17 +81,14 @@ class Action(BaseModel):
 
 #Klasse für alle Objektinstanzen
 class ObjectInstances(BaseModel):
-    object_description: str = Field(description="A natural language description of the object instances in the task, e.g., 'There are four packages. The first two start in London, and the remaining two start in Paris'.")
-    object_instances: Dict[str, str] = Field(description="A dictionary of object instances with object name and description, e.g., {'L1': 'The first London package', 'L2': 'The second London package'.")
+    objects: Dict[str, str] = Field(description="A dictionary of object instances with object name and description, e.g., {'L1': 'The first London package', 'L2': 'The second London package'.")
 
 #Klasse für den Ausgangszustand
 class InitialState(BaseModel):
-    initial_state_description: str = Field(description="A natural language description of the state of the world, e.g., 'The London packages all start in the London storage'.")
     initial_state_predicates: List[Predicate] = Field(description="A list of predicates describing the initial state of the world, e.g., [{'at', {'L1': 'LStorage'}, The first London package location}, {'at', {'L2': 'LStorage'}, The second London package location}")
 
 #Klasse für den Zielzustand
 class GoalState(BaseModel):
-    goal_state_description: str = Field(description="A natural language description of the goal state of the world, e.g., 'The goal is for L1 to go to Addr1 and for L2 to be delivered to Addr2, as well as for both P1 and P2 to be transported to London storage. Here’s how we can define the goal'.")
     goal_state_predicates: Dict[str, List[Predicate]] = Field(description="{'and': [Predicate(name='at', parameters={'package': 'L1', 'location': 'Addr1'}, description='L1 is delivered'), Predicate(name='at', parameters={'package': 'L2', 'location': 'Addr2'}, description='L2 is delivered')]}")
 
 ##Diese Klasse ist nur für die Ausstattung des LLMs mit einem strukturierten Output (für die Taskgenerierung)
