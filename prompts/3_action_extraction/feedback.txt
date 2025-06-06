@@ -143,14 +143,4 @@ I've got a building with five floors and two elevators, and I want you to plan t
 As such: No feedback.
 
 # Task
-
 ## Domain
-{domain_desc}
-
-## Available Types
-{type_hierarchy}
-
-## Actions
-{actions}
-
-### Feedback

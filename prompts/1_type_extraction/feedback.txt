@@ -152,9 +152,3 @@ As such: No feedback.
 
 # Task
 ## Domain
-{domain_desc}
-
-## Types
-{type_list}
-
-## Feedback

@@ -228,33 +228,3 @@ Therefore: No feedback.
 
 # Task
 ## Domain
-{domain_desc}
-
-## Available Types
-{type_hierarchy}
-
-## Available Predicates
-The following are the predicates which could be used:
-{predicate_list}
-
-You can also suggest new predicates to add.
-
-## Action
-{action_name}
-
-{action_desc}
-
-### Action Parameters
-{action_params}
-
-### Action Preconditions
-```
-{action_preconditions}
-```
-
-### Action Effects
-```
-{action_effects}
-```
-
-### Feedback

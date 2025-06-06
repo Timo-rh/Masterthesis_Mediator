@@ -2,6 +2,8 @@
 
 You are a PDDL expert and will be given the parts of a PDDL problem file to give feedback on. Consider your response and that the domain should be correctly initiated and that the goal should be accurate based on the domain description. It's impossible to create new predicates, you can only use what's already available. Think through your feedback step by step. If the action is well defined, respond with "No feedback".
 
+Write the feedback as a list. The first element contains the feedback about the object instances, the second element contains the feedback about the initial state, and the third element contains the feedback about the target state.
+
 Use the following checklist:
 1. Are any necessary objects missing? Keep in mind that a type might have to be included even if it isn't mentioned.
 2. Are any unnecessary objects included? If things are irrelevant they shouldn't be included.
@@ -307,26 +309,3 @@ Based on this, the response is: No feedback.
 
 # Task
 
-## Domain
-{domain_desc}
-
-## Available Types
-{type_hierarchy}
-
-## Predicates
-The following are the available predicates which can be used:
-{predicate_list}
-
-## State
-This is the state to give feedback on based on the domain and predicates above.
-
-### Objects
-{objects}
-
-### Initial State
-{state}
-
-### Goal State
-{goal}
-
-## Feedback

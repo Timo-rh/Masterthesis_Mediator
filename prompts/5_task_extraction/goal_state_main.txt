@@ -1,6 +1,8 @@
 # Role
 Your task is to estimate the initial state and the goal state for a PDDL problem based on a domain description and the available actions. Consider that if a predicate is checked by an action for an object, it should probably somehow be possible to make true or start true. For the initial state specify both object instances and which predicates are true, false predicates don't have to be specified. For the goal, specify the states which need to have specific values regardless if those are true or false. Do it step-by-step and explain your thoughts. Respond with the exact headings provided. You can't assume that any object, regardless of type, already exists. Everything you wish to use should be defined here. Also, remember that any symmetrical predicates likely should be defined both ways. 
 
+For now only define the goal state.
+
 # Example
 ## Domain
 The AI agent is here a scheduling system for a house construction company with administrators who can create orders, workers who perform them and vehicles to transport workers.
@@ -50,7 +52,7 @@ emma - general_worker: The first worker, Emma
 bob - general_worker: The second worker, Bob
 ```
 
-## State
+## Initial State
 Let's start by specifying where everyone is. It's a reasonable assumption that everyone starts at the Chicago depot.
 ```
 (at truck1 chicago_depot): truck1 is at the chicago_depot
@@ -75,7 +77,7 @@ Finally, the "connected" predicate states that two locations are connected if th
 (connected chicago_depot house3): chicago_depot is connected to house3
 ```
 
-## Goal
+## Goal State
 ```
 (AND ; all the following should be done
    (finalised house1) ; house 1 is done
@@ -157,7 +159,7 @@ emma - general_worker: The first worker, Emma
 bob - general_worker: The second worker, Bob
 ```
 
-## State
+## Initial State
 Let's start by specifying where everyone is again. This time, we  make sure to include Bob.
 ```
 (at truck1 chicago_depot): truck1 is at the chicago_depot
@@ -179,7 +181,7 @@ The connections between the locations are the same bi-directional connections as
 (connected chicago_depot house3): chicago_depot is connected to house3
 ```
 
-## Goal
+## Goal State
 For the goal, we remove the "truck1" location predicate, but still check that all the houses are finalised. 
 ```
 (AND ; all the following should be done
@@ -190,57 +192,5 @@ For the goal, we remove the "truck1" location predicate, but still check that al
 ```
 
 # Task
-## Types
-```
-{type_hierarchy}
-```
-
-## Predicates
-```
-{predicates}
-```
-
-## Domain
-{domain_desc}
 
 
-#Klasse für alle Objektinstanzen
-class ObjectInstances(BaseModel):
-    objects: Dict[str, str] = Field(description="A dictionary of object instances with object name and description, e.g., {'L1': 'The first London package', 'L2': 'The second London package'.")
-
-#Klasse für den Ausgangszustand
-class InitialState(BaseModel):
-    initial_state_predicates: List[Predicate] = Field(description="A list of predicates describing the initial state of the world, e.g., [{'at', {'L1': 'LStorage'}, The first London package location}, {'at', {'L2': 'LStorage'}, The second London package location}")
-
-#Klasse für den Zielzustand
-class GoalState(BaseModel):
-    goal_state_predicates: Dict[str, List[Predicate]] = Field(description="{'and': [Predicate(name='at', parameters={'package': 'L1', 'location': 'Addr1'}, description='L1 is delivered'), Predicate(name='at', parameters={'package': 'L2', 'location': 'Addr2'}, description='L2 is delivered')]}")
-
-##Diese Klasse ist nur für die Ausstattung des LLMs mit einem strukturierten Output (für die Taskgenerierung)
-class Task_Description(BaseModel):
-    object_instances: ObjectInstances = Field(description="Grounded objects for the task.")
-    initial_state: InitialState = Field(description="Grounded Initial state of the world.")
-    goal_state: GoalState = Field(description="Grounded Goal state of the world.")
-
-    WICHTIG: Achten Sie genau auf das Ausgabeformat:
-
-    1. object_instances muss eine Struktur haben mit einem 'objects' Feld, das ein Dictionary enthält:
-       {
-         "object_instances": {
-           "objects": {
-             "key1": "value1",
-             "key2": "value2"
-           }
-         },
-         ...
-       }
-
-    2. goal_state muss eine Struktur haben mit einem 'goal_state_predicates' Feld, das ein Dictionary ist:
-       {
-         "goal_state": {
-           "goal_state_predicates": {
-             "and": [predicate1, predicate2, ...]
-           }
-         },
-         ...
-       }

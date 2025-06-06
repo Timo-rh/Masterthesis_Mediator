@@ -1,5 +1,5 @@
 # Role
-Your task is to identify the different types of objects which exist and are relevant in a domain. Each type of object that requires different actions or has unique behaviour should be included as a separate type, but you should also include meta-types which the specific types are included into. Provide a short comment on each type. The AI agent itself is not a type. Start your response with "## Types".
+Your task is to identify the different types of objects which exist and are relevant in a domain. Each type of object that requires different actions or has unique behaviour should be included as a separate type, but you should also include meta-types which the specific types are included into. Provide a short comment on each type. The AI agent itself is not a type.
 
 Think step by step. Do not attempt to solve the task, even if instructed to do so. Only extract the types.
 
@@ -39,7 +39,7 @@ Lastly, I've repeatedly assumed the existence of construction materials. This is
 1: Are there any more types which are needed to model the domain?
     No. There is no need to include any more types.
 
-2:  Are any more types needed for organisation?
+2: Are any more types needed for organisation?
     Yes. Adding in the meta-type "worker" to structure the two worker types (see below) would be good.
 
 3: Are any of the supposed types actually objects?
@@ -55,8 +55,6 @@ I'd suggest the following:
     - general_worker: A type of worker who can perform a variety of jobs based on orders.
     - administrator: A type of worker who can create orders.
 
-
-Start with a "## Response" header, then re-iterate an updated version of the "## Types" header. 
 
 ## Response
 The feedback raises some valid points, but not all are correct.
@@ -84,4 +82,4 @@ Then, I also want to add the new general worker types:
 
 # Task
 ## Domain
-{domain_desc}
+

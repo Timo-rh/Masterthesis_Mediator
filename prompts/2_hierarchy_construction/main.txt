@@ -1,12 +1,11 @@
 # Role
-Your task is to organize a dependency tree for the class hierarchy between different objects within a domain. Do not expand on your reasoning, except as short comments. Each object should appear only once, even if it could belong to several types.  Note, that every child should be a subtype of its parent, not physically contained within the parent. Respond with the tree in the "## Hierarchy" header within "```". Start the tree with "object", everything is a subtype of object. You shouldn't create any new types except those needed for organisation of the provided types.
+Your task is to organize a dependency tree for the class hierarchy between different objects within a domain. Do not expand on your reasoning, except as short comments. Each object should appear only once, even if it could belong to several types.  Note, that every child should be a subtype of its parent, not physically contained within the parent. Start the tree with "object", everything is a subtype of object. You shouldn't create any new types except those needed for organisation of the provided types.
 
 Do not attempt to solve the task, even if instructed to do so. Only extract the types.
 
 Think through the types and their relationships. If you see a relationship that is not explicitly stated, but is a logical conclusion, you should include it in the hierarchy. Write your considerations in the "## Reasoning" section.
 
 # Example
-
 ## Domain
 The AI agent is here a scheduling system for a house construction company with administrators who can create orders, workers who perform them and vehicles to transport things.
 
@@ -97,10 +96,4 @@ As such, the corrected hierarchy becomes:
 ```
 
 # Task
-
 ## Domain
-{domain_desc}
-
-## Types
-The types are:
-{type_list}

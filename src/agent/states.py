@@ -10,9 +10,8 @@ from pydantic import BaseModel, Field
 
 class NL2PlanState(BaseModel):
     # === INPUT ===
-    natural_language_task: str  #TODO: Prüfen ob die Aufteilung in domain_desc, task, etc. mehr Sinn ergibt
+    natural_language_task: str
     domain_desc: str
-    feedback_type: Optional[Literal["llm_feedback", "human_feedback"]] = Field(default=None, description="The type of feedback received.")  # TODO: Wäre das nicht eher für die config relevant?
 
     # === ZWISCHENERGEBNISSE (Pipeline-Outputs) ===
     types: Optional[List[Type]] = None                          # Step 1
@@ -99,8 +98,5 @@ class Task_Description(BaseModel):
 
 #Klasse für das Feedback
 class Feedback(BaseModel):
-    feedback: str = Field(description="Description of the feedback received for the current step.")
+    feedback: List[str] = Field(description="A list of feedback messages for the Task Extraction substeps.")
 
-
-#TODO: Klären, ob sich der Inputprompt dynamisch in den Schritten ändert. -> eher statisch, aber domain_desc, task und type_extraction/main sind alles einzelne Dateien
-#TODO: Feedback und restliche States definieren

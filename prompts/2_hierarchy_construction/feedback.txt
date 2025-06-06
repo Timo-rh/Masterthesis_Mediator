@@ -85,9 +85,3 @@ My advice is that you perform the following concrete change:
 
 # Task
 ## Domain
-{domain_desc}
-
-## Types
-{type_hierarchy}
-
-## Feedback
