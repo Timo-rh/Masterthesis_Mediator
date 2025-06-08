@@ -64,7 +64,7 @@ graph.add_edge("Task Extraction - Goal State with Feedback", END)
 #         return "mediator_llm"
 
 #Compile
-graph.compile(name="Mediator")
+graph.compile(name="Mediator mit einfachem Feedback")
 
 # # Define the graph
 # graph = (
@@ -73,3 +73,27 @@ graph.compile(name="Mediator")
 #     .add_edge("__start__", "call_model")
 #     .compile(name="New Graph")
 # )
+
+nfgraph = StateGraph(NL2PlanState)
+#Nodes
+nfgraph.add_node("Type Extraction", regular_type_extraction)
+nfgraph.add_node("Hierarchy Construction", regular_hierarchy_construction)
+nfgraph.add_node("Action Extraction", regular_action_extraction)
+nfgraph.add_node("Action Construction", action_construction)
+nfgraph.add_node("Task Extraction - Objects", regular_objects_extraction)
+nfgraph.add_node("Task Extraction - Initial State", regular_initial_state_extraction)
+nfgraph.add_node("Task Extraction - Goal State", regular_goal_state_extraction)
+
+#Edges
+nfgraph.add_edge(START, "Type Extraction")
+nfgraph.add_edge("Type Extraction", "Hierarchy Construction")
+nfgraph.add_edge("Hierarchy Construction", "Action Extraction")
+nfgraph.add_edge("Action Extraction", "Action Construction")
+nfgraph.add_edge("Action Construction", "Task Extraction - Objects")
+nfgraph.add_edge("Task Extraction - Objects", "Task Extraction - Initial State")
+nfgraph.add_edge("Task Extraction - Initial State", "Task Extraction - Goal State")
+nfgraph.add_edge("Task Extraction - Goal State", END)
+
+#Compile
+nfgraph.compile(name="Mediator ohne Feedback")
+

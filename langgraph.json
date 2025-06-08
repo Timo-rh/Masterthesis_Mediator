@@ -1,7 +1,8 @@
 {
   "dependencies": ["."],
   "graphs": {
-    "Mediator_V1": "./src/agent/graph.py:graph"
+    "Mediator mit einfachem Feedback": "./src/agent/graph.py:graph",
+    "Mediator ohne Feedback": "./src/agent/graph.py:nfgraph"
   },
   "env": ".env"
 }
