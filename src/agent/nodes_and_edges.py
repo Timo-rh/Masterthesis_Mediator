@@ -267,7 +267,7 @@ def construct_one_action(state: NL2PlanState, action: Nominated_Action):
     """Generiert eine Aktion."""
     with open(os.path.join(action_construction_prompts, "main.txt")) as f:
         system_message = f.read().strip()
-    action_construction_llm = mediator_llm.with_structured_output(Action)
+    action_construction_llm = mediator_llm.with_structured_output(Action_)
     input_prompt = ChatPromptTemplate([("system", "{system_message}"), ("human", "{domain_desc}\n## Task\n{task}\n## Available Types\n{type_hierarchy}\nThe following actions will be defined later and together they make up the entire domain:\n{nominated_actions}\n ## Action {action_to_create}\n ### Available Predicates {predicates}")])
     action_construction_chain = input_prompt | action_construction_llm
     action_construction_call = action_construction_chain.invoke(
@@ -317,7 +317,7 @@ def construct_one_action_with_feedback(state: NL2PlanState, action: Nominated_Ac
     """Generiert eine Aktion,"""
     with open(os.path.join(action_construction_prompts, "main.txt")) as f:
         system_message = f.read().strip()
-    action_construction_llm = mediator_llm.with_structured_output(Action)
+    action_construction_llm = mediator_llm.with_structured_output(Action_)
     input_prompt = ChatPromptTemplate([("system", "{system_message}"), ("human", "{domain_desc}\n## Task\n{task}\n## Available Types\n{type_hierarchy}\nThe following actions will be defined later and together they make up the entire domain:\n{nominated_actions}\n ## Action {action_to_create}\n ### Available Predicates {predicates}\n ## Feedback\n{feedback}")])
     action_construction_chain = input_prompt | action_construction_llm
     feedback = state.feedback[3]

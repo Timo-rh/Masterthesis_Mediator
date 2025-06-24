@@ -1,0 +1,629 @@
+{
+  "natural_language_task": "Currently I've got five packages to ship, 3 in a storage in Ado and the rest in Betar's storage. Those from Ado should be sent 1 to Bal Street in Betar, 2 to Cli Promenade in Colin. Those from Betar should be moved to the Ado storage. The only plane is currently in Duran's airport, but each city has it's own truck and airport.",
+  "domain_desc": "The AI agent here is a logistics planner that has to plan to transport packages within the locations in a city through a truck and between cities through an airplane. Within a city, the locations are directly linked, allowing trucks to travel between any two of these locations. Similarly, cities are directly connected to each other allowing airplanes to travel between any two cities. Also, there is no limit to how many packages a truck or plane can carry (so in theory a truck or plane can carry an infinite number of packages).",
+  "domain_name": "logistics",
+  "types": [
+    {
+      "name": "city",
+      "description": "A city contains locations and has its own truck and airport. Cities are directly connected to each other."
+    },
+    {
+      "name": "location",
+      "description": "A place within a city that can contain packages. Locations in a city are directly connected."
+    },
+    {
+      "name": "storage",
+      "description": "A type of location used to store packages."
+    },
+    {
+      "name": "street",
+      "description": "A type of location where packages can be delivered."
+    },
+    {
+      "name": "promenade",
+      "description": "A type of location where packages can be delivered."
+    },
+    {
+      "name": "airport",
+      "description": "A type of location where airplanes can land and take off."
+    },
+    {
+      "name": "vehicle",
+      "description": "A means of transport that can carry packages between locations."
+    },
+    {
+      "name": "truck",
+      "description": "A type of vehicle that transports packages between locations within a city."
+    },
+    {
+      "name": "airplane",
+      "description": "A type of vehicle that transports packages between cities."
+    },
+    {
+      "name": "package",
+      "description": "An item that needs to be transported from one location to another."
+    }
+  ],
+  "type_hierarchy": [
+    {
+      "parent_type": {
+        "name": "object",
+        "description": "Object is always root, everything is an object"
+      },
+      "child_types": [
+        {
+          "name": "city",
+          "description": "A city contains locations and has its own truck and airport. Cities are directly connected to each other."
+        },
+        {
+          "name": "vehicle",
+          "description": "A means of transport that can carry packages between locations."
+        },
+        {
+          "name": "package",
+          "description": "An item that needs to be transported from one location to another."
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "vehicle",
+        "description": "A means of transport that can carry packages between locations."
+      },
+      "child_types": [
+        {
+          "name": "truck",
+          "description": "A type of vehicle that transports packages between locations within a city."
+        },
+        {
+          "name": "airplane",
+          "description": "A type of vehicle that transports packages between cities."
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "location",
+        "description": "A place within a city that can contain packages. Locations in a city are directly connected."
+      },
+      "child_types": [
+        {
+          "name": "storage",
+          "description": "A type of location used to store packages."
+        },
+        {
+          "name": "street",
+          "description": "A type of location where packages can be delivered."
+        },
+        {
+          "name": "promenade",
+          "description": "A type of location where packages can be delivered."
+        },
+        {
+          "name": "airport",
+          "description": "A type of location where airplanes can land and take off."
+        }
+      ]
+    }
+  ],
+  "nominated_actions": [
+    {
+      "related_type": "truck",
+      "name": "load_truck",
+      "description": "A package is loaded onto a truck at a location. Requires that the package and the truck to be at the same location.",
+      "usage_example": "Load package_1 onto truck_1 at storage_1"
+    },
+    {
+      "related_type": "truck",
+      "name": "unload_truck",
+      "description": "A package is unloaded from a truck at a location. Requires that the truck with the package be at the location.",
+      "usage_example": "Unload package_1 from truck_1 at street_2"
+    },
+    {
+      "related_type": "airplane",
+      "name": "load_airplane",
+      "description": "A package is loaded onto an airplane at an airport. Requires that the package and the airplane to be at the same airport.",
+      "usage_example": "Load package_2 onto airplane_1 at airport_1"
+    },
+    {
+      "related_type": "airplane",
+      "name": "unload_airplane",
+      "description": "A package is unloaded from an airplane at an airport. Requires that the airplane with the package be at the airport.",
+      "usage_example": "Unload package_2 from airplane_1 at airport_2"
+    },
+    {
+      "related_type": "truck",
+      "name": "drive_truck",
+      "description": "A truck drives from one location to another within the same city. Requires the locations to be in the same city.",
+      "usage_example": "Drive truck_1 from storage_1 to airport_1"
+    },
+    {
+      "related_type": "airplane",
+      "name": "fly_airplane",
+      "description": "An airplane flies from one city's airport to another city's airport. Requires the airplane to be at the source airport.",
+      "usage_example": "Fly airplane_1 from airport_1 to airport_2"
+    }
+  ],
+  "actions": [
+    {
+      "name": "load_truck",
+      "description": "A package is loaded onto a truck at a location. Requires that the package and the truck to be at the same location.",
+      "action_parameters": {
+        "?p": "package",
+        "?t": "truck",
+        "?l": "location"
+      },
+      "preconditions": {
+        "at_conditions": [
+          {
+            "name": "at",
+            "predicate_parameters": {
+              "?o": "?p",
+              "?l": "?l"
+            },
+            "description": "The package is at the location"
+          },
+          {
+            "name": "at",
+            "predicate_parameters": {
+              "?o": "?t",
+              "?l": "?l"
+            },
+            "description": "The truck is at the location"
+          }
+        ],
+        "not_in_conditions": [
+          {
+            "name": "in",
+            "predicate_parameters": {
+              "?p": "?p",
+              "?v": "?t"
+            },
+            "description": "The package is not already in the truck"
+          }
+        ]
+      },
+      "effects": {
+        "in_effects": [
+          {
+            "name": "in",
+            "predicate_parameters": {
+              "?p": "?p",
+              "?v": "?t"
+            },
+            "description": "The package is now in the truck"
+          }
+        ],
+        "not_at_effects": [
+          {
+            "name": "at",
+            "predicate_parameters": {
+              "?o": "?p",
+              "?l": "?l"
+            },
+            "description": "The package is no longer at the location"
+          }
+        ]
+      }
+    },
+    {
+      "name": "unload_truck",
+      "description": "A package is unloaded from a truck at a location. Requires that the truck with the package be at the location.",
+      "action_parameters": {
+        "?p": "package",
+        "?t": "truck",
+        "?l": "location"
+      },
+      "preconditions": {
+        "truck_at_location": [
+          {
+            "name": "at",
+            "predicate_parameters": {
+              "?o": "?t",
+              "?l": "?l"
+            },
+            "description": "The truck must be at the location where we want to unload"
+          }
+        ],
+        "package_in_truck": [
+          {
+            "name": "in",
+            "predicate_parameters": {
+              "?p": "?p",
+              "?v": "?t"
+            },
+            "description": "The package must be in the truck to be unloaded"
+          }
+        ]
+      },
+      "effects": {
+        "package_location": [
+          {
+            "name": "at",
+            "predicate_parameters": {
+              "?o": "?p",
+              "?l": "?l"
+            },
+            "description": "The package is now at the location"
+          }
+        ],
+        "package_not_in_truck": [
+          {
+            "name": "in",
+            "predicate_parameters": {
+              "?p": "?p",
+              "?v": "?t"
+            },
+            "description": "The package is no longer in the truck"
+          }
+        ]
+      }
+    },
+    {
+      "name": "load_airplane",
+      "description": "A package is loaded onto an airplane at an airport. Requires that the package and the airplane to be at the same airport.",
+      "action_parameters": {
+        "?p": "package",
+        "?a": "airplane",
+        "?ap": "airport"
+      },
+      "preconditions": {
+        "preconditions": [
+          {
+            "name": "at",
+            "predicate_parameters": {
+              "?o": "?p",
+              "?l": "?ap"
+            },
+            "description": "The package must be at the airport"
+          },
+          {
+            "name": "at",
+            "predicate_parameters": {
+              "?o": "?a",
+              "?l": "?ap"
+            },
+            "description": "The airplane must be at the airport"
+          },
+          {
+            "name": "not_in",
+            "predicate_parameters": {
+              "?p": "?p",
+              "?v": "?a"
+            },
+            "description": "The package must not already be in the airplane"
+          }
+        ]
+      },
+      "effects": {
+        "effects": [
+          {
+            "name": "in",
+            "predicate_parameters": {
+              "?p": "?p",
+              "?v": "?a"
+            },
+            "description": "The package is now in the airplane"
+          },
+          {
+            "name": "not_at",
+            "predicate_parameters": {
+              "?o": "?p",
+              "?l": "?ap"
+            },
+            "description": "The package is no longer at the airport"
+          }
+        ]
+      }
+    },
+    {
+      "name": "unload_airplane",
+      "description": "A package is unloaded from an airplane at an airport. Requires that the airplane with the package be at the airport.",
+      "action_parameters": {
+        "?p": "package",
+        "?a": "airplane",
+        "?ap": "airport"
+      },
+      "preconditions": {
+        "airplane_at_airport": [
+          {
+            "name": "at",
+            "predicate_parameters": {
+              "?o": "?a",
+              "?l": "?ap"
+            },
+            "description": "The airplane must be at the airport"
+          }
+        ],
+        "package_in_airplane": [
+          {
+            "name": "in",
+            "predicate_parameters": {
+              "?p": "?p",
+              "?v": "?a"
+            },
+            "description": "The package must be in the airplane"
+          }
+        ]
+      },
+      "effects": {
+        "package_location": [
+          {
+            "name": "not_in",
+            "predicate_parameters": {
+              "?p": "?p",
+              "?v": "?a"
+            },
+            "description": "The package is no longer in the airplane"
+          },
+          {
+            "name": "at",
+            "predicate_parameters": {
+              "?o": "?p",
+              "?l": "?ap"
+            },
+            "description": "The package is now at the airport"
+          }
+        ]
+      }
+    },
+    {
+      "name": "drive_truck",
+      "description": "A truck drives from one location to another within the same city. Requires the locations to be in the same city.",
+      "action_parameters": {
+        "?t": "truck",
+        "?from": "location",
+        "?to": "location",
+        "?c": "city"
+      },
+      "preconditions": {
+        "location_check": [
+          {
+            "name": "at",
+            "predicate_parameters": {
+              "?o": "?t",
+              "?l": "?from"
+            },
+            "description": "The truck must be at the starting location"
+          },
+          {
+            "name": "in_city",
+            "predicate_parameters": {
+              "?l": "?from",
+              "?c": "?c"
+            },
+            "description": "The starting location must be in the specified city"
+          },
+          {
+            "name": "in_city",
+            "predicate_parameters": {
+              "?l": "?to",
+              "?c": "?c"
+            },
+            "description": "The destination location must be in the specified city"
+          }
+        ]
+      },
+      "effects": {
+        "location_update": [
+          {
+            "name": "not_at",
+            "predicate_parameters": {
+              "?o": "?t",
+              "?l": "?from"
+            },
+            "description": "The truck is no longer at the starting location"
+          },
+          {
+            "name": "at",
+            "predicate_parameters": {
+              "?o": "?t",
+              "?l": "?to"
+            },
+            "description": "The truck is now at the destination location"
+          }
+        ]
+      }
+    },
+    {
+      "name": "fly_airplane",
+      "description": "An airplane flies from one city's airport to another city's airport. Requires the airplane to be at the source airport.",
+      "action_parameters": {
+        "?a": "airplane",
+        "?from": "airport",
+        "?to": "airport",
+        "?city1": "city",
+        "?city2": "city"
+      },
+      "preconditions": {
+        "location_checks": [
+          {
+            "name": "at",
+            "predicate_parameters": {
+              "?o": "?a",
+              "?l": "?from"
+            },
+            "description": "The airplane must be at the source airport"
+          },
+          {
+            "name": "in_city",
+            "predicate_parameters": {
+              "?l": "?from",
+              "?c": "?city1"
+            },
+            "description": "The source airport must be in city1"
+          },
+          {
+            "name": "in_city",
+            "predicate_parameters": {
+              "?l": "?to",
+              "?c": "?city2"
+            },
+            "description": "The destination airport must be in city2"
+          }
+        ]
+      },
+      "effects": {
+        "location_changes": [
+          {
+            "name": "not_at",
+            "predicate_parameters": {
+              "?o": "?a",
+              "?l": "?from"
+            },
+            "description": "The airplane is no longer at the source airport"
+          },
+          {
+            "name": "at",
+            "predicate_parameters": {
+              "?o": "?a",
+              "?l": "?to"
+            },
+            "description": "The airplane is now at the destination airport"
+          }
+        ]
+      }
+    }
+  ],
+  "object_instances": {
+    "ado_city": "The city of Ado",
+    "betar_city": "The city of Betar",
+    "colin_city": "The city of Colin",
+    "duran_city": "The city of Duran",
+    "ado_storage": "Storage location in Ado",
+    "ado_airport": "Airport in Ado",
+    "ado_truck": "Truck assigned to Ado city",
+    "betar_storage": "Storage location in Betar",
+    "betar_airport": "Airport in Betar",
+    "betar_street": "Street location in Betar",
+    "betar_truck": "Truck assigned to Betar city",
+    "colin_promenade": "Promenade location in Colin",
+    "colin_airport": "Airport in Colin",
+    "colin_truck": "Truck assigned to Colin city",
+    "duran_airport": "Airport in Duran",
+    "duran_truck": "Truck assigned to Duran city",
+    "airplane1": "The only airplane in the system, currently at Duran's airport",
+    "package1": "First package from Ado, needs to go to Betar Street",
+    "package2": "Second package from Ado, needs to go to Colin Promenade",
+    "package3": "Third package from Ado, needs to go to Colin Promenade",
+    "package4": "First package from Betar, needs to go to Ado Storage",
+    "package5": "Second package from Betar, needs to go to Ado Storage"
+  },
+  "initial_state": [
+    {
+      "name": "at",
+      "predicate_parameters": {
+        "A1": "DuranAirport"
+      },
+      "description": "The airplane is at Duran's airport"
+    },
+    {
+      "name": "at",
+      "predicate_parameters": {
+        "AT": "AdoAirport"
+      },
+      "description": "Ado's truck is at Ado's airport"
+    },
+    {
+      "name": "at",
+      "predicate_parameters": {
+        "BT": "BetarAirport"
+      },
+      "description": "Betar's truck is at Betar's airport"
+    },
+    {
+      "name": "at",
+      "predicate_parameters": {
+        "CT": "ColinAirport"
+      },
+      "description": "Colin's truck is at Colin's airport"
+    },
+    {
+      "name": "at",
+      "predicate_parameters": {
+        "DT": "DuranAirport"
+      },
+      "description": "Duran's truck is at Duran's airport"
+    },
+    {
+      "name": "at",
+      "predicate_parameters": {
+        "P1": "AdoStorage"
+      },
+      "description": "First package is at Ado's storage"
+    },
+    {
+      "name": "at",
+      "predicate_parameters": {
+        "P2": "AdoStorage"
+      },
+      "description": "Second package is at Ado's storage"
+    },
+    {
+      "name": "at",
+      "predicate_parameters": {
+        "P3": "AdoStorage"
+      },
+      "description": "Third package is at Ado's storage"
+    },
+    {
+      "name": "at",
+      "predicate_parameters": {
+        "P4": "BetarStorage"
+      },
+      "description": "Fourth package is at Betar's storage"
+    },
+    {
+      "name": "at",
+      "predicate_parameters": {
+        "P5": "BetarStorage"
+      },
+      "description": "Fifth package is at Betar's storage"
+    }
+  ],
+  "goal_state": {
+    "and": [
+      {
+        "name": "at",
+        "predicate_parameters": {
+          "package": "L1",
+          "location": "bal_street"
+        },
+        "description": "Package L1 from Ado should be at Bal Street in Betar"
+      },
+      {
+        "name": "at",
+        "predicate_parameters": {
+          "package": "L2",
+          "location": "cli_promenade"
+        },
+        "description": "Package L2 from Ado should be at Cli Promenade in Colin"
+      },
+      {
+        "name": "at",
+        "predicate_parameters": {
+          "package": "L3",
+          "location": "cli_promenade"
+        },
+        "description": "Package L3 from Ado should be at Cli Promenade in Colin"
+      },
+      {
+        "name": "at",
+        "predicate_parameters": {
+          "package": "L4",
+          "location": "ado_storage"
+        },
+        "description": "Package L4 from Betar should be at Ado storage"
+      },
+      {
+        "name": "at",
+        "predicate_parameters": {
+          "package": "L5",
+          "location": "ado_storage"
+        },
+        "description": "Package L5 from Betar should be at Ado storage"
+      }
+    ]
+  },
+  "feedback": []
+}

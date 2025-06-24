@@ -24,3 +24,6 @@ tyreworld = path.join(ips_dir, 'tyreworld')
 
 # External tools
 scorpion_dir = path.join(root_dir, 'scorpion')
+
+# parser
+ohne_feedback_dir = path.join(results_dir, 'ohne_feedback')
