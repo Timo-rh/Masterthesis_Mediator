@@ -37,8 +37,10 @@ from operator import add
 
 #https://python.langchain.com/api_reference/langchain/chat_models/langchain.chat_models.base.init_chat_model.html#langchain.chat_models.base.init_chat_model
 #Initalisierung des Mediator-LLMs (Temperatur = 0, Timeout nach 300 Sekunden)
-mediator_llm = chat_models.init_chat_model("anthropic:claude-3-5-sonnet-latest", temperature=0, timeout=300)
-#mediator_llm = chat_models.init_chat_model("gpt-4o", temperature=0, timeout=300)
+#mediator_llm = chat_models.init_chat_model("anthropic:claude-3-5-sonnet-latest", temperature=0, timeout=300)
+mediator_llm = chat_models.init_chat_model("gpt-4o", temperature=0, timeout=300)
+#mediator_llm = chat_models.init_chat_model("gemini-1.5-flash", temperature=0, timeout=300)
+mediator_llm = chat_models.init_chat_model("deepseek:deepseek-r-1", temperature=0, timeout=300)
 
 #Initalisierung des Feedback-LLMs (Temperatur = 0, Timeout nach 300 Sekunden)
 feedback_llm = chat_models.init_chat_model("anthropic:claude-3-5-sonnet-latest", temperature=0, timeout=300)
@@ -251,16 +253,21 @@ def action_extraction_with_feedback(state: NL2PlanState):
 def action_construction(state: NL2PlanState):
     """Konstruiert alle nominierten Aktionen."""
     constructed_actions = []
+    all_predicates = []
 
     for action in state.nominated_actions:
         # Konstruiere die Aktion mit construct_one_action
-        constructed_action = construct_one_action(state, action)
+        constructed_action, predicates = construct_one_action(state, action)
 
         # Füge die konstruierte Aktion zur Liste hinzu
         constructed_actions.append(constructed_action)
 
+        # Füge die extrahierten Prädikate zur Liste hinzu
+        all_predicates.extend(predicates)
+
     # Gib alle erfolgreich konstruierten Aktionen zurück
-    return {"actions": constructed_actions}
+    return {"actions": constructed_actions,
+            "predicates": all_predicates}
 
 
 def construct_one_action(state: NL2PlanState, action: Nominated_Action):
@@ -286,11 +293,10 @@ def construct_one_action(state: NL2PlanState, action: Nominated_Action):
     # Alle Predicates aus effects zusammenfassen
     for predicate_list in action_construction_call.effects.values():
         extracted_predicates.extend(predicate_list)
-    # speichert Predicate-Liste im State
-    state.predicates = extracted_predicates
+
 
     # Gibt eine Aktion zurück
-    return action_construction_call
+    return action_construction_call, extracted_predicates
 
 
 def give_action_construction_feedback(state: NL2PlanState):

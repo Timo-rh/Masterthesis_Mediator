@@ -1,7 +1,7 @@
 from __future__ import annotations
 import operator
 from typing import List, Optional, Dict, Literal, Annotated, Union
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, RootModel
 
 
 # =============================================================================
@@ -67,7 +67,7 @@ class Nominated_Action_List(BaseModel):
 #Klasse für Prädikate
 class Predicate_(BaseModel):
     name: str = Field(description="The name of the predicate. Each predicate has to have a distinct name.")
-    predicate_parameters: Dict[str, str] #= Field(description="The parameters of the predicate, e.g., '{param_name (?o): param_type (object)}'")
+    predicate_parameters: Dict[str, str] #= Field(description="The parameters of the predicate, e.g., '{param_name (o): param_type (object)}'")
     description: str = Field(description="A description of the predicate, e.g., 'true if the object is at the location.'.")
 
 Condition = Union[
@@ -108,3 +108,4 @@ class Task_Description(BaseModel):
 class Feedback(BaseModel):
     feedback: List[str] = Field(description="A list of feedback messages for the Task Extraction substeps.")
 
+print(Action_.model_json_schema())

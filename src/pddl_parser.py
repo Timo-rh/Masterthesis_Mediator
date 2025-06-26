@@ -1,6 +1,6 @@
 from src.agent.states import *
 from pddl.core import Domain, Problem, Types
-from pddl.logic import Predicate
+from pddl.logic import Predicate, variables, Variable
 from pddl.action import Action
 from pddl.requirements import Requirements
 
@@ -93,28 +93,54 @@ result1 = NL2PlanState(
         )
     ],
 
-    predicates=None,  # Not included in JSON
+    predicates=[
+        Predicate_(
+            name="at",
+            predicate_parameters={"p": "object", "l": "location"},
+            description="Package p is at location l"
+        ),
+        Predicate_(
+            name="in",
+            predicate_parameters={"p": "package", "t": "vehicle"},
+            description="Package p is in vehicle t"
+        ),
+        Predicate_(
+            name="in_city",
+            predicate_parameters={"l": "location", "c": "city"},
+            description="Location l is in city c"
+        ),
+        Predicate_(
+            name="is_airport",
+            predicate_parameters={"l": "location"},
+            description="Location l is an airport"
+        ),
+        Predicate_(
+            name="different",
+            predicate_parameters={"c1": "city", "c2": "city"},
+            description="Cities c1 and c2 are different"
+        )
+    ],  #TODO: Not included in JSON
 
-    actions = [
+    actions=[
         Action_(
             name="load_truck",
             description="A package is loaded onto a truck at a location. Requires that the package and the truck to be at the same location.",
-            action_parameters={"?p": "package", "?t": "truck", "?l": "location"},
+            action_parameters={"p": "package", "t": "truck", "l": "location"},
             preconditions={
                 "and": [
-                    Predicate_(name="at", predicate_parameters={"?p": "?p", "?l": "?l"},
+                    Predicate_(name="at", predicate_parameters={"p": "p", "l": "l"},
                                description="The package must be at the location"),
-                    Predicate_(name="at", predicate_parameters={"?t": "?t", "?l": "?l"},
+                    Predicate_(name="at", predicate_parameters={"t": "t", "l": "l"},
                                description="The truck must be at the location"),
-                    {"not": Predicate_(name="in", predicate_parameters={"?p": "?p", "?t": "?t"},
+                    {"not": Predicate_(name="in", predicate_parameters={"p": "p", "t": "t"},
                                        description="The package must not already be in the truck")}
                 ]
             },
             effects={
                 "and": [
-                    Predicate_(name="in", predicate_parameters={"?p": "?p", "?t": "?t"},
+                    Predicate_(name="in", predicate_parameters={"p": "p", "t": "t"},
                                description="The package is now in the truck"),
-                    {"not": Predicate_(name="at", predicate_parameters={"?p": "?p", "?l": "?l"},
+                    {"not": Predicate_(name="at", predicate_parameters={"p": "p", "l": "l"},
                                        description="The package is no longer at the location")}
                 ]
             }
@@ -122,20 +148,20 @@ result1 = NL2PlanState(
         Action_(
             name="unload_truck",
             description="A package is unloaded from a truck at a location. Requires that the truck with the package be at the destination location.",
-            action_parameters={"?p": "package", "?t": "truck", "?l": "location"},
+            action_parameters={"p": "package", "t": "truck", "l": "location"},
             preconditions={
                 "and": [
-                    Predicate_(name="at", predicate_parameters={"?t": "?t", "?l": "?l"},
+                    Predicate_(name="at", predicate_parameters={"t": "t", "l": "l"},
                                description="The truck must be at the location"),
-                    Predicate_(name="in", predicate_parameters={"?p": "?p", "?t": "?t"},
+                    Predicate_(name="in", predicate_parameters={"p": "p", "t": "t"},
                                description="The package must be in the truck")
                 ]
             },
             effects={
                 "and": [
-                    Predicate_(name="at", predicate_parameters={"?p": "?p", "?l": "?l"},
+                    Predicate_(name="at", predicate_parameters={"p": "p", "l": "l"},
                                description="The package is now at the location"),
-                    {"not": Predicate_(name="in", predicate_parameters={"?p": "?p", "?t": "?t"},
+                    {"not": Predicate_(name="in", predicate_parameters={"p": "p", "t": "t"},
                                        description="The package is no longer in the truck")}
                 ]
             }
@@ -143,22 +169,22 @@ result1 = NL2PlanState(
         Action_(
             name="load_airplane",
             description="A package is loaded onto an airplane at an airport. Requires that the package and the airplane to be at the same airport.",
-            action_parameters={"?p": "package", "?a": "airplane", "?ap": "airport"},
+            action_parameters={"p": "package", "a": "airplane", "ap": "airport"},
             preconditions={
                 "and": [
-                    Predicate_(name="at", predicate_parameters={"?p": "?p", "?l": "?ap"},
+                    Predicate_(name="at", predicate_parameters={"p": "p", "l": "ap"},
                                description="The package must be at the airport"),
-                    Predicate_(name="at", predicate_parameters={"?t": "?a", "?l": "?ap"},
+                    Predicate_(name="at", predicate_parameters={"t": "a", "l": "ap"},
                                description="The airplane must be at the airport"),
-                    {"not": Predicate_(name="in", predicate_parameters={"?p": "?p", "?t": "?a"},
+                    {"not": Predicate_(name="in", predicate_parameters={"p": "p", "t": "a"},
                                        description="The package must not already be in the airplane")}
                 ]
             },
             effects={
                 "and": [
-                    Predicate_(name="in", predicate_parameters={"?p": "?p", "?t": "?a"},
+                    Predicate_(name="in", predicate_parameters={"p": "p", "t": "a"},
                                description="The package is now in the airplane"),
-                    {"not": Predicate_(name="at", predicate_parameters={"?p": "?p", "?l": "?ap"},
+                    {"not": Predicate_(name="at", predicate_parameters={"p": "p", "l": "ap"},
                                        description="The package is no longer at the airport")}
                 ]
             }
@@ -166,20 +192,20 @@ result1 = NL2PlanState(
         Action_(
             name="unload_airplane",
             description="A package is unloaded from an airplane at an airport. Requires that the airplane with the package be at the destination airport.",
-            action_parameters={"?p": "package", "?a": "airplane", "?ap": "airport"},
+            action_parameters={"p": "package", "a": "airplane", "ap": "airport"},
             preconditions={
                 "and": [
-                    Predicate_(name="at", predicate_parameters={"?t": "?a", "?l": "?ap"},
+                    Predicate_(name="at", predicate_parameters={"t": "a", "l": "ap"},
                                description="The airplane must be at the airport"),
-                    Predicate_(name="in", predicate_parameters={"?p": "?p", "?t": "?a"},
+                    Predicate_(name="in", predicate_parameters={"p": "p", "t": "a"},
                                description="The package must be in the airplane")
                 ]
             },
             effects={
                 "and": [
-                    {"not": Predicate_(name="in", predicate_parameters={"?p": "?p", "?t": "?a"},
+                    {"not": Predicate_(name="in", predicate_parameters={"p": "p", "t": "a"},
                                        description="The package is no longer in the airplane")},
-                    Predicate_(name="at", predicate_parameters={"?p": "?p", "?l": "?ap"},
+                    Predicate_(name="at", predicate_parameters={"p": "p", "l": "ap"},
                                description="The package is now at the airport")
                 ]
             }
@@ -187,22 +213,22 @@ result1 = NL2PlanState(
         Action_(
             name="drive_truck",
             description="A truck drives from one location to another within the same city. Locations within a city are directly connected.",
-            action_parameters={"?t": "truck", "?from": "location", "?to": "location", "?c": "city"},
+            action_parameters={"t": "truck", "from": "location", "to": "location", "c": "city"},
             preconditions={
                 "and": [
-                    Predicate_(name="at", predicate_parameters={"?t": "?t", "?l": "?from"},
+                    Predicate_(name="at", predicate_parameters={"t": "truck", "l": "from"},
                                description="The truck must be at the starting location"),
-                    Predicate_(name="in_city", predicate_parameters={"?l": "?from", "?c": "?c"},
+                    Predicate_(name="in_city", predicate_parameters={"l": "from", "c": "c"},
                                description="The starting location must be in the specified city"),
-                    Predicate_(name="in_city", predicate_parameters={"?l": "?to", "?c": "?c"},
+                    Predicate_(name="in_city", predicate_parameters={"l": "to", "c": "c"},
                                description="The destination location must be in the same city")
                 ]
             },
             effects={
                 "and": [
-                    {"not": Predicate_(name="at", predicate_parameters={"?t": "?t", "?l": "?from"},
+                    {"not": Predicate_(name="at", predicate_parameters={"t": "t", "l": "from"},
                                        description="The truck is no longer at the starting location")},
-                    Predicate_(name="at", predicate_parameters={"?t": "?t", "?l": "?to"},
+                    Predicate_(name="at", predicate_parameters={"t": "t", "l": "to"},
                                description="The truck is now at the destination location")
                 ]
             }
@@ -210,36 +236,41 @@ result1 = NL2PlanState(
         Action_(
             name="fly_airplane",
             description="An airplane flies from one city's airport to another city's airport. Cities are directly connected.",
-            action_parameters={"?a": "airplane", "?from": "airport", "?to": "airport", "?from_city": "city",
-                               "?to_city": "city"},
+            action_parameters={
+                "a": "airplane",
+                "from": "airport",
+                "to": "airport",
+                "from_city": "city",
+                "to_city": "city"
+            },
             preconditions={
                 "and": [
-                    Predicate_(name="at", predicate_parameters={"?o": "?a", "?l": "?from"},
+                    Predicate_(name="at", predicate_parameters={"o": "a", "l": "from"},
                                description="The airplane must be at the departure airport"),
-                    Predicate_(name="in_city", predicate_parameters={"?l": "?from", "?c": "?from_city"},
+                    Predicate_(name="in_city", predicate_parameters={"l": "from", "c": "from_city"},
                                description="The departure airport must be in the departure city"),
-                    Predicate_(name="in_city", predicate_parameters={"?l": "?to", "?c": "?to_city"},
+                    Predicate_(name="in_city", predicate_parameters={"l": "to", "c": "to_city"},
                                description="The destination airport must be in the destination city"),
-                    Predicate_(name="is_airport", predicate_parameters={"?l": "?from"},
+                    Predicate_(name="is_airport", predicate_parameters={"l": "from"},
                                description="The departure location must be an airport"),
-                    Predicate_(name="is_airport", predicate_parameters={"?l": "?to"},
+                    Predicate_(name="is_airport", predicate_parameters={"l": "to"},
                                description="The destination location must be an airport"),
-                    Predicate_(name="different", predicate_parameters={"?c1": "?from_city", "?c2": "?to_city"},
+                    Predicate_(name="different", predicate_parameters={"c1": "from_city", "c2": "to_city"},
                                description="The departure and destination cities must be different")
                 ]
             },
             effects={
                 "and": [
-                    {"not": Predicate_(name="at", predicate_parameters={"?o": "?a", "?l": "?from"},
+                    {"not": Predicate_(name="at", predicate_parameters={"o": "a", "l": "from"},
                                        description="The airplane is no longer at the departure airport")},
-                    Predicate_(name="at", predicate_parameters={"?o": "?a", "?l": "?to"},
+                    Predicate_(name="at", predicate_parameters={"o": "a", "l": "to"},
                                description="The airplane is now at the destination airport")
                 ]
             }
         )
     ],
 
-    object_instances=ObjectInstances(
+object_instances=ObjectInstances(
         objects={
             "ado_city": "The city of Ado",
             "betar_city": "The city of Betar",
@@ -331,69 +362,58 @@ result1 = NL2PlanState(
     feedback=[]
 )
 
+#Types erzeugen
+def create_types(state: NL2PlanState):
+    # Typ-Hierarchie in ein Mapping wandeln: {child: parent}
+    types_map = {}
 
-# def create_domain(state: NL2PlanState):
-#     """
-#     Erzeugt die PDDL-Domain aus dem gegebenen NL2PlanState.
-#     """
-#
-#     # 0) Erstelle die Requirements
-#     requirements = [Requirements.STRIPS, Requirements.TYPING, Requirements.EQUALITY, Requirements.NEG_PRECONDITION,
-#                     Requirements.DIS_PRECONDITION, Requirements.UNIVERSAL_PRECONDITION,
-#                     Requirements.CONDITIONAL_EFFECTS]
-#
-#     domain = Domain(
-#         name=state.domain_name,
-#         requirements=requirements,
-#         predicates=[],
-#         actions=[]
-#     )
-#
-#     return domain
-#
-#
-# def create_types(state:NL2PlanState):
-#     """
-#        Erstellt PDDL Domain und Problem aus einem NL2PlanState Objekt
-#     """
-#
-#
-#     # 1) Erstelle das Mapping von Kind-Typ zu Parent-Typ (oder None für Wurzel)
-#     types_map = {}
-#
-#     # Alle Elterntypen zuerst sammeln (für Root-Type "object" ohne Parent)
-#     for hierarchy in state.type_hierarchy:
-#         parent_name = hierarchy.parent_type.name
-#         if parent_name not in types_map:
-#             types_map[parent_name] = None  # Root-Type bekommt None als Parent
-#
-#     # Jetzt alle Kindtypen einzeln mit ihrem Elterntyp verknüpfen
-#     for hierarchy in state.type_hierarchy:
-#         parent_name = hierarchy.parent_type.name
-#         for child in hierarchy.child_types:
-#             child_name = child.name
-#             types_map[child_name] = parent_name
-#
-#     types=types_map_to_pddl(types_map)
-#     return types
-#
-#
-#
-#
-#
-#
-#
-# def types_map_to_pddl(types_map):
-#     lines = []
-#     for child, parent in types_map.items():
-#         # Root-Type hat parent = None
-#         if parent is None:
-#             continue
-#         lines.append(f"{child} - {parent}")
-#     return "(:types\n    " + "\n    ".join(lines) + "\n)"
-#
-# print(create_domain(result1))
-# print(create_types(result1))
+    for hierarchy in state.type_hierarchy:
+        parent_name = hierarchy.parent_type.name
+        for child in hierarchy.child_types:
+            child_name = child.name
+            types_map[child_name] = parent_name
+
+        # Eltern auch sicherstellen, wenn nicht schon vorhanden
+        if parent_name not in types_map:
+            types_map[parent_name] = None  # root-type hat keinen parent
+
+    return types_map
+
+#Variablen für Predicates und Actions erzeugen
+parameter_vars = {}
+
+def get_or_create_variable(name, type_):
+    if name in parameter_vars:
+        return parameter_vars[name]
+    else:
+        if type_ == "object":
+            v, = variables(name)
+        else:
+            v, = variables(name, types=[type_])
+        parameter_vars[name] = v
+        return v
+
+#Predicates erzeugen
+def create_predicates(state:NL2PlanState):
+    predicates_list = []
+    for pred in state.predicates:
+        vars_ = []
+        for var_name, var_type in pred.predicate_parameters.items():
+            v = get_or_create_variable(var_name, var_type)
+            vars_.append(v)
+        p = Predicate(pred.name, *vars_)
+        predicates_list.append(p)
+    return predicates_list
+print(create_predicates(result1))
+
+def create_actions(state: NL2PlanState):
+    actions = []
+    for action in state.actions:
+        # Action-Parameter
+        action_vars = []
+        for param_name, param_type in action.action_parameters.items():
+            v = get_or_create_variable(param_name, param_type)
+            action_vars.append(v)
 
 def create_domain(state: NL2PlanState):
     # 1. Requirements definieren
@@ -412,44 +432,17 @@ def create_domain(state: NL2PlanState):
         name=state.domain_name,
         requirements=requirements,
         types=create_types(state),
-        predicates=[],  # später ergänzen
+        predicates=create_predicates(state),  # später ergänzen
         actions=[],     # später ergänzen
     )
 
     return domain
 
 
-def create_types(state: NL2PlanState):
-    # Typ-Hierarchie in ein Mapping wandeln: {child: parent}
-    types_map = {}
 
-    for hierarchy in state.type_hierarchy:
-        parent_name = hierarchy.parent_type.name
-        for child in hierarchy.child_types:
-            child_name = child.name
-            types_map[child_name] = parent_name
-
-        # Eltern auch sicherstellen, wenn nicht schon vorhanden
-        if parent_name not in types_map:
-            types_map[parent_name] = None  # root-type hat keinen parent
-
-    return types_map
 
 
 domain = create_domain(result1)
 print(domain)
 
-def create_predicates(state: NL2PlanState):
-    predicates = []
 
-    # # Hier können die Prädikate aus dem State extrahiert und in PDDL-Form gebracht werden
-    # for action in state.actions:
-    #     for precondition in action.preconditions.get("preconditions", []):
-    #         predicates.append(precondition)
-    #
-    #     for effect in action.effects.get("effects", []):
-    #         predicates.append(effect)
-    #
-    # return predicates
-
-print(create_predicates(result1))
