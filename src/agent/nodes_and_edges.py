@@ -527,6 +527,7 @@ def create_domain(state: NL2PlanState):
     return domain
 
 def domain_to_state(domain: Domain):
+    domain=str(domain)
     return {"pddl_domain": domain}
 
 #Problem erzeugen

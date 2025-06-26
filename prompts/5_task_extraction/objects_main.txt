@@ -19,37 +19,53 @@ Currently, there are a couple of trucks at the Chicago depot and we're trying to
         - house: What is constructed.
 
 ## Predicates
-- (at ?o - object ?l - location): true if the object ?o (which should be a worker or vehicle) is at location ?l
-- (inside ?w - worker ?v - vehicle): true if the worker ?w is in the vehicle ?v
-- (wall_order ?h - house): true if there is an order to build a wall at house ?h
-- (wall_built ?h - house): true if a wall has been built for house ?h
-- (floor_order ?h - house): true if there is an order to build a floor at house ?h
-- (floor_built ?h - house): true if a floor has been built for house ?h
-- (floor_order ?h - house): true if there is an order to build a roof at house ?h
-- (roof_built ?h - house): true if a roof has been built for house ?h
-- (finalized ?h - house): true if the house ?h has been completed. 
-- (connected ?l1 - location ?l2 - location): true if there is a road between l1 and l2 allowing travel between them.
+```
+predicates=[
+    Predicate_Defintion(name="at", predicate_parameters={"o": "object", "l": "location"}, description="true if the object ?o (which should be a worker or vehicle) is at location ?l"),
+    Predicate_Defintion(name="inside", predicate_parameters={"w": "worker", "v": "vehicle"}, description="true if the worker ?w is in the vehicle ?v"),
+    Predicate_Defintion(name="wall_order", predicate_parameters={"h": "house"}, description="true if there is an order to build a wall at house ?h"),
+    Predicate_Defintion(name="wall_built", predicate_parameters={"h": "house"}, description="true if a wall has been built for house ?h"),
+    Predicate_Defintion(name="floor_order", predicate_parameters={"h": "house"}, description="true if there is an order to build a floor at house ?h"),
+    Predicate_Defintion(name="floor_built", predicate_parameters={"h": "house"}, description="true if a floor has been built for house ?h"),
+    Predicate_Defintion(name="roof_order", predicate_parameters={"h": "house"}, description="true if there is an order to build a roof at house ?h"),
+    Predicate_Defintion(name="roof_built", predicate_parameters={"h": "house"}, description="true if a roof has been built for house ?h"),
+    Predicate_Defintion(name="finalized", predicate_parameters={"h": "house"}, description="true if the house ?h has been completed."),
+    Predicate_Defintion(name="connected", predicate_parameters={"l1": "location", "l2": "location"}, description="true if there is a road between l1 and l2 allowing travel between them.")
+]
+```
 
 ## Object Instances
 We assume that there are two trucks since the description said "a couple".
 ```
-truck1 - the first truck at the Chicago depot
-truck2 - the second truck at the Chicago depot
+object_instances=ObjectInstances(
+        objects={
+            "truck1": "truck",
+            "truck2": "truck"
+            }
+        )
 ```
 
 Next, let's define the relevant locations. Since "chicago_depot" is not a house, we model it as a general location.
 ```
-chicago_depot - location: The Chicago depot
-house1 - The first house to build
-house2 - The second house to build
-house3 - The third house to build
+object_instances=ObjectInstances(
+        objects={
+            "chicago_depot": "location",
+            "house1": "house",
+            "house2": "house",
+            "house3": "house"
+            }
+        )
 ```
 
 Now, let's model the worker.
 ```
-jamie - administrator: The administrator Jamie
-emma - general_worker: The first worker, Emma
-bob - general_worker: The second worker, Bob
+object_instances=ObjectInstances(
+        objects={
+            "jamie": "administrator",
+            "emma": "general_worker",
+            "bob": "general_worker"
+            }
+        )
 ```
 
 
@@ -76,23 +92,35 @@ Now I'll reiterate the corrected initialization with the exact same headers.
 ## Object Instances
 The feedback suggested to use more trucks, but this would be wrong since the domain only specifies "A couple". So, we stick with the two trucks.
 ```
-truck1 - the first truck at the Chicago depot
-truck2 - the second truck at the Chicago depot
+object_instances=ObjectInstances(
+        objects={
+            "truck1": "truck",
+            "truck2": "truck"
+            }
+        )
 ```
 
 The locations haven't been updated:
 ```
-chicago_depot - location: The Chicago depot
-house1 - The first house to build
-house2 - The second house to build
-house3 - The third house to build
+object_instances=ObjectInstances(
+        objects={
+            "chicago_depot": "location",
+            "house1": "house",
+            "house2": "house",
+            "house3": "house"
+            }
+        )
 ```
 
 The workers are unchanged from before:
 ```
-jamie - administrator: The administrator Jamie
-emma - general_worker: The first worker, Emma
-bob - general_worker: The second worker, Bob
+object_instances=ObjectInstances(
+        objects={
+            "jamie": "administrator",
+            "emma": "general_worker",
+            "bob": "general_worker"
+            }
+        )
 ```
 
 # Task

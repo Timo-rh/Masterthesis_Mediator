@@ -132,7 +132,7 @@ result1 = NL2PlanState(
             predicate_parameters={"c1": "city", "c2": "city"},
             description="Cities c1 and c2 are different"
         )
-    ],  #TODO: Not included in JSON
+    ],
 
 actions = [
     Action_(
@@ -267,9 +267,11 @@ actions = [
             "betar_truck": "truck",
             "colin_promenade": "promenade",
             "colin_airport": "airport",
+            "colin_storage": "storage",
             "colin_truck": "truck",
             "duran_airport": "airport",
             "duran_truck": "truck",
+            "duran_storage": "storage",
             "airplane1": "airplane",
             "package1": "package",
             "package2": "package",
@@ -281,43 +283,82 @@ actions = [
 
     initial_state=InitialState(
         initial_state_predicates=[
-            Predicate_Instance(name="at", parameters=["A1","AdoStorage"]),
-            Predicate_Instance(name="at", parameters=["A2", "AdoStorage"]),
-            Predicate_Instance(name="at", parameters=["A3", "AdoStorage"]),
-            Predicate_Instance(name="at", parameters=["B1", "BetarStorage"]),
-            Predicate_Instance(name="at", parameters=["B2", "BetarStorage"]),
-            Predicate_Instance(name="at", parameters=["AdoTruck", "AdoStorage"]),
-            Predicate_Instance(name="at", parameters=["BetarTruck", "BetarStorage"]),
-            Predicate_Instance(name="at", parameters=["ColinTruck", "ColinStorage"]),
-            Predicate_Instance(name="at", parameters=["DuranTruck", "DuranStorage"]),
-            Predicate_Instance(name="at", parameters=["Plane1", "DuranAirport"]),
-            Predicate_Instance(name="in-city", parameters=["AdoStorage", "Ado"]),
-            Predicate_Instance(name="in-city", parameters=["AdoAirport", "Ado"]),
-            Predicate_Instance(name="in-city", parameters=["BetarStorage", "Betar"]),
-            Predicate_Instance(name="in-city", parameters=["BetarStreet", "Betar"]),
-            Predicate_Instance(name="in-city", parameters=["BetarAirport", "Betar"]),
-            Predicate_Instance(name="in-city", parameters=["ColinStorage", "Colin"]),
-            Predicate_Instance(name="in-city", parameters=["ColinPromenade", "Colin"]),
-            Predicate_Instance(name="in-city", parameters=["ColinAirport", "Colin"]),
-            Predicate_Instance(name="in-city", parameters=["DuranStorage", "Duran"]),
-            Predicate_Instance(name="in-city", parameters=["DuranAirport", "Duran"]),        ]
+            Predicate_Instance(name="at", parameters=["package1","ado_storage"]),
+            Predicate_Instance(name="at", parameters=["package2", "ado_storage"]),
+            Predicate_Instance(name="at", parameters=["package3", "ado_storage"]),
+            Predicate_Instance(name="at", parameters=["package4", "betar_storage"]),
+            Predicate_Instance(name="at", parameters=["package5", "betar_storage"]),
+            Predicate_Instance(name="at", parameters=["ado_truck", "ado_storage"]),
+            Predicate_Instance(name="at", parameters=["betar_truck", "betar_storage"]),
+            Predicate_Instance(name="at", parameters=["colin_truck", "colin_storage"]),
+            Predicate_Instance(name="at", parameters=["duran_truck", "duran_storage"]),
+            Predicate_Instance(name="at", parameters=["airplane1", "duran_airport"]),
+            Predicate_Instance(name="in_city", parameters=["ado_storage", "ado_city"]),
+            Predicate_Instance(name="in_city", parameters=["ado_airport", "ado_city"]),
+            Predicate_Instance(name="in_city", parameters=["betar_storage", "betar_city"]),
+            Predicate_Instance(name="in_city", parameters=["betar_street", "betar_city"]),
+            Predicate_Instance(name="in_city", parameters=["betar_airport", "betar_city"]),
+            Predicate_Instance(name="in_city", parameters=["colin_storage", "colin_city"]),
+            Predicate_Instance(name="in_city", parameters=["colin_promenade", "colin_city"]),
+            Predicate_Instance(name="in_city", parameters=["colin_airport", "colin_city"]),
+            Predicate_Instance(name="in_city", parameters=["duran_storage", "duran_city"]),
+            Predicate_Instance(name="in_city", parameters=["duran_airport", "duran_city"])
+        ]
     ),
 
     goal_state=GoalState(
         goal_state_predicates={
             "and": [
-                Predicate_Instance(name="at", parameters=["L1","bal_street"]),
-                Predicate_Instance(name="at", parameters=["L2","cli_promenade"]),
-                Predicate_Instance(name="at", parameters=["L3","cli_promenade"]),
-                Predicate_Instance(name="at", parameters=["L4","ado_storage"]),
-                Predicate_Instance(name="at", parameters=["L5","ado_storage"]),
+                Predicate_Instance(name="at", parameters=["package1","betar_street"]),
+                Predicate_Instance(name="at", parameters=["package2","colin_promenade"]),
+                Predicate_Instance(name="at", parameters=["package3","colin_promenade"]),
+                Predicate_Instance(name="at", parameters=["package4","ado_storage"]),
+                Predicate_Instance(name="at", parameters=["package5","ado_storage"])
             ]
         }
     ),
 
     feedback=[],
 
-    pddl_domain=None
+    pddl_domain="""(define (domain logistics)
+    (:requirements :conditional-effects :disjunctive-preconditions :equality :negative-preconditions :strips :typing :universal-preconditions)
+    (:types
+        city location package vehicle - object
+        airport promenade storage street - location
+        airplane truck - vehicle
+    )
+    (:predicates (at ?p ?l - location)  (different ?c1 - city ?c2 - city)  (in ?p ?t - vehicle)  (in_city ?l - location ?c - city)  (is_airport ?l - location))
+    (:action drive_truck
+        :parameters (?t - truck ?from - location ?to - location ?c - city)
+        :precondition (and (at ?t ?from) (in_city ?from ?c) (in_city ?to ?c))
+        :effect (and (not (at ?t ?from)) (at ?t ?to))
+    )
+     (:action fly_airplane
+        :parameters (?a - airplane ?from - airport ?to - airport ?from_city - city ?to_city - city)
+        :precondition (and (at ?a ?from) (in_city ?from ?from_city) (in_city ?to ?to_city) (is_airport ?from) (is_airport ?to) (different ?from_city ?to_city))
+        :effect (and (not (at ?a ?from)) (at ?a ?to))
+    )
+     (:action load_airplane
+        :parameters (?p - package ?a - airplane ?ap - airport)
+        :precondition (and (at ?p ?ap) (at ?a ?ap) (not (in ?p ?a)))
+        :effect (and (in ?p ?a) (not (at ?p ?ap)))
+    )
+     (:action load_truck
+        :parameters (?p - package ?t - truck ?l - location)
+        :precondition (and (at ?p ?l) (at ?t ?l) (not (in ?p ?t)))
+        :effect (and (in ?p ?t) (not (at ?p ?l)))
+    )
+     (:action unload_airplane
+        :parameters (?p - package ?a - airplane ?ap - airport)
+        :precondition (and (at ?a ?ap) (in ?p ?a))
+        :effect (and (not (in ?p ?a)) (at ?p ?ap))
+    )
+     (:action unload_truck
+        :parameters (?p - package ?t - truck ?l - location)
+        :precondition (and (at ?t ?l) (in ?p ?t))
+        :effect (and (at ?p ?l) (not (in ?p ?t)))
+    )
+    )"""
 )
 # =============================================================================
 # Erzeugung der PDDL-Domain
@@ -437,38 +478,64 @@ def create_actions(state: NL2PlanState):
 # =============================================================================
 
 # Erstellen der Objekte (Constants) aus den ObjectInstances
-def create_objects(state: NL2PlanState) -> list[Constant]:
-    constants_list = []
+def create_objects(state: NL2PlanState) -> dict[str, Constant]:
+    object_map = {}
     for name, type_ in state.object_instances.objects.items():
-        const = Constant(name, type_tag=type_)
-        constants_list.append(const)
-    return constants_list
+        object_map[name] = Constant(name, type_tag=type_)
+    return object_map
 
 
 # Erstellen des Initialzustands (InitialState)
-def create_initial_state(state: NL2PlanState):
-    pass
+def create_initial_state(state: NL2PlanState, object_map: dict[str, Constant]) -> list[Predicate]:
+    initial_predicates = []
+
+    # Arity-Map zur Validierung
+    arity_map = {pred_def.name: len(pred_def.predicate_parameters) for pred_def in state.predicates}
+
+    for pred_inst in state.initial_state.initial_state_predicates:
+        name = pred_inst.name
+        parameters = pred_inst.parameters
+
+        if name not in arity_map:
+            raise ValueError(f"Predicate '{name}' not defined in domain.")
+        if len(parameters) != arity_map[name]:
+            raise ValueError(f"Predicate '{name}' expects {arity_map[name]} arguments, got {len(parameters)}")
+
+        # Parameters auf Constants mappen
+        constants = []
+        for p in parameters:
+            key = p.lower()
+            if key not in object_map:
+                raise ValueError(f"Constant '{p}' not found in objects.")
+            constants.append(object_map[key])
+
+        pred = Predicate(name, *constants)
+        initial_predicates.append(pred)
+
+    return initial_predicates
 
 
+# Erstellen des Zielzustands (GoalState)
+def create_goal_state(goal_state: GoalState, object_map: dict[str, Constant]) -> And:
+    predicates = []
+    for pred_inst in goal_state.goal_state_predicates.get("and", []):
+        name = pred_inst.name
+        parameters = pred_inst.parameters
 
+        constants = []
+        for p in parameters:
+            key = p.lower()
+            if key not in object_map:
+                raise ValueError(f"Constant '{p}' not found in objects.")
+            constants.append(object_map[key])
 
+        pred = Predicate(name, *constants)
+        predicates.append(pred)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    return And(*predicates)
 
 # Test
-print(create_objects(result1))
+#print(create_objects(result1))
 
 requirements = [
         Requirements.STRIPS,
@@ -493,15 +560,27 @@ def create_domain(state: NL2PlanState):
     return domain
 
 domain = create_domain(result1)
+#print(str(domain))
 
 def create_problem(state: NL2PlanState):
+    # 1. Erstelle alle Constant-Objekte (als dict)
+    constants_map = create_objects(state)  # dict[name -> Constant]
+
+    # 2. Erstelle initial state mit vorhandenen Constants
+    initial_state = create_initial_state(state, constants_map)
+
+    # 3. Erstelle goal state mit vorhandenen Constants
+    goal_state = create_goal_state(state.goal_state, constants_map)
+
+    # 4. Erstelle PDDL-Problem
     problem = Problem(
         name=state.task_name,
         requirements=requirements,
         domain=domain,
-        objects=create_objects(state),
-        # init=create_initial_state(state),
-        # goal=create_goal_state(state)
+        objects=list(constants_map.values()),  # Liste aller Constant-Objekte
+        init=initial_state,
+        goal=goal_state
     )
+    return problem
 
 print(create_problem(result1))
