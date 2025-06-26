@@ -1,7 +1,7 @@
 from __future__ import annotations
 import operator
 from typing import List, Optional, Dict, Literal, Annotated, Union
-from pydantic import BaseModel, Field, RootModel
+from pydantic import BaseModel, Field
 
 
 # =============================================================================
@@ -13,18 +13,21 @@ class NL2PlanState(BaseModel):
     natural_language_task: str
     domain_desc: str
     domain_name: str
+    task_name: str
 
     # === ZWISCHENERGEBNISSE (Pipeline-Outputs) ===
     types: Optional[List[Type_]] = None                          # Step 1
     type_hierarchy: Optional[List[Hierarchy_Object]] = None     # Step 2
     nominated_actions: Optional[List[Nominated_Action]] = None  # Step 3
-    predicates: Optional[List[Predicate_]] = None               # Step 4
+    predicates: Optional[List[Predicate_Defintion]] = None               # Step 4
     actions: Optional[List[Action_]] = None                      # Step 4
     object_instances: Optional[ObjectInstances] = None          # Step 5
     initial_state: Optional[InitialState] = None                # Step 5
     goal_state: Optional[GoalState] = None                      # Step 5
     feedback: Annotated[list, operator.add]                     # Entspricht dem Feedback-Schema
 
+    # === OUTPUT ===
+    pddl_domain: Optional[str] = None
 
 # =============================================================================
 # Schemata für Strukturierung der Outputs (Types, Hierarchie etc.)
@@ -64,17 +67,23 @@ class Nominated_Action(BaseModel):
 class Nominated_Action_List(BaseModel):
     actions: List[Nominated_Action] = Field(description="List of all actions.")
 
-#Klasse für Prädikate
-class Predicate_(BaseModel):
+#Klasse für die Definition von Predikaten
+class Predicate_Defintion(BaseModel):
     name: str = Field(description="The name of the predicate. Each predicate has to have a distinct name.")
     predicate_parameters: Dict[str, str] #= Field(description="The parameters of the predicate, e.g., '{param_name (o): param_type (object)}'")
     description: str = Field(description="A description of the predicate, e.g., 'true if the object is at the location.'.")
 
+#Klasse für die Verwendung von Predikaten
+class Predicate_Instance(BaseModel):
+    name: str = Field(description="The name of the predicate. Each predicate has to have a distinct name.")
+    parameters: List[str] = Field(description="The parameters of the predicate, e.g., ['p', 'l'] for a predicate 'at' with parameters 'object' and 'location'.")
+
 Condition = Union[
-    Predicate_,
-    Dict[Literal["or"], List[Predicate_]],
-    Dict[Literal["not"], Predicate_]
+    Predicate_Instance,
+    Dict[Literal["or"], List[Predicate_Instance]],
+    Dict[Literal["not"], Predicate_Instance]
 ]
+
 
 
 #Klasse für Beschreibung einer Aktion (Action Construction Step) #TODO: "Key-Tuple" durch einzelnen Wert ersetzen (Erklärung des Operators (add etc.) fällt dann weg. -> In Doku aufnehmen
@@ -88,15 +97,15 @@ class Action_(BaseModel):
 
 #Klasse für alle Objektinstanzen
 class ObjectInstances(BaseModel):
-    objects: Dict[str, str] = Field(description="A dictionary of object instances with object name and description, e.g., {'L1': 'The first London package', 'L2': 'The second London package'.")
+    objects: Dict[str, str] = Field(description="A dictionary of object instances with object name and type, e.g., {'L1': 'package', 'L2': 'package'.")
 
 #Klasse für den Ausgangszustand
 class InitialState(BaseModel):
-    initial_state_predicates: List[Predicate_] = Field(description="A list of predicates describing the initial state of the world, e.g., [{'at', {'L1': 'LStorage'}, The first London package location}, {'at', {'L2': 'LStorage'}, The second London package location}")
+    initial_state_predicates: List[Predicate_Instance] = Field(description="A list of predicates describing the initial state of the world, e.g., [{'at', {'L1': 'LStorage'}, The first London package location}, {'at', {'L2': 'LStorage'}, The second London package location}")
 
 #Klasse für den Zielzustand
 class GoalState(BaseModel):
-    goal_state_predicates: Dict[str, List[Predicate_]] = Field(description="{'and': [Predicate(name='at', parameters={'package': 'L1', 'location': 'Addr1'}, description='L1 is delivered'), Predicate(name='at', parameters={'package': 'L2', 'location': 'Addr2'}, description='L2 is delivered')]}")
+    goal_state_predicates: Dict[str, List[Predicate_Instance]] = Field(description="{'and': [Predicate(name='at', parameters={'package': 'L1', 'location': 'Addr1'}, description='L1 is delivered'), Predicate(name='at', parameters={'package': 'L2', 'location': 'Addr2'}, description='L2 is delivered')]}")
 
 ##Diese Klasse ist nur für die Ausstattung des LLMs mit einem strukturierten Output (für die Taskgenerierung)
 class Task_Description(BaseModel):
@@ -108,4 +117,3 @@ class Task_Description(BaseModel):
 class Feedback(BaseModel):
     feedback: List[str] = Field(description="A list of feedback messages for the Task Extraction substeps.")
 
-print(Action_.model_json_schema())

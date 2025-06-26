@@ -50,10 +50,53 @@ So, all in all the hierarchy becomes:
         - floor: A type of house_component.
         - roof: A type of house_component.
     - location: A type of object consisting of places which can be visited.
-        - house: A type of location. 
+        - house: A type of location.
             - mansion: A type of house.
             - library: A type of house.
     - depot: A type of location.
+Hierarchy(
+    hierarchy=[
+        Hierarchy_Object(
+            parent_type=Type_(name="object", description="Object is always root, everything is an object"),
+            child_types=[
+                Type_(name="worker", description="A type of object consisting of humans who do things."),
+                Type_(name="order", description="A type of object consisting of instructions."),
+                Type_(name="vehicle", description="A type of object consisting of vehicles."),
+                Type_(name="house_component", description="A type of object consisting of the components of a house."),
+                Type_(name="location", description="A type of object consisting of places which can be visited."),
+                Type_(name="depot", description="A type of location.")
+            ],
+        ),
+        Hierarchy_Object(
+            parent_type=Type_(name="worker", description="A type of object consisting of humans who do things."),
+            child_types=[
+                Type_(name="administrator", description="A type of worker."),
+                Type_(name="general_worker", description="A type of worker."),
+            ],
+        ),
+        Hierarchy_Object(
+            parent_type=Type_(name="house_component", description="A type of object consisting of the components of a house."),
+            child_types=[
+                Type_(name="wall", description="A type of house_component."),
+                Type_(name="floor", description="A type of house_component."),
+                Type_(name="roof", description="A type of house_component."),
+            ],
+        ),
+        Hierarchy_Object(
+            parent_type=Type_(name="location", description="A type of object consisting of places which can be visited."),
+            child_types=[
+                Type_(name="house", description="A type of location.")
+            ],
+        ),
+        Hierarchy_Object(
+            parent_type=Type_(name="house", description="A type of location."),
+            child_types=[
+                Type_(name="mansion", description="A type of house."),
+                Type_(name="library", description="A type of house."),
+            ],
+        ),
+    ]
+)
 ```
 
 ## Feedback
@@ -78,21 +121,49 @@ The feedback is partially correct. Moving the "depot" type is valid and should b
 ## Hierarchy
 As such, the corrected hierarchy becomes:
 ```
-- object: Object is always root, everything is an object
-    - worker: A type of object consisting of humans who do things.
-        - administrator: A type of worker.
-        - general_worker: A type of worker.
-    - order: A type of object consisting of instructions.
-    - vehicle: A type of object consisting of vehicles.
-    - house_component: A type of object consisting of the components of a house.
-        - wall: A type of house_component.
-        - floor: A type of house_component.
-        - roof: A type of house_component.
-    - location: A type of object consisting of places which can be visited.
-        - house: A type of location. 
-            - mansion: A type of house.
-            - library: A type of house.
-        - depot: A type of location.
+Hierarchy(
+    hierarchy=[
+        Hierarchy_Object(
+            parent_type=Type_(name="object", description="Object is always root, everything is an object"),
+            child_types=[
+                Type_(name="worker", description="A type of object consisting of humans who do things."),
+                Type_(name="order", description="A type of object consisting of instructions."),
+                Type_(name="vehicle", description="A type of object consisting of vehicles."),
+                Type_(name="house_component", description="A type of object consisting of the components of a house."),
+                Type_(name="location", description="A type of object consisting of places which can be visited."),
+            ],
+        ),
+        Hierarchy_Object(
+            parent_type=Type_(name="worker", description="A type of object consisting of humans who do things."),
+            child_types=[
+                Type_(name="administrator", description="A type of worker."),
+                Type_(name="general_worker", description="A type of worker."),
+            ],
+        ),
+        Hierarchy_Object(
+            parent_type=Type_(name="house_component", description="A type of object consisting of the components of a house."),
+            child_types=[
+                Type_(name="wall", description="A type of house_component."),
+                Type_(name="floor", description="A type of house_component."),
+                Type_(name="roof", description="A type of house_component."),
+            ],
+        ),
+        Hierarchy_Object(
+            parent_type=Type_(name="location", description="A type of object consisting of places which can be visited."),
+            child_types=[
+                Type_(name="house", description="A type of location."),
+                Type_(name="depot", description="A type of location."),
+            ],
+        ),
+        Hierarchy_Object(
+            parent_type=Type_(name="house", description="A type of location."),
+            child_types=[
+                Type_(name="mansion", description="A type of house."),
+                Type_(name="library", description="A type of house."),
+            ],
+        ),
+    ]
+)
 ```
 
 # Task

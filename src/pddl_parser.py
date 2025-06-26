@@ -1,8 +1,19 @@
 from src.agent.states import *
-from pddl.core import Domain, Problem, Types
-from pddl.logic import Predicate, variables, Variable
-from pddl.action import Action
+from pddl.core import Domain, Action
+from pddl.logic.base import And, Not, Or
+from pddl.logic import Predicate, variables
+from pddl.logic.terms import Constant
+import re
+from datetime import datetime
+
+import os
+from utils.paths import *
+from langchain import chat_models
+from langchain_core.prompts import ChatPromptTemplate
+from pddl.core import Problem, Domain
 from pddl.requirements import Requirements
+from src.agent.nodes_and_edges import *
+
 
 result1 = NL2PlanState(
     natural_language_task="Currently I've got five packages to ship, 3 in a storage in Ado and the rest in Betar's storage. Those from Ado should be sent 1 to Bal Street in Betar, 2 to Cli Promenade in Colin. Those from Betar should be moved to the Ado storage. The only plane is currently in Duran's airport, but each city has it's own truck and airport.",
@@ -10,6 +21,8 @@ result1 = NL2PlanState(
     domain_desc="The AI agent here is a logistics planner that has to plan to transport packages within the locations in a city through a truck and between cities through an airplane. Within a city, the locations are directly linked, allowing trucks to travel between any two of these locations. Similarly, cities are directly connected to each other allowing airplanes to travel between any two cities. Also, there is no limit to how many packages a truck or plane can carry (so in theory a truck or plane can carry an infinite number of packages).",
 
     domain_name="logistics",
+
+    task_name="task1",
 
     types=[
         Type_(name="city",
@@ -94,275 +107,223 @@ result1 = NL2PlanState(
     ],
 
     predicates=[
-        Predicate_(
+        Predicate_Defintion(
             name="at",
             predicate_parameters={"p": "object", "l": "location"},
             description="Package p is at location l"
         ),
-        Predicate_(
+        Predicate_Defintion(
             name="in",
             predicate_parameters={"p": "package", "t": "vehicle"},
             description="Package p is in vehicle t"
         ),
-        Predicate_(
+        Predicate_Defintion(
             name="in_city",
             predicate_parameters={"l": "location", "c": "city"},
             description="Location l is in city c"
         ),
-        Predicate_(
+        Predicate_Defintion(
             name="is_airport",
             predicate_parameters={"l": "location"},
             description="Location l is an airport"
         ),
-        Predicate_(
+        Predicate_Defintion(
             name="different",
             predicate_parameters={"c1": "city", "c2": "city"},
             description="Cities c1 and c2 are different"
         )
     ],  #TODO: Not included in JSON
 
-    actions=[
-        Action_(
-            name="load_truck",
-            description="A package is loaded onto a truck at a location. Requires that the package and the truck to be at the same location.",
-            action_parameters={"p": "package", "t": "truck", "l": "location"},
-            preconditions={
-                "and": [
-                    Predicate_(name="at", predicate_parameters={"p": "p", "l": "l"},
-                               description="The package must be at the location"),
-                    Predicate_(name="at", predicate_parameters={"t": "t", "l": "l"},
-                               description="The truck must be at the location"),
-                    {"not": Predicate_(name="in", predicate_parameters={"p": "p", "t": "t"},
-                                       description="The package must not already be in the truck")}
-                ]
-            },
-            effects={
-                "and": [
-                    Predicate_(name="in", predicate_parameters={"p": "p", "t": "t"},
-                               description="The package is now in the truck"),
-                    {"not": Predicate_(name="at", predicate_parameters={"p": "p", "l": "l"},
-                                       description="The package is no longer at the location")}
-                ]
-            }
-        ),
-        Action_(
-            name="unload_truck",
-            description="A package is unloaded from a truck at a location. Requires that the truck with the package be at the destination location.",
-            action_parameters={"p": "package", "t": "truck", "l": "location"},
-            preconditions={
-                "and": [
-                    Predicate_(name="at", predicate_parameters={"t": "t", "l": "l"},
-                               description="The truck must be at the location"),
-                    Predicate_(name="in", predicate_parameters={"p": "p", "t": "t"},
-                               description="The package must be in the truck")
-                ]
-            },
-            effects={
-                "and": [
-                    Predicate_(name="at", predicate_parameters={"p": "p", "l": "l"},
-                               description="The package is now at the location"),
-                    {"not": Predicate_(name="in", predicate_parameters={"p": "p", "t": "t"},
-                                       description="The package is no longer in the truck")}
-                ]
-            }
-        ),
-        Action_(
-            name="load_airplane",
-            description="A package is loaded onto an airplane at an airport. Requires that the package and the airplane to be at the same airport.",
-            action_parameters={"p": "package", "a": "airplane", "ap": "airport"},
-            preconditions={
-                "and": [
-                    Predicate_(name="at", predicate_parameters={"p": "p", "l": "ap"},
-                               description="The package must be at the airport"),
-                    Predicate_(name="at", predicate_parameters={"t": "a", "l": "ap"},
-                               description="The airplane must be at the airport"),
-                    {"not": Predicate_(name="in", predicate_parameters={"p": "p", "t": "a"},
-                                       description="The package must not already be in the airplane")}
-                ]
-            },
-            effects={
-                "and": [
-                    Predicate_(name="in", predicate_parameters={"p": "p", "t": "a"},
-                               description="The package is now in the airplane"),
-                    {"not": Predicate_(name="at", predicate_parameters={"p": "p", "l": "ap"},
-                                       description="The package is no longer at the airport")}
-                ]
-            }
-        ),
-        Action_(
-            name="unload_airplane",
-            description="A package is unloaded from an airplane at an airport. Requires that the airplane with the package be at the destination airport.",
-            action_parameters={"p": "package", "a": "airplane", "ap": "airport"},
-            preconditions={
-                "and": [
-                    Predicate_(name="at", predicate_parameters={"t": "a", "l": "ap"},
-                               description="The airplane must be at the airport"),
-                    Predicate_(name="in", predicate_parameters={"p": "p", "t": "a"},
-                               description="The package must be in the airplane")
-                ]
-            },
-            effects={
-                "and": [
-                    {"not": Predicate_(name="in", predicate_parameters={"p": "p", "t": "a"},
-                                       description="The package is no longer in the airplane")},
-                    Predicate_(name="at", predicate_parameters={"p": "p", "l": "ap"},
-                               description="The package is now at the airport")
-                ]
-            }
-        ),
-        Action_(
-            name="drive_truck",
-            description="A truck drives from one location to another within the same city. Locations within a city are directly connected.",
-            action_parameters={"t": "truck", "from": "location", "to": "location", "c": "city"},
-            preconditions={
-                "and": [
-                    Predicate_(name="at", predicate_parameters={"t": "truck", "l": "from"},
-                               description="The truck must be at the starting location"),
-                    Predicate_(name="in_city", predicate_parameters={"l": "from", "c": "c"},
-                               description="The starting location must be in the specified city"),
-                    Predicate_(name="in_city", predicate_parameters={"l": "to", "c": "c"},
-                               description="The destination location must be in the same city")
-                ]
-            },
-            effects={
-                "and": [
-                    {"not": Predicate_(name="at", predicate_parameters={"t": "t", "l": "from"},
-                                       description="The truck is no longer at the starting location")},
-                    Predicate_(name="at", predicate_parameters={"t": "t", "l": "to"},
-                               description="The truck is now at the destination location")
-                ]
-            }
-        ),
-        Action_(
-            name="fly_airplane",
-            description="An airplane flies from one city's airport to another city's airport. Cities are directly connected.",
-            action_parameters={
-                "a": "airplane",
-                "from": "airport",
-                "to": "airport",
-                "from_city": "city",
-                "to_city": "city"
-            },
-            preconditions={
-                "and": [
-                    Predicate_(name="at", predicate_parameters={"o": "a", "l": "from"},
-                               description="The airplane must be at the departure airport"),
-                    Predicate_(name="in_city", predicate_parameters={"l": "from", "c": "from_city"},
-                               description="The departure airport must be in the departure city"),
-                    Predicate_(name="in_city", predicate_parameters={"l": "to", "c": "to_city"},
-                               description="The destination airport must be in the destination city"),
-                    Predicate_(name="is_airport", predicate_parameters={"l": "from"},
-                               description="The departure location must be an airport"),
-                    Predicate_(name="is_airport", predicate_parameters={"l": "to"},
-                               description="The destination location must be an airport"),
-                    Predicate_(name="different", predicate_parameters={"c1": "from_city", "c2": "to_city"},
-                               description="The departure and destination cities must be different")
-                ]
-            },
-            effects={
-                "and": [
-                    {"not": Predicate_(name="at", predicate_parameters={"o": "a", "l": "from"},
-                                       description="The airplane is no longer at the departure airport")},
-                    Predicate_(name="at", predicate_parameters={"o": "a", "l": "to"},
-                               description="The airplane is now at the destination airport")
-                ]
-            }
-        )
-    ],
+actions = [
+    Action_(
+        name="load_truck",
+        description="A package is loaded onto a truck at a location. Requires that the package and the truck to be at the same location.",
+        action_parameters={"p": "package", "t": "truck", "l": "location"},
+        preconditions={
+            "and": [
+                Predicate_Instance(name="at", parameters=["p", "l"]),
+                Predicate_Instance(name="at", parameters=["t", "l"]),
+                {"not": Predicate_Instance(name="in", parameters=["p", "t"])}
+            ]
+        },
+        effects={
+            "and": [
+                Predicate_Instance(name="in", parameters=["p", "t"]),
+                {"not": Predicate_Instance(name="at", parameters=["p", "l"])}
+            ]
+        }
+    ),
+    Action_(
+        name="unload_truck",
+        description="A package is unloaded from a truck at a location. Requires that the truck with the package be at the destination location.",
+        action_parameters={"p": "package", "t": "truck", "l": "location"},
+        preconditions={
+            "and": [
+                Predicate_Instance(name="at", parameters=["t", "l"]),
+                Predicate_Instance(name="in", parameters=["p", "t"])
+            ]
+        },
+        effects={
+            "and": [
+                Predicate_Instance(name="at", parameters=["p", "l"]),
+                {"not": Predicate_Instance(name="in", parameters=["p", "t"])}
+            ]
+        }
+    ),
+    Action_(
+        name="load_airplane",
+        description="A package is loaded onto an airplane at an airport. Requires that the package and the airplane to be at the same airport.",
+        action_parameters={"p": "package", "a": "airplane", "ap": "airport"},
+        preconditions={
+            "and": [
+                Predicate_Instance(name="at", parameters=["p", "ap"]),
+                Predicate_Instance(name="at", parameters=["a", "ap"]),
+                {"not": Predicate_Instance(name="in", parameters=["p", "a"])}
+            ]
+        },
+        effects={
+            "and": [
+                Predicate_Instance(name="in", parameters=["p", "a"]),
+                {"not": Predicate_Instance(name="at", parameters=["p", "ap"])}
+            ]
+        }
+    ),
+    Action_(
+        name="unload_airplane",
+        description="A package is unloaded from an airplane at an airport. Requires that the airplane with the package be at the destination airport.",
+        action_parameters={"p": "package", "a": "airplane", "ap": "airport"},
+        preconditions={
+            "and": [
+                Predicate_Instance(name="at", parameters=["a", "ap"]),
+                Predicate_Instance(name="in", parameters=["p", "a"])
+            ]
+        },
+        effects={
+            "and": [
+                {"not": Predicate_Instance(name="in", parameters=["p", "a"])},
+                Predicate_Instance(name="at", parameters=["p", "ap"])
+            ]
+        }
+    ),
+    Action_(
+        name="drive_truck",
+        description="A truck drives from one location to another within the same city. Locations within a city are directly connected.",
+        action_parameters={"t": "truck", "from": "location", "to": "location", "c": "city"},
+        preconditions={
+            "and": [
+                Predicate_Instance(name="at", parameters=["t", "from"]),
+                Predicate_Instance(name="in_city", parameters=["from", "c"]),
+                Predicate_Instance(name="in_city", parameters=["to", "c"])
+            ]
+        },
+        effects={
+            "and": [
+                {"not": Predicate_Instance(name="at", parameters=["t", "from"])},
+                Predicate_Instance(name="at", parameters=["t", "to"])
+            ]
+        }
+    ),
+    Action_(
+        name="fly_airplane",
+        description="An airplane flies from one city's airport to another city's airport. Cities are directly connected.",
+        action_parameters={
+            "a": "airplane",
+            "from": "airport",
+            "to": "airport",
+            "from_city": "city",
+            "to_city": "city"
+        },
+        preconditions={
+            "and": [
+                Predicate_Instance(name="at", parameters=["a", "from"]),
+                Predicate_Instance(name="in_city", parameters=["from", "from_city"]),
+                Predicate_Instance(name="in_city", parameters=["to", "to_city"]),
+                Predicate_Instance(name="is_airport", parameters=["from"]),
+                Predicate_Instance(name="is_airport", parameters=["to"]),
+                Predicate_Instance(name="different", parameters=["from_city", "to_city"])
+            ]
+        },
+        effects={
+            "and": [
+                {"not": Predicate_Instance(name="at", parameters=["a", "from"])},
+                Predicate_Instance(name="at", parameters=["a", "to"])
+            ]
+        }
+    )
+],
 
-object_instances=ObjectInstances(
+    object_instances=ObjectInstances(
         objects={
-            "ado_city": "The city of Ado",
-            "betar_city": "The city of Betar",
-            "colin_city": "The city of Colin",
-            "duran_city": "The city of Duran",
-            "ado_storage": "Storage location in Ado",
-            "ado_airport": "Airport in Ado",
-            "ado_truck": "Truck assigned to Ado city",
-            "betar_storage": "Storage location in Betar",
-            "betar_airport": "Airport in Betar",
-            "betar_street": "Street location in Betar",
-            "betar_truck": "Truck assigned to Betar city",
-            "colin_promenade": "Promenade location in Colin",
-            "colin_airport": "Airport in Colin",
-            "colin_truck": "Truck assigned to Colin city",
-            "duran_airport": "Airport in Duran",
-            "duran_truck": "Truck assigned to Duran city",
-            "airplane1": "The only airplane in the system, currently at Duran's airport",
-            "package1": "First package from Ado, needs to go to Betar Street",
-            "package2": "Second package from Ado, needs to go to Colin Promenade",
-            "package3": "Third package from Ado, needs to go to Colin Promenade",
-            "package4": "First package from Betar, needs to go to Ado Storage",
-            "package5": "Second package from Betar, needs to go to Ado Storage"
+            "ado_city": "city",
+            "betar_city": "city",
+            "colin_city": "city",
+            "duran_city": "city",
+            "ado_storage": "storage",
+            "ado_airport": "airport",
+            "ado_truck": "truck",
+            "betar_storage": "storage",
+            "betar_airport": "airport",
+            "betar_street": "location",
+            "betar_truck": "truck",
+            "colin_promenade": "promenade",
+            "colin_airport": "airport",
+            "colin_truck": "truck",
+            "duran_airport": "airport",
+            "duran_truck": "truck",
+            "airplane1": "airplane",
+            "package1": "package",
+            "package2": "package",
+            "package3": "package",
+            "package4": "package",
+            "package5": "package"
         }
     ),
 
     initial_state=InitialState(
         initial_state_predicates=[
-            Predicate_(name="at", predicate_parameters={"A1": "AdoStorage"},
-                       description="First Ado package is in Ado's storage"),
-            Predicate_(name="at", predicate_parameters={"A2": "AdoStorage"},
-                       description="Second Ado package is in Ado's storage"),
-            Predicate_(name="at", predicate_parameters={"A3": "AdoStorage"},
-                       description="Third Ado package is in Ado's storage"),
-            Predicate_(name="at", predicate_parameters={"B1": "BetarStorage"},
-                       description="First Betar package is in Betar's storage"),
-            Predicate_(name="at", predicate_parameters={"B2": "BetarStorage"},
-                       description="Second Betar package is in Betar's storage"),
-            Predicate_(name="at", predicate_parameters={"AdoTruck": "AdoStorage"},
-                       description="Ado's truck starts at its storage"),
-            Predicate_(name="at", predicate_parameters={"BetarTruck": "BetarStorage"},
-                       description="Betar's truck starts at its storage"),
-            Predicate_(name="at", predicate_parameters={"ColinTruck": "ColinStorage"},
-                       description="Colin's truck starts at its storage"),
-            Predicate_(name="at", predicate_parameters={"DuranTruck": "DuranStorage"},
-                       description="Duran's truck starts at its storage"),
-            Predicate_(name="at", predicate_parameters={"Plane1": "DuranAirport"},
-                       description="The plane starts at Duran's airport"),
-            Predicate_(name="in-city", predicate_parameters={"AdoStorage": "Ado"},
-                       description="Ado storage is in Ado city"),
-            Predicate_(name="in-city", predicate_parameters={"AdoAirport": "Ado"},
-                       description="Ado airport is in Ado city"),
-            Predicate_(name="in-city", predicate_parameters={"BetarStorage": "Betar"},
-                       description="Betar storage is in Betar city"),
-            Predicate_(name="in-city", predicate_parameters={"BetarStreet": "Betar"},
-                       description="Betar street is in Betar city"),
-            Predicate_(name="in-city", predicate_parameters={"BetarAirport": "Betar"},
-                       description="Betar airport is in Betar city"),
-            Predicate_(name="in-city", predicate_parameters={"ColinStorage": "Colin"},
-                       description="Colin storage is in Colin city"),
-            Predicate_(name="in-city", predicate_parameters={"ColinPromenade": "Colin"},
-                       description="Colin promenade is in Colin city"),
-            Predicate_(name="in-city", predicate_parameters={"ColinAirport": "Colin"},
-                       description="Colin airport is in Colin city"),
-            Predicate_(name="in-city", predicate_parameters={"DuranStorage": "Duran"},
-                       description="Duran storage is in Duran city"),
-            Predicate_(name="in-city", predicate_parameters={"DuranAirport": "Duran"},
-                       description="Duran airport is in Duran city")
-        ]
+            Predicate_Instance(name="at", parameters=["A1","AdoStorage"]),
+            Predicate_Instance(name="at", parameters=["A2", "AdoStorage"]),
+            Predicate_Instance(name="at", parameters=["A3", "AdoStorage"]),
+            Predicate_Instance(name="at", parameters=["B1", "BetarStorage"]),
+            Predicate_Instance(name="at", parameters=["B2", "BetarStorage"]),
+            Predicate_Instance(name="at", parameters=["AdoTruck", "AdoStorage"]),
+            Predicate_Instance(name="at", parameters=["BetarTruck", "BetarStorage"]),
+            Predicate_Instance(name="at", parameters=["ColinTruck", "ColinStorage"]),
+            Predicate_Instance(name="at", parameters=["DuranTruck", "DuranStorage"]),
+            Predicate_Instance(name="at", parameters=["Plane1", "DuranAirport"]),
+            Predicate_Instance(name="in-city", parameters=["AdoStorage", "Ado"]),
+            Predicate_Instance(name="in-city", parameters=["AdoAirport", "Ado"]),
+            Predicate_Instance(name="in-city", parameters=["BetarStorage", "Betar"]),
+            Predicate_Instance(name="in-city", parameters=["BetarStreet", "Betar"]),
+            Predicate_Instance(name="in-city", parameters=["BetarAirport", "Betar"]),
+            Predicate_Instance(name="in-city", parameters=["ColinStorage", "Colin"]),
+            Predicate_Instance(name="in-city", parameters=["ColinPromenade", "Colin"]),
+            Predicate_Instance(name="in-city", parameters=["ColinAirport", "Colin"]),
+            Predicate_Instance(name="in-city", parameters=["DuranStorage", "Duran"]),
+            Predicate_Instance(name="in-city", parameters=["DuranAirport", "Duran"]),        ]
     ),
 
     goal_state=GoalState(
         goal_state_predicates={
             "and": [
-                Predicate_(name="at", predicate_parameters={"package": "L1", "location": "bal_street"},
-                           description="Package L1 from Ado should be at Bal Street in Betar"),
-                Predicate_(name="at", predicate_parameters={"package": "L2", "location": "cli_promenade"},
-                           description="Package L2 from Ado should be at Cli Promenade in Colin"),
-                Predicate_(name="at", predicate_parameters={"package": "L3", "location": "cli_promenade"},
-                           description="Package L3 from Ado should be at Cli Promenade in Colin"),
-                Predicate_(name="at", predicate_parameters={"package": "L4", "location": "ado_storage"},
-                           description="Package L4 from Betar should be at Ado storage"),
-                Predicate_(name="at", predicate_parameters={"package": "L5", "location": "ado_storage"},
-                           description="Package L5 from Betar should be at Ado storage")
+                Predicate_Instance(name="at", parameters=["L1","bal_street"]),
+                Predicate_Instance(name="at", parameters=["L2","cli_promenade"]),
+                Predicate_Instance(name="at", parameters=["L3","cli_promenade"]),
+                Predicate_Instance(name="at", parameters=["L4","ado_storage"]),
+                Predicate_Instance(name="at", parameters=["L5","ado_storage"]),
             ]
         }
     ),
 
-    feedback=[]
-)
+    feedback=[],
 
-#Types erzeugen
+    pddl_domain=None
+)
+# =============================================================================
+# Erzeugung der PDDL-Domain
+# =============================================================================
+
+# Types erzeugen
 def create_types(state: NL2PlanState):
     # Typ-Hierarchie in ein Mapping wandeln: {child: parent}
     types_map = {}
@@ -379,7 +340,7 @@ def create_types(state: NL2PlanState):
 
     return types_map
 
-#Variablen für Predicates und Actions erzeugen
+# Variablen für Predicates und Actions erzeugen
 parameter_vars = {}
 
 def get_or_create_variable(name, type_):
@@ -393,7 +354,7 @@ def get_or_create_variable(name, type_):
         parameter_vars[name] = v
         return v
 
-#Predicates erzeugen
+# Predicates erzeugen
 def create_predicates(state:NL2PlanState):
     predicates_list = []
     for pred in state.predicates:
@@ -404,20 +365,112 @@ def create_predicates(state:NL2PlanState):
         p = Predicate(pred.name, *vars_)
         predicates_list.append(p)
     return predicates_list
-print(create_predicates(result1))
 
+# Actions erzeugen
 def create_actions(state: NL2PlanState):
     actions = []
-    for action in state.actions:
-        # Action-Parameter
-        action_vars = []
-        for param_name, param_type in action.action_parameters.items():
-            v = get_or_create_variable(param_name, param_type)
-            action_vars.append(v)
 
-def create_domain(state: NL2PlanState):
-    # 1. Requirements definieren
-    requirements = [
+    for action in state.actions:
+        action_vars = {}
+        for param_name, param_type in action.action_parameters.items():
+            v, = variables(param_name, types=[param_type])
+            action_vars[param_name] = v
+
+        def build_predicate(pred_: Predicate_Instance):
+            args = []
+            for var in pred_.parameters:
+                if var not in action_vars:
+                    raise ValueError(f"Variable '{var}' nicht in Action-Params gefunden")
+                args.append(action_vars[var])
+            return Predicate(pred_.name, *args)
+
+        def parse_condition(cond):
+            if isinstance(cond, dict):
+                if "and" in cond:
+                    parts = []
+                    for c in cond["and"]:
+                        res = parse_condition(c)
+                        if isinstance(res, list):
+                            parts.extend(res)
+                        else:
+                            parts.append(res)
+                    return And(*parts)
+
+                elif "or" in cond:
+                    parts = []
+                    for c in cond["or"]:
+                        res = parse_condition(c)
+                        if isinstance(res, list):
+                            parts.extend(res)
+                        else:
+                            parts.append(res)
+                    return Or(*parts)
+
+                elif "not" in cond:
+                    inner = parse_condition(cond["not"])
+                    return Not(inner)
+
+                else:
+                    raise ValueError(f"Unbekanntes Dict-Format in Bedingung: {cond}")
+
+            elif isinstance(cond, Predicate_Instance):
+                return build_predicate(cond)
+
+            else:
+                raise ValueError(f"Unbekannter Bedingungstyp: {cond}")
+
+        precondition = parse_condition(action.preconditions)
+        effect = parse_condition(action.effects)
+
+        pddl_action = Action(
+            name=action.name,
+            parameters=list(action_vars.values()),
+            precondition=precondition,
+            effect=effect
+        )
+        actions.append(pddl_action)
+
+    return actions
+
+# =============================================================================
+# Erzeugung des PDDL-Problems
+# =============================================================================
+
+# Erstellen der Objekte (Constants) aus den ObjectInstances
+def create_objects(state: NL2PlanState) -> list[Constant]:
+    constants_list = []
+    for name, type_ in state.object_instances.objects.items():
+        const = Constant(name, type_tag=type_)
+        constants_list.append(const)
+    return constants_list
+
+
+# Erstellen des Initialzustands (InitialState)
+def create_initial_state(state: NL2PlanState):
+    pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Test
+print(create_objects(result1))
+
+requirements = [
         Requirements.STRIPS,
         Requirements.TYPING,
         Requirements.EQUALITY,
@@ -427,22 +480,28 @@ def create_domain(state: NL2PlanState):
         Requirements.CONDITIONAL_EFFECTS,
     ]
 
-    # 2. Domain erzeugen mit diesem Mapping
+
+def create_domain(state: NL2PlanState):
     domain = Domain(
         name=state.domain_name,
         requirements=requirements,
         types=create_types(state),
-        predicates=create_predicates(state),  # später ergänzen
-        actions=[],     # später ergänzen
+        predicates=create_predicates(state),
+        actions=create_actions(state),
     )
-
+    # Domäne im State speichern
     return domain
 
-
-
-
-
 domain = create_domain(result1)
-print(domain)
 
+def create_problem(state: NL2PlanState):
+    problem = Problem(
+        name=state.task_name,
+        requirements=requirements,
+        domain=domain,
+        objects=create_objects(state),
+        # init=create_initial_state(state),
+        # goal=create_goal_state(state)
+    )
 
+print(create_problem(result1))

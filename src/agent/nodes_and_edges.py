@@ -1,14 +1,11 @@
 from __future__ import annotations
-from typing import Dict, Any
+import os
+from utils.paths import *
 from langchain import chat_models
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnableConfig
-from langgraph.types import Command
-
-from utils.paths import *
-from src.agent.states import *
-import os
-from operator import add
+from pddl.core import Problem, Domain
+from pddl.requirements import Requirements
+from src.pddl_parser import *
 
 # class Config_Schema(TypedDict): #TODO: aus Obsidian übernehmen & Config festlegen für init_chat_model (.with_config-Methode?)
 #     """Configurable parameters for the agent.
@@ -37,10 +34,10 @@ from operator import add
 
 #https://python.langchain.com/api_reference/langchain/chat_models/langchain.chat_models.base.init_chat_model.html#langchain.chat_models.base.init_chat_model
 #Initalisierung des Mediator-LLMs (Temperatur = 0, Timeout nach 300 Sekunden)
-#mediator_llm = chat_models.init_chat_model("anthropic:claude-3-5-sonnet-latest", temperature=0, timeout=300)
-mediator_llm = chat_models.init_chat_model("gpt-4o", temperature=0, timeout=300)
+mediator_llm = chat_models.init_chat_model("anthropic:claude-3-5-sonnet-latest", temperature=0, timeout=300)
+#mediator_llm = chat_models.init_chat_model("gpt-4o", temperature=0, timeout=300)
 #mediator_llm = chat_models.init_chat_model("gemini-1.5-flash", temperature=0, timeout=300)
-mediator_llm = chat_models.init_chat_model("deepseek:deepseek-r-1", temperature=0, timeout=300)
+#mediator_llm = chat_models.init_chat_model("deepseek:deepseek-r-1", temperature=0, timeout=300)
 
 #Initalisierung des Feedback-LLMs (Temperatur = 0, Timeout nach 300 Sekunden)
 feedback_llm = chat_models.init_chat_model("anthropic:claude-3-5-sonnet-latest", temperature=0, timeout=300)
@@ -505,17 +502,40 @@ def goal_state_extraction_with_feedback(state: NL2PlanState):
 # Planning Schritt
 # =============================================================================
 
-def create_pddl():
-    pass
+# Requirements setzen
+requirements = [
+        Requirements.STRIPS,
+        Requirements.TYPING,
+        Requirements.EQUALITY,
+        Requirements.NEG_PRECONDITION,
+        Requirements.DIS_PRECONDITION,
+        Requirements.UNIVERSAL_PRECONDITION,
+        Requirements.CONDITIONAL_EFFECTS,
+    ]
 
 
-# async def call_model(state: NL2PlanState, config: RunnableConfig) -> Dict[str, Any]:
-#     """Process input and returns output.
-#
-#     Can use runtime configuration to alter behavior.
-#     """
-#     configuration = config["configurable"]
-#     return {
-#         "changeme": "output from call_model. "  #TODO: anpassen, um beim Start des Graphen das u.a. Modell festlegen zu können
-#         f'Configured with {configuration.get("my_configurable_param")}'
-#     }
+# Domain erzeugen
+def create_domain(state: NL2PlanState):
+    domain = Domain(
+        name=state.domain_name,
+        requirements=requirements,
+        types=create_types(state),
+        predicates=create_predicates(state),
+        actions=create_actions(state),
+    )
+    # Domäne im State speichern
+    return domain
+
+def domain_to_state(domain: Domain):
+    return {"pddl_domain": domain}
+
+#Problem erzeugen
+def create_problem(state: NL2PlanState):
+    problem = Problem(
+        state.task_name,
+        requirements=requirements,
+        domain=state.pddl_domain,
+        objects=create_objects(state),
+        # init=create_initial_state(state),
+        # goal=create_goal_state(state)
+    )

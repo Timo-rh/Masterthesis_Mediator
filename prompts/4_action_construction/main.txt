@@ -45,8 +45,8 @@ To be able to drive from "from" to "to" it's specified that:
     2: The two locations have to be connected.
 
 For this we'll need two predicates:
- - "at" to define where something is. This should probably work for both vehicles and all workers, so let's define it as "Predicate_(name= at, predicate_parameters= {o:object, l:location}, description= true if object is at the location.)".
- - "connected" to define if two locations are connected. This would entail that we can travel between the locations with a vehicle "Predicate_(name= connected, predicate_parameters= {l1:location, l2:location}, description= true if two locations are connected.)"
+ - "at" to define where something is. This should probably work for both vehicles and all workers, so let's define it as "Predicate_Definition(name= at, predicate_parameters= {o:object, l:location}, description= true if object is at the location.)".
+ - "connected" to define if two locations are connected. This would entail that we can travel between the locations with a vehicle "Predicate_Definition(name= connected, predicate_parameters= {l1:location, l2:location}, description= true if two locations are connected.)"
 
 Furthermore, we can assume that the two locations have to be different:
     3: The locations are different
@@ -54,10 +54,9 @@ Furthermore, we can assume that the two locations have to be different:
 Let's specify this in the PDDL-like format:
 ```
 preconditions = "and", [
-    Predicate_(name: at, predicate_parameters: {v:vehicle, from:location}, description: "The vehicle is at the starting location."),
-    Predicate_(name: connected, predicate_parameters: {from:location, to:location}, description: "The two locations are connected by a road."),
-    Predicate_(name: not, predicate_parameters: {to:location, from:location}, description: "The locations are different.")
-]
+    Predicate_Instance(name: at, parameters: ["v", "from"]),
+    Predicate_Instance(name: connected, parameters: ["from", "to"]),
+    Predicate_Instance(name: connected, parameters: ["to", "from"])]
 ```
 
 ### Action Effects
@@ -70,15 +69,12 @@ This doesn't need any new predicates.
 Let's write this in PDDL-like format:
 ```
 effects = {
-    "and": [
-        {
-            "not": Predicate_(name="at", predicate_parameters={"v": "vehicle", "from": "location"},
-                              description="The vehicle is no longer at the starting location")
-        },
-        Predicate_(name="at", predicate_parameters={"v": "vehicle", "to": "location"},
-                   description="The vehicle is now at the destination location")
-    ]
-}
+    "and": [{"not": Predicate_Instance(
+                name="at",
+                parameters=["v", "from"])},
+                    Predicate_Instance(
+                        name="at",
+                        parameters=["v", "to"])]}
 ```
 
 ### New Predicates
@@ -86,12 +82,12 @@ We used several new predicates. Those have to be specified formally here. Rememb
 
 The first predicate we created is "at" which shows where something is. To make it compatible for both vehicles and workers, we use the general object type.
 ```
-Predicate(name=at, predicate_parameters={o: object, l: location}, description="true if the object o (a vehicle or a worker) is at the location l")
+Predicate_Definition(name=at, predicate_parameters={o: object, l: location}, description="true if the object o (a vehicle or a worker) is at the location l")
 ```
 
 The next we added is the "connected" predicate which indicates that a road exists between two locations.
 ```
-Predicate(name=connected, predicate_parameters={l1: location, l2: location}, description="true if a road exists between l1 and l2 allowing vehicle travel between them.")
+Predicate_Definition(name=connected, predicate_parameters={l1: location, l2: location}, description="true if a road exists between l1 and l2 allowing vehicle travel between them.")
 ``` 
 
 ## Error
@@ -117,23 +113,18 @@ There was an issue with or feedback for generating the specified action. Correct
 
 You should take the following concrete steps:
     - Add a "has_fuel" predicate to check that the vehicle has fuel. This should be checked before moving and then emptied.
-    - Make sure that both directions are checked for a road by replacing "Predicate_(name=connected, predicate_parameters={"from": "location", "to":"location"}, description="Locations are connected")" with "or": [
-                        Predicate_(name="connected", predicate_parameters={"from": "location", "to": "location"},
-                                   description="Locations are connected"),
-                        Predicate_(name="connected", predicate_parameters={"to": "location", "from": "location"},
-                                   description="Locations are connected the other way")
+    - Make sure that both directions are checked for a road by replacing "Predicate_Instance(name=connected, parameters=["from", "to":]) with "or": [
+                        Predicate_Instance(name="connected", parameters=["from", "to":],
+                        Predicate_Instance(name="connected", parameters=["to", "from":])]
     - This would result in the following precondition:
         ```
         preconditions = {
             "and": [
-                Predicate_(name="at", predicate_parameters={"v": "vehicle", "l": "location"},
-                           description="The vehicle must be at the starting location"),
+                Predicate_Instance(name="at", parameters=["v", "from":],
                 {
                     "or": [
-                        Predicate_(name="connected", predicate_parameters={"from": "location", "to": "location"},
-                                   description="Locations are connected"),
-                        Predicate_(name="connected", predicate_parameters={"to": "location", "from": "location"},
-                                   description="Locations are connected the other way")
+                        Predicate_Instance(name="connected", parameters=["from", "to":],
+                        Predicate_Instance(name="connected", parameters=["to", "from":])
                     ]
                 }
             ]
@@ -167,20 +158,12 @@ Okay, so we'll need the same parameters as last time, but we still need to clear
 Now, we'll make the change to check both directions of the "connected" predicate as to create more robust PDDL.
 ```
 preconditions = {
-    "and": [
-        Predicate_(name="at", predicate_parameters={"v": "vehicle", "from": "location"},
-                   description="The vehicle is at the starting location"),
-        {
-            "or": [
-                Predicate_(name="connected", predicate_parameters={"from": "location", "to": "location"},
-                           description="A road exists from 'from' to 'to'"),
-                Predicate_(name="connected", predicate_parameters={"from": "location", "to": "location"},
-                           description="A road exists from 'to' to 'from'")
-            ]
-        }
-    ]
-}
-
+            "and": [
+                Predicate_Instance(name="at", parameters=["v", "from":],
+                {"or": [
+                        Predicate_Instance(name="connected", parameters=["from", "to":],
+                        Predicate_Instance(name="connected", parameters=["to", "from":])
+                        ]}]}
 ```
 
 ### Action Effects
@@ -189,16 +172,14 @@ These are the exact same as above, but they need to be reiterated:
 effects = {
     "and": [
         {
-            "not": Predicate_(
+            "not": Predicate_Instance(
                 name="at",
-                predicate_parameters={"v": "vehicle", "from": "location"},
-                description="v is no longer at from"
+                parameters=["v","from"]
             )
         },
-        Predicate_(
+        Predicate_Instance(
             name="at",
-            predicate_parameters={"v": "vehicle", "to": "location"},
-            description="v is now instead at to"
+            parameters={"v","to"]
         )
     ]
 }
@@ -207,13 +188,13 @@ effects = {
 ### New Predicates
 These are the same as before:
 ```
-Predicate_(
+Predicate_Definition(
     name="at",
     predicate_parameters={"o": "object", "l": "location"},
     description="True if the object o (a vehicle or a worker) is at the location l."
 )
 
-Predicate_(
+Predicate_Definition(
     name="connected",
     predicate_parameters={"l1": "location", "l2": "location"},
     description="True if a road exists between l1 and l2 allowing vehicle travel between them."
