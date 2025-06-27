@@ -1,6 +1,6 @@
 from __future__ import annotations
 import operator
-from typing import List, Optional, Dict, Literal, Annotated, Union
+from typing import List, Optional, Dict, Literal, Annotated, Union, ForwardRef
 from pydantic import BaseModel, Field
 
 
@@ -28,6 +28,7 @@ class NL2PlanState(BaseModel):
 
     # === OUTPUT ===
     pddl_domain: Optional[str] = None
+    pddl_problem: Optional[str] = None
 
 # =============================================================================
 # Schemata für Strukturierung der Outputs (Types, Hierarchie etc.)
@@ -73,26 +74,32 @@ class Predicate_Defintion(BaseModel):
     predicate_parameters: Dict[str, str] #= Field(description="The parameters of the predicate, e.g., '{param_name (o): param_type (object)}'")
     description: str = Field(description="A description of the predicate, e.g., 'true if the object is at the location.'.")
 
+#Diese Klasse ist nur für die Ausstattung des LLMs mit einem strukturierten Output
+class Predicate_Defintion_List(BaseModel):
+    predicates: List[Predicate_Defintion] = Field(description="List of all predicate definitions. Each predicate has to have a distinct name.")
+
 #Klasse für die Verwendung von Predikaten
 class Predicate_Instance(BaseModel):
     name: str = Field(description="The name of the predicate. Each predicate has to have a distinct name.")
     parameters: List[str] = Field(description="The parameters of the predicate, e.g., ['p', 'l'] for a predicate 'at' with parameters 'object' and 'location'.")
 
-Condition = Union[
-    Predicate_Instance,
-    Dict[Literal["or"], List[Predicate_Instance]],
-    Dict[Literal["not"], Predicate_Instance]
-]
-
-
+#Rekursive Definition der Predicate_Instances
+class Condition(BaseModel):
+    type: Optional[Literal["or", "not"]] = None  # "or" und "not" sind optional
+    conditions: Optional[
+        Union[
+            List[Predicate_Instance],  # Für "or"
+            Predicate_Instance         # Für "not"
+        ]
+    ] = None
 
 #Klasse für Beschreibung einer Aktion (Action Construction Step) #TODO: "Key-Tuple" durch einzelnen Wert ersetzen (Erklärung des Operators (add etc.) fällt dann weg. -> In Doku aufnehmen
 class Action_(BaseModel):
     name: str = Field(description="The name of the action, e.g., 'drive'.")
     description: str = Field(description="A description of the action. Includes what is required to take that action, e.g., 'A package is loaded onto a vehicle at a location. Requires that the package and the truck to be at the same location.'.")
     action_parameters: Dict[str, str] #= Field(description="The parameters of the action, e.g., '{param_name: param_type}'")
-    preconditions: Dict[Literal["and"], List[Condition]] #= Field(description="All preconditions for the action, e.g., {'and': [Predicate(name='at', parameters={'object': '?p', 'location': '?l'}, description='The package is at the location'), Predicate(name='at', parameters={'object': '?v', 'location': '?l'}, description='The vehicle is at the location')]}")
-    effects: Dict[Literal["and"], List[Condition]] #= Field(description="All effects for the action, e.g., {'and': [Predicate(name='at', parameters={'object': '?p', 'location': '?l'}, description='The package is at the location'), Predicate(name='at', parameters={'object': '?v', 'location': '?l'}, description='The vehicle is at the location')]}")
+    preconditions: Dict[Literal["and"], List[Union[Predicate_Instance, Condition]]] #= Field(description="All preconditions for the action, e.g., {'and': [Predicate(name='at', parameters={'object': '?p', 'location': '?l'}, description='The package is at the location'), Predicate(name='at', parameters={'object': '?v', 'location': '?l'}, description='The vehicle is at the location')]}")
+    effects: Dict[Literal["and"], List[Union[Predicate_Instance, Condition]]] #= Field(description="All effects for the action, e.g., {'and': [Predicate(name='at', parameters={'object': '?p', 'location': '?l'}, description='The package is at the location'), Predicate(name='at', parameters={'object': '?v', 'location': '?l'}, description='The vehicle is at the location')]}")
 
 
 #Klasse für alle Objektinstanzen

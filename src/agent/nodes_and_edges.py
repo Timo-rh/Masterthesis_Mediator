@@ -247,24 +247,25 @@ def action_extraction_with_feedback(state: NL2PlanState):
 # Action-Construction Schritt
 # =============================================================================
 
-def action_construction(state: NL2PlanState):
-    """Konstruiert alle nominierten Aktionen."""
-    constructed_actions = []
-    all_predicates = []
+def construct_predicates_for_one_action(state: NL2PlanState, action: Nominated_Action):
+    """Konstruirert in einem Call alle benötigten Prädikate für alle Aktionen."""
+    with open(os.path.join(action_construction_prompts, "predicate_generation.txt")) as f:
+        system_message = f.read().strip()
+    predicate_construction_llm = mediator_llm.with_structured_output(Predicate_Defintion_List)
+    input_prompt = ChatPromptTemplate([("system", "{system_message}"), ("human",
+                                                                        "{domain_desc}\n## Task\n{task}\n## Available Types\n{type_hierarchy}\nThe following actions will be defined later and together they make up the entire domain:\n{nominated_actions}\n ## Action {action_to_create}\n ### Already defined predicates {predicates}")])
+    predicate_construction_chain = input_prompt | predicate_construction_llm
+    predicate_construction_call = predicate_construction_chain.invoke(
+        {"system_message": system_message,
+         "domain_desc": state.domain_desc,
+         "task": state.natural_language_task,
+         "type_hierarchy": state.type_hierarchy,
+         "nominated_actions": state.nominated_actions,
+         "action_to_create": action,
+         "predicates": state.predicates})
 
-    for action in state.nominated_actions:
-        # Konstruiere die Aktion mit construct_one_action
-        constructed_action, predicates = construct_one_action(state, action)
-
-        # Füge die konstruierte Aktion zur Liste hinzu
-        constructed_actions.append(constructed_action)
-
-        # Füge die extrahierten Prädikate zur Liste hinzu
-        all_predicates.extend(predicates)
-
-    # Gib alle erfolgreich konstruierten Aktionen zurück
-    return {"actions": constructed_actions,
-            "predicates": all_predicates}
+    # Gibt eine Liste an Prädikaten zurück
+    return predicate_construction_call
 
 
 def construct_one_action(state: NL2PlanState, action: Nominated_Action):
@@ -283,17 +284,35 @@ def construct_one_action(state: NL2PlanState, action: Nominated_Action):
          "action_to_create": action,
          "predicates": state.predicates})
 
-    extracted_predicates = []
-    # Alle Predicates aus preconditions zusammenfassen
-    for predicate_list in action_construction_call.preconditions.values():
-        extracted_predicates.extend(predicate_list)
-    # Alle Predicates aus effects zusammenfassen
-    for predicate_list in action_construction_call.effects.values():
-        extracted_predicates.extend(predicate_list)
-
-
     # Gibt eine Aktion zurück
-    return action_construction_call, extracted_predicates
+    return action_construction_call
+
+def action_construction(state: NL2PlanState):
+    """Konstruiert alle nominierten Aktionen."""
+    constructed_actions = []
+    all_predicates = []
+
+    for action in state.nominated_actions:
+        # Konstruiere die benötigten Prädikate für die Aktion
+        predicates_list = construct_predicates_for_one_action(state, action)
+
+        # Zugriff auf die predicates-Liste des zurückgegebenen Objekts
+        predicates = predicates_list.predicates
+
+        # Konstruiere die Aktion mit construct_one_action
+        constructed_action = construct_one_action(state, action)
+
+        # Füge die konstruierte Aktion zur Liste hinzu
+        constructed_actions.append(constructed_action)
+
+        # Füge nur neue, einzigartige Prädikate hinzu
+        for new_pred in predicates:
+            if not any(pred.name == new_pred.name for pred in all_predicates):
+                all_predicates.append(new_pred)
+
+    # Gib alle erfolgreich konstruierten Aktionen zurück
+    return {"actions": constructed_actions,
+            "predicates": all_predicates}
 
 
 def give_action_construction_feedback(state: NL2PlanState):
@@ -314,6 +333,29 @@ def give_action_construction_feedback(state: NL2PlanState):
 
     # Gibt Feedback für Schritt "3" zurück
     return {"feedback": [feedback_call.content]}
+
+
+def construct_predicates_for_one_action_with_feedback(state: NL2PlanState, action: Nominated_Action):
+    """Konstruirert in einem Call alle benötigten Prädikate für alle Aktionen."""
+    with open(os.path.join(action_construction_prompts, "predicate_generation.txt")) as f:
+        system_message = f.read().strip()
+    predicate_construction_llm = mediator_llm.with_structured_output(Predicate_Defintion_List)
+    input_prompt = ChatPromptTemplate([("system", "{system_message}"), ("human",
+                                                                        "{domain_desc}\n## Task\n{task}\n## Available Types\n{type_hierarchy}\nThe following actions will be defined later and together they make up the entire domain:\n{nominated_actions}\n ## Action {action_to_create}\n ### Already defined predicates {predicates}\n## Feedback\n{feedback}")])
+    predicate_construction_chain = input_prompt | predicate_construction_llm
+    feedback = state.feedback[3]
+    predicate_construction_call = predicate_construction_chain.invoke(
+        {"system_message": system_message,
+         "domain_desc": state.domain_desc,
+         "task": state.natural_language_task,
+         "type_hierarchy": state.type_hierarchy,
+         "nominated_actions": state.nominated_actions,
+         "action_to_create": action,
+         "predicates": state.predicates,
+         "feedback": feedback})
+
+    # Gibt eine Liste an Prädikaten zurück
+    return predicate_construction_call
 
 
 def construct_one_action_with_feedback(state: NL2PlanState, action: Nominated_Action):
@@ -340,18 +382,32 @@ def construct_one_action_with_feedback(state: NL2PlanState, action: Nominated_Ac
 
 
 def action_construction_with_feedback(state: NL2PlanState):
-    """Konstruiert alle nominierten Aktionen und validiert sie."""
+    """Konstruiert alle nominierten Aktionen."""
     constructed_actions = []
+    all_predicates = []
 
     for action in state.nominated_actions:
+        # Konstruiere die benötigten Prädikate für die Aktion
+        predicates_list = construct_predicates_for_one_action_with_feedback(state, action)
+
+        # Zugriff auf die predicates-Liste des zurückgegebenen Objekts
+        predicates = predicates_list.predicates
+
         # Konstruiere die Aktion mit construct_one_action
         constructed_action = construct_one_action_with_feedback(state, action)
 
         # Füge die konstruierte Aktion zur Liste hinzu
         constructed_actions.append(constructed_action)
 
+        # Füge nur neue, einzigartige Prädikate hinzu
+        for new_pred in predicates:
+            if not any(pred.name == new_pred.name for pred in all_predicates):
+                all_predicates.append(new_pred)
+
     # Gib alle erfolgreich konstruierten Aktionen zurück
-    return {"actions": constructed_actions}
+    return {"actions": constructed_actions,
+            "predicates": all_predicates}
+
 
 # =============================================================================
 # Task - Extraction Schritt
@@ -502,41 +558,13 @@ def goal_state_extraction_with_feedback(state: NL2PlanState):
 # Planning Schritt
 # =============================================================================
 
-# Requirements setzen
-requirements = [
-        Requirements.STRIPS,
-        Requirements.TYPING,
-        Requirements.EQUALITY,
-        Requirements.NEG_PRECONDITION,
-        Requirements.DIS_PRECONDITION,
-        Requirements.UNIVERSAL_PRECONDITION,
-        Requirements.CONDITIONAL_EFFECTS,
-    ]
-
-
-# Domain erzeugen
-def create_domain(state: NL2PlanState):
-    domain = Domain(
-        name=state.domain_name,
-        requirements=requirements,
-        types=create_types(state),
-        predicates=create_predicates(state),
-        actions=create_actions(state),
-    )
-    # Domäne im State speichern
-    return domain
-
-def domain_to_state(domain: Domain):
-    domain=str(domain)
-    return {"pddl_domain": domain}
+def domain_to_state(state: NL2PlanState):
+    domain = create_domain(state)
+    pddl_domain=str(domain)
+    return {"pddl_domain": pddl_domain}
 
 #Problem erzeugen
-def create_problem(state: NL2PlanState):
-    problem = Problem(
-        state.task_name,
-        requirements=requirements,
-        domain=state.pddl_domain,
-        objects=create_objects(state),
-        # init=create_initial_state(state),
-        # goal=create_goal_state(state)
-    )
+def problem_to_state(state: NL2PlanState):
+    problem = create_problem(state)
+    pddl_problem=str(problem)
+    return {"pddl_problem": pddl_problem}

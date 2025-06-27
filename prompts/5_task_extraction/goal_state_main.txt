@@ -3,6 +3,15 @@ Your task is to estimate the initial state and the goal state for a PDDL problem
 
 For now only define the goal state.
 
+# Rules
+1. All objects used in `initial_state` and `goal_state` must be defined in `object_instances`.
+2. The types of objects in `object_instances` must match the types of predicates in `initial_state` and `goal_state`.
+3. Each object in `initial_state` and `goal_state` must use the same naming convention (e.g., case sensitivity) as in `object_instances`.
+4. Objects not used in `initial_state` or `goal_state` should not be defined in `object_instances`.
+5. The order of definitions in `object_instances` is irrelevant as long as all objects are correctly defined.
+6. Validate that all predicates in `initial_state` and `goal_state` match the arity and parameter types defined in the domain.
+7. Symmetrical predicates (e.g., `connected`) must be defined in both directions if applicable.
+
 # Example
 ## Domain
 The AI agent is here a scheduling system for a house construction company with administrators who can create orders, workers who perform them and vehicles to transport workers.

@@ -1,7 +1,11 @@
 # Role
-You are defining the preconditions and effects (represented in PDDL-like format) of an AI agent's actions. Information about the AI agent will be provided in the domain description. Note that individual conditions in preconditions and effects should be listed separately. For example, "object_1 is washed and heated" should be considered as two separate conditions "object_1 is washed" and "object_1 is heated". Also, in PDDL, two predicates cannot have the same name even if they have different parameters. Each predicate in PDDL must have a unique name, and its parameters must be explicitly defined in the predicate definition. It is recommended to define predicate names in a simple, intuitive and readable way as well as to avoid symmetrical constraints, so (same_room ?b1 - block ?b2 - block2 ?r - room) should instead be modelled with two predicates, (in_room ?b1 - block ?r - room) and (in_room ?b2 - block ?r - room). Note that creating new actions is not an option.
+You are defining the possible actions with preconditions and effects (represented in PDDL-like format) of an AI agent for this task. Information about the AI agent will be provided in the domain description. Note that creating new actions is not an option.
 
-Think through your choices and comment on them as you go.
+# Rules
+1. Ensure that all variables used in the `preconditions` and `effects` are explicitly and correctly defined in the `action_parameters`. Missing variables are not allowed.
+2. Variables used in `preconditions` and `effects` must match the `action_parameters`. If additional variables are needed, they must be added to the `action_parameters` before defining the action.
+3. Always validate that the `action_parameters` are complete and consistent with the `preconditions` and `effects` before finalizing the action.
+4. If a variable is referenced in the `preconditions` or `effects` but not defined in the `action_parameters`, automatically include it in the `action_parameters` with the appropriate type.
 
 # Example
 
@@ -25,18 +29,20 @@ drive
 A vehicle drives from a location to another. Requires that the vehicle is at the starting location and that the two locations are connected. Example: truck1 drives from loc1 to house1.
 
 ### Available Predicates
-No predicate has been defined yet
+- Predicate_Definition(name= "at", predicate_parameters= {"o":"object", "l":"location"}, description= "true if object is at the location".)
+- Predicate_Definition(name= "connected", predicate_parameters= {"l1":"location", "l2":"location"}, description= "true if a road exists between l1 and l2 allowing vehicle travel between them.")
+- Predicate_Definition(name= "are_different", predicate_parameters= {"l1":"location", "l2":"location"}, description= "true if l1 and l2 are not the same location.")
 
 ### Action Parameters
 Well, first we need to know which vehicle is travelling.
 ```
-- {v: vehicle} ; The vehicle travelling
+- {"v": "vehicle"} ; The vehicle travelling
 ```
 
 Then, we need to know where it's travelling to and from. Any type of location (both house and others) should be valid to travel between.
 ```
-- {from : location} ; The location travelling from
-- {to : location} ; The location travelling to
+- {"from": "location"} ; The location travelling from
+- {"to": "location"} ; The location travelling to
 ```
 
 ### Action Preconditions
@@ -44,19 +50,21 @@ To be able to drive from "from" to "to" it's specified that:
     1: The truck has to be at the starting location.
     2: The two locations have to be connected.
 
-For this we'll need two predicates:
- - "at" to define where something is. This should probably work for both vehicles and all workers, so let's define it as "Predicate_Definition(name= at, predicate_parameters= {o:object, l:location}, description= true if object is at the location.)".
- - "connected" to define if two locations are connected. This would entail that we can travel between the locations with a vehicle "Predicate_Definition(name= connected, predicate_parameters= {l1:location, l2:location}, description= true if two locations are connected.)"
-
-Furthermore, we can assume that the two locations have to be different:
-    3: The locations are different
+For this, we'll need to create `Predicate_Instance` objects from the available `Predicate_Definition` objects:
+ - We use "at" to define where something is. This needs two Predicate_Instances to check, if the vehicle is at the location:
+    - Predicate_Instance(name: "at", parameters: ["v", "from"])
+    - Predicate_Instance(name: "at", parameters: ["v", "to"])
+ - We use "connected" to check if two locations are connected. This would entail that we can travel between the locations with a vehicle:
+    - Predicate_Instance(name= "connected", parameters: ["from", "to"])
+ - Furthermore, we can assume that the two locations have to be different:
+    - Predicate_Instance(name= "are_different", parameters: ["from", "to"])
 
 Let's specify this in the PDDL-like format:
 ```
-preconditions = "and", [
-    Predicate_Instance(name: at, parameters: ["v", "from"]),
-    Predicate_Instance(name: connected, parameters: ["from", "to"]),
-    Predicate_Instance(name: connected, parameters: ["to", "from"])]
+preconditions = {"and", [
+    Predicate_Instance(name: "at", parameters: ["v", "from"]),
+    Predicate_Instance(name: "connected", parameters: ["from", "to"]),
+    Predicate_Instance(name: "are_different", parameters: ["from", "to"])]}
 ```
 
 ### Action Effects
@@ -64,31 +72,21 @@ So, what happens when the action is performed?
  - The vehicle is no longer at "from".
  - The vehicle is now at "to".
 
-This doesn't need any new predicates. 
+For this we need to check the "at" predicate for the "to" location:
 
 Let's write this in PDDL-like format:
 ```
 effects = {
-    "and": [{"not": Predicate_Instance(
-                name="at",
-                parameters=["v", "from"])},
-                    Predicate_Instance(
-                        name="at",
-                        parameters=["v", "to"])]}
+    "and": [
+        Condition(
+            type="not",
+            conditions=Predicate_Instance(name="at", parameters=["v", "from"])
+        ),
+        Predicate_Instance(name="at", parameters=["v", "to"])
+    ]
+}
 ```
 
-### New Predicates
-We used several new predicates. Those have to be specified formally here. Remember that every predicate needs a distinct name, so not only the preconditions but also the predicate name in the precondition must have a distinct name.
-
-The first predicate we created is "at" which shows where something is. To make it compatible for both vehicles and workers, we use the general object type.
-```
-Predicate_Definition(name=at, predicate_parameters={o: object, l: location}, description="true if the object o (a vehicle or a worker) is at the location l")
-```
-
-The next we added is the "connected" predicate which indicates that a road exists between two locations.
-```
-Predicate_Definition(name=connected, predicate_parameters={l1: location, l2: location}, description="true if a road exists between l1 and l2 allowing vehicle travel between them.")
-``` 
 
 ## Error
 There was an issue with or feedback for generating the specified action. Correct the following error and regenerate the action, using the exact same schema.
@@ -120,18 +118,14 @@ You should take the following concrete steps:
         ```
         preconditions = {
             "and": [
-                Predicate_Instance(name="at", parameters=["v", "from":],
-                {
-                    "or": [
-                        Predicate_Instance(name="connected", parameters=["from", "to":],
-                        Predicate_Instance(name="connected", parameters=["to", "from":])
-                    ]
-                }
+                Predicate_Instance(name: "at", parameters: ["v", "from"]),
+                Predicate_Instance(name: "connected", parameters: ["from", "to"]),
+                Predicate_Instance(name: "are_different", parameters: ["from", "to"])
             ]
         }
         ``` 
 
-Make sure to reply with all four parts of the action: parameters, preconditions, effects and new predicates. You should also add a "### Response" heading to respond to and consider this error.
+Make sure to reply with all three parts of the action: parameters, preconditions, and effects.
 
 ## Action
 drive
@@ -139,7 +133,9 @@ drive
 A vehicle drives from a location to another. Requires that the vehicle is at the starting location and that the two locations are connected. Example: truck1 drives from loc1 to house1.
 
 ### Available Predicates
-No predicate has been defined yet
+- Predicate_Definition(name= "at", predicate_parameters= {"o":"object", "l":"location"}, description= "true if object is at the location".)
+- Predicate_Definition(name= "connected", predicate_parameters= {"l1":"location", "l2":"location"}, description= "true if a road exists between l1 and l2 allowing vehicle travel between them.")
+- Predicate_Definition(name= "are_different", predicate_parameters= {"l1":"location", "l2":"location"}, description= "true if l1 and l2 are not the same location.")
 
 ### Response
 Tracking fuel would maybe be more realistic, but nothing in the domain description hints that this is needed for the current problem. As such, to simplify the domain we ignore this advice.
@@ -149,9 +145,9 @@ However, the suggestion to check "connected" both ways is great. Let's update th
 ### Action Parameters
 Okay, so we'll need the same parameters as last time, but we still need to clearly specify them again:
 ```
-- {v: vehicle} ; The vehicle travelling
-- {from : location} ; The location travelling from
-- {to : location} ; The location travelling to
+- {"v": "vehicle"} ; The vehicle travelling
+- {"from": "location"} ; The location travelling from
+- {"to": "location"} ; The location travelling to
 ```
 
 ### Action Preconditions
@@ -160,10 +156,10 @@ Now, we'll make the change to check both directions of the "connected" predicate
 preconditions = {
             "and": [
                 Predicate_Instance(name="at", parameters=["v", "from":],
-                {"or": [
-                        Predicate_Instance(name="connected", parameters=["from", "to":],
-                        Predicate_Instance(name="connected", parameters=["to", "from":])
-                        ]}]}
+                Predicate_Instance(name="connected", parameters=["from", "to":],
+                Predicate_Instance(name="connected", parameters=["to", "from":])
+            ]
+        }
 ```
 
 ### Action Effects
@@ -171,35 +167,15 @@ These are the exact same as above, but they need to be reiterated:
 ```
 effects = {
     "and": [
-        {
-            "not": Predicate_Instance(
-                name="at",
-                parameters=["v","from"]
-            )
-        },
-        Predicate_Instance(
-            name="at",
-            parameters={"v","to"]
-        )
+        Condition(
+            type="not",
+            conditions=Predicate_Instance(name="at", parameters=["v", "from"])
+        ),
+        Predicate_Instance(name="at", parameters=["v", "to"])
     ]
 }
 ```
 
-### New Predicates
-These are the same as before:
-```
-Predicate_Definition(
-    name="at",
-    predicate_parameters={"o": "object", "l": "location"},
-    description="True if the object o (a vehicle or a worker) is at the location l."
-)
-
-Predicate_Definition(
-    name="connected",
-    predicate_parameters={"l1": "location", "l2": "location"},
-    description="True if a road exists between l1 and l2 allowing vehicle travel between them."
-)
-``` 
 
 # Task
 ## Domain 

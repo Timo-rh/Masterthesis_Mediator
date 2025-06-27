@@ -27,6 +27,8 @@ graph.add_node("Task Extraction Feedback", give_task_extraction_feedback)
 graph.add_node("Task Extraction - Objects with Feedback", objects_extraction_with_feedback)
 graph.add_node("Task Extraction - Initial State with Feedback", initial_state_extraction_with_feedback)
 graph.add_node("Task Extraction - Goal State with Feedback", goal_state_extraction_with_feedback)
+graph.add_node("PDDL Creation - Domain", domain_to_state)
+graph.add_node("PDDL Creation - Problem", problem_to_state)
 #graph.add_node("PDDL Creation", create_pddl)
 #graph.add_node("Automatic Planner", generate_plan)
 
@@ -51,7 +53,9 @@ graph.add_edge("Task Extraction - Goal State", "Task Extraction Feedback")
 graph.add_edge("Task Extraction Feedback", "Task Extraction - Objects with Feedback")
 graph.add_edge("Task Extraction - Objects with Feedback", "Task Extraction - Initial State with Feedback")
 graph.add_edge("Task Extraction - Initial State with Feedback", "Task Extraction - Goal State with Feedback")
-graph.add_edge("Task Extraction - Goal State with Feedback", END)
+graph.add_edge("Task Extraction - Goal State with Feedback", "PDDL Creation - Domain")
+graph.add_edge("PDDL Creation - Domain", "PDDL Creation - Problem")
+graph.add_edge("PDDL Creation - Problem", END)
 
 
 
@@ -83,6 +87,8 @@ nfgraph.add_node("Action Construction", action_construction)
 nfgraph.add_node("Task Extraction - Objects", regular_objects_extraction)
 nfgraph.add_node("Task Extraction - Initial State", regular_initial_state_extraction)
 nfgraph.add_node("Task Extraction - Goal State", regular_goal_state_extraction)
+nfgraph.add_node("PDDL Creation - Domain", domain_to_state)
+nfgraph.add_node("PDDL Creation - Problem", problem_to_state)
 
 #Edges
 nfgraph.add_edge(START, "Type Extraction")
@@ -92,7 +98,9 @@ nfgraph.add_edge("Action Extraction", "Action Construction")
 nfgraph.add_edge("Action Construction", "Task Extraction - Objects")
 nfgraph.add_edge("Task Extraction - Objects", "Task Extraction - Initial State")
 nfgraph.add_edge("Task Extraction - Initial State", "Task Extraction - Goal State")
-nfgraph.add_edge("Task Extraction - Goal State", END)
+nfgraph.add_edge("Task Extraction - Goal State", "PDDL Creation - Domain")
+nfgraph.add_edge("PDDL Creation - Domain", "PDDL Creation - Problem")
+nfgraph.add_edge("PDDL Creation - Problem", END)
 
 #Compile
 nfgraph.compile(name="Mediator ohne Feedback")

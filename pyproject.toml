@@ -1,9 +1,9 @@
 [project]
-name = "agent"
+name = "mediator"
 version = "0.0.1"
-description = "Starter template for making a new agent LangGraph."
+description = "Mediator Agent mit LangGraph"
 authors = [
-    { name = "William Fu-Hinthorn", email = "13333726+hinthornw@users.noreply.github.com" },
+    { name = "Timo-rh" }
 ]
 readme = "README.md"
 license = { text = "MIT" }
@@ -11,21 +11,32 @@ requires-python = ">=3.9"
 dependencies = [
     "langgraph>=0.2.6",
     "python-dotenv>=1.0.1",
+    "pddl>=0.3.0",
+    "langchain>=0.1.0",
+    "langchain-core>=0.1.10",
+    "langchain-community>=0.0.13",
+    "langchain-anthropic>=0.3.16",
+    "anthropic>=0.8.0",
+    "fastapi>=0.104.1",
+    "uvicorn>=0.24.0",
 ]
 
+[tool.setuptools]
+packages = ["src"]
+package-dir = {"src" = "src"}
 
 [project.optional-dependencies]
-dev = ["mypy>=1.11.1", "ruff>=0.6.1"]
+dev = [
+    "mypy>=1.13.0",
+    "ruff>=0.8.2",
+    "pytest>=8.3.5",
+    "anyio>=4.7.0",
+    "langgraph-cli[inmem]>=0.2.8",
+]
 
 [build-system]
 requires = ["setuptools>=73.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-packages = ["langgraph.templates.agent", "agent"]
-[tool.setuptools.package-dir]
-"langgraph.templates.agent" = "src/agent"
-"agent" = "src/agent"
 
 
 [tool.setuptools.package-data]
@@ -44,9 +55,7 @@ lint.select = [
 lint.ignore = [
     "UP006",
     "UP007",
-    # We actually do want to import from typing_extensions
     "UP035",
-    # Relax the convention by _not_ requiring documentation for every function parameter.
     "D417",
     "E501",
 ]
@@ -54,12 +63,3 @@ lint.ignore = [
 "tests/*" = ["D", "UP"]
 [tool.ruff.lint.pydocstyle]
 convention = "google"
-
-[dependency-groups]
-dev = [
-    "anyio>=4.7.0",
-    "langgraph-cli[inmem]>=0.2.8",
-    "mypy>=1.13.0",
-    "pytest>=8.3.5",
-    "ruff>=0.8.2",
-]

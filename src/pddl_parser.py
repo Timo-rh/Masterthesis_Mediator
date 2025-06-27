@@ -12,7 +12,7 @@ from langchain import chat_models
 from langchain_core.prompts import ChatPromptTemplate
 from pddl.core import Problem, Domain
 from pddl.requirements import Requirements
-from src.agent.nodes_and_edges import *
+
 
 
 result1 = NL2PlanState(
@@ -143,13 +143,19 @@ actions = [
             "and": [
                 Predicate_Instance(name="at", parameters=["p", "l"]),
                 Predicate_Instance(name="at", parameters=["t", "l"]),
-                {"not": Predicate_Instance(name="in", parameters=["p", "t"])}
+                Condition(
+                    type="not",
+                    conditions=Predicate_Instance(name="in", parameters=["p", "t"])
+                )
             ]
         },
         effects={
             "and": [
                 Predicate_Instance(name="in", parameters=["p", "t"]),
-                {"not": Predicate_Instance(name="at", parameters=["p", "l"])}
+                Condition(
+                    type="not",
+                    conditions=Predicate_Instance(name="at", parameters=["p", "l"])
+                )
             ]
         }
     ),
@@ -166,7 +172,10 @@ actions = [
         effects={
             "and": [
                 Predicate_Instance(name="at", parameters=["p", "l"]),
-                {"not": Predicate_Instance(name="in", parameters=["p", "t"])}
+                Condition(
+                    type="not",
+                    conditions=Predicate_Instance(name="in", parameters=["p", "t"])
+                )
             ]
         }
     ),
@@ -178,13 +187,19 @@ actions = [
             "and": [
                 Predicate_Instance(name="at", parameters=["p", "ap"]),
                 Predicate_Instance(name="at", parameters=["a", "ap"]),
-                {"not": Predicate_Instance(name="in", parameters=["p", "a"])}
+                Condition(
+                    type="not",
+                    conditions=Predicate_Instance(name="in", parameters=["p", "a"])
+                )
             ]
         },
         effects={
             "and": [
                 Predicate_Instance(name="in", parameters=["p", "a"]),
-                {"not": Predicate_Instance(name="at", parameters=["p", "ap"])}
+                Condition(
+                    type="not",
+                    conditions=Predicate_Instance(name="at", parameters=["p", "ap"])
+                )
             ]
         }
     ),
@@ -200,7 +215,10 @@ actions = [
         },
         effects={
             "and": [
-                {"not": Predicate_Instance(name="in", parameters=["p", "a"])},
+                Condition(
+                    type="not",
+                    conditions=Predicate_Instance(name="in", parameters=["p", "a"])
+                ),
                 Predicate_Instance(name="at", parameters=["p", "ap"])
             ]
         }
@@ -218,7 +236,10 @@ actions = [
         },
         effects={
             "and": [
-                {"not": Predicate_Instance(name="at", parameters=["t", "from"])},
+                Condition(
+                    type="not",
+                    conditions=Predicate_Instance(name="at", parameters=["t", "from"])
+                ),
                 Predicate_Instance(name="at", parameters=["t", "to"])
             ]
         }
@@ -245,13 +266,15 @@ actions = [
         },
         effects={
             "and": [
-                {"not": Predicate_Instance(name="at", parameters=["a", "from"])},
+                Condition(
+                    type="not",
+                    conditions=Predicate_Instance(name="at", parameters=["a", "from"])
+                ),
                 Predicate_Instance(name="at", parameters=["a", "to"])
             ]
         }
     )
 ],
-
     object_instances=ObjectInstances(
         objects={
             "ado_city": "city",
@@ -381,97 +404,131 @@ def create_types(state: NL2PlanState):
 
     return types_map
 
-# Variablen für Predicates und Actions erzeugen
-parameter_vars = {}
+# Variablen für Prädikate und Aktionen erzeugen
+predicate_variables = {}
 
 def get_or_create_variable(name, type_):
-    if name in parameter_vars:
-        return parameter_vars[name]
+    if name in predicate_variables:
+        return predicate_variables[name]
     else:
         if type_ == "object":
-            v, = variables(name)
+            variable, = variables(name)
         else:
-            v, = variables(name, types=[type_])
-        parameter_vars[name] = v
-        return v
+            variable, = variables(name, types=[type_])
+        predicate_variables[name] = variable
+        return variable
 
-# Predicates erzeugen
-def create_predicates(state:NL2PlanState):
-    predicates_list = []
-    for pred in state.predicates:
-        vars_ = []
-        for var_name, var_type in pred.predicate_parameters.items():
-            v = get_or_create_variable(var_name, var_type)
-            vars_.append(v)
-        p = Predicate(pred.name, *vars_)
-        predicates_list.append(p)
-    return predicates_list
+def build_predicate(predicate_instance: Predicate_Instance):
+    """
+    Wandelt eine Predicate_Instance in ein Predicate-Objekt um.
+    """
+    name = predicate_instance.name
+    parameters = [get_or_create_variable(param, "object") for param in predicate_instance.parameters]
+    return Predicate(name, *parameters)
 
-# Actions erzeugen
+def create_predicates(state: NL2PlanState):
+    """
+    Erstellt eine Liste von Prädikaten aus den Prädikatsdefinitionen im Zustand.
+    """
+    predicates = []
+    for predicate in state.predicates:
+        variables_list = []
+        for var_name, var_type in predicate.predicate_parameters.items():
+            variable = get_or_create_variable(var_name, var_type)
+            variables_list.append(variable)
+        predicates.append(Predicate(predicate.name, *variables_list))
+    return predicates
+
+# Aktionen erzeugen
 def create_actions(state: NL2PlanState):
     actions = []
 
     for action in state.actions:
-        action_vars = {}
+        action_variables = {}
         for param_name, param_type in action.action_parameters.items():
-            v, = variables(param_name, types=[param_type])
-            action_vars[param_name] = v
+            variable, = variables(param_name, types=[param_type])
+            action_variables[param_name] = variable
 
-        def build_predicate(pred_: Predicate_Instance):
-            args = []
-            for var in pred_.parameters:
-                if var not in action_vars:
-                    raise ValueError(f"Variable '{var}' nicht in Action-Params gefunden")
-                args.append(action_vars[var])
-            return Predicate(pred_.name, *args)
-
-        def parse_condition(cond):
-            if isinstance(cond, dict):
-                if "and" in cond:
-                    parts = []
-                    for c in cond["and"]:
-                        res = parse_condition(c)
-                        if isinstance(res, list):
-                            parts.extend(res)
-                        else:
-                            parts.append(res)
-                    return And(*parts)
-
-                elif "or" in cond:
-                    parts = []
-                    for c in cond["or"]:
-                        res = parse_condition(c)
-                        if isinstance(res, list):
-                            parts.extend(res)
-                        else:
-                            parts.append(res)
-                    return Or(*parts)
-
-                elif "not" in cond:
-                    inner = parse_condition(cond["not"])
-                    return Not(inner)
-
-                else:
-                    raise ValueError(f"Unbekanntes Dict-Format in Bedingung: {cond}")
-
-            elif isinstance(cond, Predicate_Instance):
-                return build_predicate(cond)
-
+        # Überprüfe, ob alle Variablen in den Bedingungen definiert sind
+        def validate_parameters(condition):
+            if isinstance(condition, Predicate_Instance):
+                for var in condition.parameters:
+                    if var not in action_variables:
+                        raise ValueError(
+                            f"Variable '{var}' in condition '{condition.name}' ist nicht in den action_parameters definiert. "
+                            f"Definierte Parameter: {list(action_variables.keys())}")
+            elif isinstance(condition, Condition):
+                if condition.type == "not" and condition.conditions:
+                    validate_parameters(condition.conditions)
+                elif condition.type in {"and", "or"} and isinstance(condition.conditions, list):
+                    for sub_condition in condition.conditions:
+                        validate_parameters(sub_condition)
             else:
-                raise ValueError(f"Unbekannter Bedingungstyp: {cond}")
+                raise ValueError(f"Unbekannter Bedingungstyp: {type(condition)}")
 
-        precondition = parse_condition(action.preconditions)
-        effect = parse_condition(action.effects)
+        def parse_condition(condition):
+            if isinstance(condition, Condition):
+                if condition.type is None:
+                    return None
+                if condition.type == "not":
+                    inner = parse_condition(condition.conditions)
+                    return Not(inner)
+                elif condition.type == "or":
+                    if not isinstance(condition.conditions, list) or len(condition.conditions) < 2:
+                        raise ValueError("`or`-Bedingungen müssen mindestens zwei `Predicate_Instance` enthalten.")
+                    parts = [parse_condition(c) for c in condition.conditions if c is not None]
+                    return Or(*parts)
+                else:
+                    raise ValueError(f"Unbekannter Condition-Typ: {condition.type}")
+            elif isinstance(condition, Predicate_Instance):
+                return build_predicate(condition)
+            else:
+                raise ValueError(f"Unbekannter Bedingungstyp: {condition}")
+
+        # Validierung der preconditions und effects
+        for condition in action.preconditions["and"]:
+            validate_parameters(condition)
+        for condition in action.effects["and"]:
+            if isinstance(condition, Condition) and condition.type == "not":
+                validate_parameters(condition.conditions)
+            elif isinstance(condition, Predicate_Instance):
+                validate_parameters(condition)
+
+        precondition = And(*[c for c in (parse_condition(c) for c in action.preconditions["and"]) if c is not None])
+        effect = And(*[c for c in (parse_condition(c) for c in action.effects["and"]) if c is not None])
 
         pddl_action = Action(
             name=action.name,
-            parameters=list(action_vars.values()),
+            parameters=list(action_variables.values()),
             precondition=precondition,
             effect=effect
         )
         actions.append(pddl_action)
 
     return actions
+
+# Requirements setzen
+requirements = [
+        Requirements.STRIPS,
+        Requirements.TYPING,
+        Requirements.EQUALITY,
+        Requirements.NEG_PRECONDITION,
+        Requirements.DIS_PRECONDITION,
+        Requirements.UNIVERSAL_PRECONDITION,
+        Requirements.CONDITIONAL_EFFECTS,
+    ]
+
+# Domain erzeugen
+def create_domain(state: NL2PlanState):
+    domain = Domain(
+        name=state.domain_name,
+        requirements=requirements,
+        types=create_types(state),
+        predicates=create_predicates(state),
+        actions=create_actions(state),
+    )
+    # Domäne zurückgeben
+    return domain
 
 # =============================================================================
 # Erzeugung des PDDL-Problems
@@ -480,10 +537,25 @@ def create_actions(state: NL2PlanState):
 # Erstellen der Objekte (Constants) aus den ObjectInstances
 def create_objects(state: NL2PlanState) -> dict[str, Constant]:
     object_map = {}
-    for name, type_ in state.object_instances.objects.items():
+
+    # Debugging: Ausgabe des Formats von object_instances
+    print(f"object_instances Inhalt: {state.object_instances}")
+    print(f"object_instances Typ: {type(state.object_instances)}")
+
+    # Überprüfung des Formats von object_instances
+    if isinstance(state.object_instances, dict):
+        objects = state.object_instances
+    elif hasattr(state.object_instances, "objects"):
+        objects = state.object_instances.objects
+    elif hasattr(state.object_instances, "data"):  # Beispiel für ein alternatives Attribut
+        objects = state.object_instances.data
+    else:
+        raise ValueError("`object_instances` hat ein unerwartetes Format.")
+
+    # Erstellen der Objekte
+    for name, type_ in objects.items():
         object_map[name] = Constant(name, type_tag=type_)
     return object_map
-
 
 # Erstellen des Initialzustands (InitialState)
 def create_initial_state(state: NL2PlanState, object_map: dict[str, Constant]) -> list[Predicate]:
@@ -534,33 +606,6 @@ def create_goal_state(goal_state: GoalState, object_map: dict[str, Constant]) ->
 
     return And(*predicates)
 
-# Test
-#print(create_objects(result1))
-
-requirements = [
-        Requirements.STRIPS,
-        Requirements.TYPING,
-        Requirements.EQUALITY,
-        Requirements.NEG_PRECONDITION,
-        Requirements.DIS_PRECONDITION,
-        Requirements.UNIVERSAL_PRECONDITION,
-        Requirements.CONDITIONAL_EFFECTS,
-    ]
-
-
-def create_domain(state: NL2PlanState):
-    domain = Domain(
-        name=state.domain_name,
-        requirements=requirements,
-        types=create_types(state),
-        predicates=create_predicates(state),
-        actions=create_actions(state),
-    )
-    # Domäne im State speichern
-    return domain
-
-domain = create_domain(result1)
-#print(str(domain))
 
 def create_problem(state: NL2PlanState):
     # 1. Erstelle alle Constant-Objekte (als dict)
@@ -576,11 +621,25 @@ def create_problem(state: NL2PlanState):
     problem = Problem(
         name=state.task_name,
         requirements=requirements,
-        domain=domain,
+        domain=create_domain(state),
         objects=list(constants_map.values()),  # Liste aller Constant-Objekte
         init=initial_state,
         goal=goal_state
     )
     return problem
 
-print(create_problem(result1))
+
+if __name__ == "__main__":
+    try:
+        print("Erstelle Domain...")
+        domain = create_domain(result1)
+        print("Domain erfolgreich erstellt:")
+        print(domain)
+
+        print("\nErstelle Problem...")
+        problem = create_problem(result1)
+        print("Problem erfolgreich erstellt:")
+        print(problem)
+    except Exception as e:
+        print("Fehler während der Verarbeitung:")
+        print(e)

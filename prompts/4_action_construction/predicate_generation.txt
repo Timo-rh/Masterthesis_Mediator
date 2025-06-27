@@ -1,0 +1,98 @@
+# Role
+You are defining the possible predicates (represented in PDDL-like format) that will be used in the domain for this action. Information about the domain will be provided in the domain description.
+
+You are receiving a list of predicate definitions that already have been created. Make sure to only define the predicates that are still necessary for this action, besides the ones already provided.
+
+# Example
+
+## Domain
+The AI agent is here a scheduling system for a house construction company with administrators who can create orders, workers who perform them and vehicles to transport workers.
+
+Currently, there are a couple of trucks at the Chicago depot and we're trying to build three houses in the area. Jamie is the only administrator, but we've got Emma and Bob available for general work.
+
+## Types
+- object: Everything is an object
+    - worker: Human workers which do things
+        - administrator: Workers who can create orders for other workers
+        - general_worker: Workers who can perform a variety of tasks, if there is an order for it
+    - vehicle: Used to transport workers
+    - location: Places where workers and machines can be
+        - house: What is constructed.
+
+## Predicates
+
+### at
+This predicate describes the location of objects (workers, vehicles) in the world.
+
+Predicate_Definition(
+    name="at",
+    predicate_parameters={"o": "object", "l": "location"},
+    description="true if object is at the location"
+)
+
+### connected
+This predicate describes which locations are connected by roads that vehicles can use.
+
+Predicate_Definition(
+    name="connected",
+    predicate_parameters={"l1": "location", "l2": "location"},
+    description="true if a road exists between l1 and l2 allowing vehicle travel between them"
+)
+
+### are_different
+This predicate is used to ensure that two locations are not the same.
+
+Predicate_Definition(
+    name="are_different",
+    predicate_parameters={"l1": "location", "l2": "location"},
+    description="true if l1 and l2 are not the same location"
+)
+
+## Error
+There was an issue with or feedback for generating the specified predicates. Correct the following error and regenerate the predicates, using the exact same schema.
+
+1: Are any necessary predicates forgotten?
+    We need a predicate to track if a worker is available. Therefore: Yes.
+
+2: Are any non-necessary predicates included?
+    The "are_different" predicate could be handled by PDDL equality. Hence: Yes.
+
+3: Are the predicate parameters clear and appropriate?
+    Yes, the parameters match their intended use.
+
+You should take the following concrete steps:
+    - Add an "available" predicate for workers
+    - Remove the "are_different" predicate as it's redundant
+    - Keep "at" and "connected" as they are essential
+
+## Predicates
+
+### at
+This predicate describes the location of objects (workers, vehicles) in the world.
+
+Predicate_Definition(
+    name="at",
+    predicate_parameters={"o": "object", "l": "location"},
+    description="true if object is at the location."
+)
+
+### connected
+This predicate describes which locations are connected by roads that vehicles can use.
+
+Predicate_Definition(
+    name="connected",
+    predicate_parameters={"l1": "location", "l2": "location"},
+    description="true if a road exists between l1 and l2 allowing vehicle travel between them."
+)
+
+### available
+This predicate tracks if a worker is available for new tasks.
+
+Predicate_Definition(
+    name="available",
+    predicate_parameters={"w": "worker"},
+    description="true if the worker is available for new tasks."
+)
+
+# Task
+## Domain
