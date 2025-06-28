@@ -4,13 +4,31 @@ Your task is to estimate the initial state and the goal state for a PDDL problem
 For now only define the goal state.
 
 # Rules
+#Rules
 1. All objects used in `initial_state` and `goal_state` must be defined in `object_instances`.
-2. The types of objects in `object_instances` must match the types of predicates in `initial_state` and `goal_state`.
-3. Each object in `initial_state` and `goal_state` must use the same naming convention (e.g., case sensitivity) as in `object_instances`.
-4. Objects not used in `initial_state` or `goal_state` should not be defined in `object_instances`.
-5. The order of definitions in `object_instances` is irrelevant as long as all objects are correctly defined.
-6. Validate that all predicates in `initial_state` and `goal_state` match the arity and parameter types defined in the domain.
-7. Symmetrical predicates (e.g., `connected`) must be defined in both directions if applicable.
+2. Each object in `initial_state` and `goal_state` must use the same naming convention and case sensitivity as in `object_instances`.
+   Example: If an object is defined as "ado_city" in `object_instances`, it should be referred to as "ado_city" in `initial_state` and `goal_state`.
+3. The order of definitions in `object_instances` is irrelevant as long as all objects are correctly defined.
+4. Make sure to include predicates for all objects that are relevant to the initial state and goal state.
+   Example:
+    objects={
+            "package1": "package",
+            "package2": "package",
+            "package3": "package",
+            "package4": "package",
+            "package5": "package"
+        }
+   },
+
+   goal_state_predicates={
+            "and": [
+            Predicate_Instance(name="at", parameters=["package1","ado_storage"]),
+            Predicate_Instance(name="at", parameters=["package2", "ado_storage"]),
+            Predicate_Instance(name="at", parameters=["package3", "ado_storage"]),
+            Predicate_Instance(name="at", parameters=["package4", "betar_storage"]),
+            Predicate_Instance(name="at", parameters=["package5", "betar_storage"])]
+            }
+
 
 # Example
 ## Domain
@@ -28,72 +46,88 @@ Currently, there are a couple of trucks at the Chicago depot and we're trying to
         - house: What is constructed.
 
 ## Predicates
-- (at ?o - object ?l - location): true if the object ?o (which should be a worker or vehicle) is at location ?l
-- (inside ?w - worker ?v - vehicle): true if the worker ?w is in the vehicle ?v
-- (wall_order ?h - house): true if there is an order to build a wall at house ?h
-- (wall_built ?h - house): true if a wall has been built for house ?h
-- (floor_order ?h - house): true if there is an order to build a floor at house ?h
-- (floor_built ?h - house): true if a floor has been built for house ?h
-- (floor_order ?h - house): true if there is an order to build a roof at house ?h
-- (roof_built ?h - house): true if a roof has been built for house ?h
-- (finalized ?h - house): true if the house ?h has been completed. 
-- (connected ?l1 - location ?l2 - location): true if there is a road between l1 and l2 allowing travel between them.
+[
+- Predicate_Defintion(name="at",predicate_parameters={"p": "object", "l": "location"},description="true if the object ?o (which should be a worker or vehicle) is at location ?l")
+- Predicate_Definition(name="inside",predicate_parameters={"w": "worker", "v": "vehicle"},description="true if the worker ?w is in the vehicle ?v")
+- Predicate_Definition(name="wall_order",predicate_parameters={"h": "house"},description="true if there is an order to build a wall at house ?h")
+- Predicate_Definition(name="wall_built",predicate_parameters={"h": "house"},description="true if a wall has been built for house ?h")
+- Predicate_Definition(name="floor_order",predicate_parameters={"h": "house"},description="true if there is an order to build a floor at house ?h")
+- Predicate_Definition(name="floor_built",predicate_parameters={"h": "house"},description="true if a floor has been built for house ?h")
+- Predicate_Definition(name="roof_order",predicate_parameters={"h": "house"},description="true if there is an order to build a roof at house ?h")
+- Predicate_Definition(name="roof_built",predicate_parameters={"h": "house"},description="true if a roof has been built for house ?h")
+- Predicate_Definition(name="finalized",predicate_parameters={"h": "house"},description="true if the house ?h has been completed")
+- Predicate_Definition(name="connected",predicate_parameters={"l1": "location", "l2": "location"},description="true if there is a road between l1 and l2 allowing travel between them")
+]
 
 ## Object Instances
 We assume that there are two trucks since the description said "a couple".
 ```
-truck1 - the first truck at the Chicago depot
-truck2 - the second truck at the Chicago depot
+{
+    "truck1":"truck",
+     "truck2":"truck"
+}
 ```
 
 Next, let's define the relevant locations. Since "chicago_depot" is not a house, we model it as a general location.
 ```
-chicago_depot - location: The Chicago depot
-house1 - The first house to build
-house2 - The second house to build
-house3 - The third house to build
+{
+"chicago_depot":"location",
+"house1":"house",
+"house2":"house",
+"house3":"house"
+}
 ```
 
-Now, let's model the worker.
+Now, let's model the workers.
 ```
-jamie - administrator: The administrator Jamie
-emma - general_worker: The first worker, Emma
-bob - general_worker: The second worker, Bob
+{
+"jamie":"administrator",
+"emma":"general_worker",
+"bob":"general_worker"
+}
 ```
 
 ## Initial State
 Let's start by specifying where everyone is. It's a reasonable assumption that everyone starts at the Chicago depot.
 ```
-(at truck1 chicago_depot): truck1 is at the chicago_depot
-(at truck2 chicago_depot): truck2 is at the chicago_depot
-(at jamie chicago_depot): Jamie is at the depot
-(at emma chicago_depot): Emma is at the depot
+[
+Predicate_Instance(name="at", parameters=["truck1", "chicago_depot"]),
+Predicate_Instance(name="at", parameters=["truck2", "chicago_depot"]),
+Predicate_Instance(name="at", parameters=["jamie", "chicago_depot"]),
+Predicate_Instance(name="at", parameters=["emma", "chicago_depot"])
+]
 ```
 
 We assume that all the houses are entirely unbuilt, that the trucks are unloaded and that no orders are written. As such, all these conditions are false and don't need to be specified. 
 
 Finally, we need to specify how the various locations are connected. Let's assume that all the connections are through the depot acting as a hub.
 ```
-(connected house1 chicago_depot): house1 is connected to the chicago_depot
-(connected house2 chicago_depot): house2 is connected to the chicago_depot
-(connected house3 chicago_depot): house3 is connected to the chicago_depot
-``` 
+[
+Predicate_Instance(name="connected", parameters=["house1", "chicago_depot"]),
+Predicate_Instance(name="connected", parameters=["house2", "chicago_depot"]),
+Predicate_Instance(name="connected", parameters=["house3", "chicago_depot"])
+]
+```
 
 Finally, the "connected" predicate states that two locations are connected if there exists a road between them. So, clearly if (connected A B) then (connected B A) since roads go both ways. So, we need to mirror all the "connected" constraints.
 ```
-(connected chicago_depot house1): chicago_depot is connected to house1
-(connected chicago_depot house2): chicago_depot is connected to house2
-(connected chicago_depot house3): chicago_depot is connected to house3
+[
+Predicate_Instance(name="connected", parameters=["chicago_depot", "house1"]),
+Predicate_Instance(name="connected", parameters=["chicago_depot", "house2"]),
+Predicate_Instance(name="connected", parameters=["chicago_depot", "house3"])
+]
 ```
 
 ## Goal State
 ```
-(AND ; all the following should be done
-   (finalised house1) ; house 1 is done
-   (finalised house2) ; house 2 is done
-   (finalised house3) ; house 3 is done
-   (truck1 house1) ; truck1 is at house1 
-)
+goal_state_predicates = {
+    "and": [
+        Predicate_Instance(name="finalised", parameters=["house1"]),
+        Predicate_Instance(name="finalised", parameters=["house2"]),
+        Predicate_Instance(name="finalised", parameters=["house3"]),
+        Predicate_Instance(name="at", parameters=["truck1", "house1"])
+    ]
+}
 ```
 
 ## Error
@@ -125,19 +159,22 @@ Finally, the "connected" predicate states that two locations are connected if th
 
 My concrete suggestions are the following:
     - Add more trucks to the domain. Initialize them to chicago_depot:
-        - (at truck3 chicago_depot)
-        - (at truck4 chicago_depot)
+        - Predicate_Instance(name="at", parameters=["truck3", "chicago_depot"])
+        - Predicate_Instance(name="at", parameters=["truck4", "chicago_depot"])
     - The starting location for "bob" is missing. Add this in with the following predicate:
-        - (at bob chicago_depot)
+        - Predicate_Instance(name="at", parameters=["bob", "chicago_depot"])
     - Remove the requirement for truck1:s location in the goal. This results in the following goal:
         ```
-        (AND ; all the houses should be done
-            (finalized house1) ; house 1 is done
-            (finalized house2) ; house 2 is done
-            (finalized house3) ; house 3 is done
-        )
+        goal_state_predicates = {
+            "and": [
+                Predicate_Instance(name="finalized", parameters=["house1"]),
+                Predicate_Instance(name="finalized", parameters=["house2"]),
+                Predicate_Instance(name="finalized", parameters=["house3"])
+            ]
+        }
         ```
-Regenerate an entire response correcting the above error. Make sure to use the exact same headers as requested before, but start with a "## Response" header to analyze the error.
+
+Regenerate an entire response correcting the above error.
 
 ## Response
 The feedback is not entirely correct. Adding more trucks would be too large of an assumption, since the domain task only states "A couple". As such, we leave it with only two trucks.
@@ -149,55 +186,67 @@ Now I'll reiterate the corrected initialization with the exact same headers.
 ## Object Instances
 The feedback suggested to use more trucks, but this would be wrong since the domain only specifies "A couple". So, we stick with the two trucks.
 ```
-truck1 - the first truck at the Chicago depot
-truck2 - the second truck at the Chicago depot
+{
+    "truck1":"truck",
+     "truck2":"truck"
+}
 ```
 
 The locations haven't been updated:
 ```
-chicago_depot - location: The Chicago depot
-house1 - The first house to build
-house2 - The second house to build
-house3 - The third house to build
+{
+"chicago_depot":"location",
+"house1":"house",
+"house2":"house",
+"house3":"house"
+}
 ```
 
 The workers are unchanged from before:
 ```
-jamie - administrator: The administrator Jamie
-emma - general_worker: The first worker, Emma
-bob - general_worker: The second worker, Bob
+{
+"jamie":"administrator",
+"emma":"general_worker",
+"bob":"general_worker"
+}
 ```
 
 ## Initial State
-Let's start by specifying where everyone is again. This time, we  make sure to include Bob.
+Let's start by specifying where everyone is again. This time, we make sure to include Bob.
 ```
-(at truck1 chicago_depot): truck1 is at the chicago_depot
-(at truck2 chicago_depot): truck2 is at the chicago_depot
-(at jamie chicago_depot): Jamie is at the depot
-(at emma chicago_depot): Emma is at the depot
-(at bob chicago_depot): Bob is at the depot
+[
+Predicate_Instance(name="at", parameters=["truck1", "chicago_depot"]),
+Predicate_Instance(name="at", parameters=["truck2", "chicago_depot"]),
+Predicate_Instance(name="at", parameters=["jamie", "chicago_depot"]),
+Predicate_Instance(name="at", parameters=["emma", "chicago_depot"]),
+Predicate_Instance(name="at", parameters=["bob", "chicago_depot"])
+]
 ```
 
 We still assume that all the houses are entirely unbuilt and no orders are written. 
 
 The connections between the locations are the same bi-directional connections as before.
 ```
-(connected house1 chicago_depot): house1 is connected to the chicago_depot
-(connected house2 chicago_depot): house2 is connected to the chicago_depot
-(connected house3 chicago_depot): house3 is connected to the chicago_depot
-(connected chicago_depot house1): chicago_depot is connected to house1
-(connected chicago_depot house2): chicago_depot is connected to house2
-(connected chicago_depot house3): chicago_depot is connected to house3
+[
+Predicate_Instance(name="connected", parameters=["house1", "chicago_depot"]),
+Predicate_Instance(name="connected", parameters=["house2", "chicago_depot"]),
+Predicate_Instance(name="connected", parameters=["house3", "chicago_depot"]),
+Predicate_Instance(name="connected", parameters=["chicago_depot", "house1"]),
+Predicate_Instance(name="connected", parameters=["chicago_depot", "house2"]),
+Predicate_Instance(name="connected", parameters=["chicago_depot", "house3"])
+]
 ```
 
 ## Goal State
 For the goal, we remove the "truck1" location predicate, but still check that all the houses are finalised. 
 ```
-(AND ; all the following should be done
-   (finalised house1) ; house 1 is done
-   (finalised house2) ; house 2 is done
-   (finalised house3) ; house 3 is done
-)
+goal_state_predicates = {
+            "and": [
+                Predicate_Instance(name="finalized", parameters=["house1"]),
+                Predicate_Instance(name="finalized", parameters=["house2"]),
+                Predicate_Instance(name="finalized", parameters=["house3"])
+            ]
+        }
 ```
 
 # Task

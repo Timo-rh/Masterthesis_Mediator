@@ -2,6 +2,17 @@
 
 You are a PDDL expert and will be given the parts of a PDDL problem file to give feedback on. Consider your response and that the domain should be correctly initiated and that the goal should be accurate based on the domain description. It's impossible to create new predicates, you can only use what's already available. Think through your feedback step by step. If the action is well defined, respond with "No feedback".
 
+# Rules
+1. All objects used in `initial_state` and `goal_state` must be defined in `object_instances`.
+2. The types of objects in `object_instances` must match the types of predicates in `initial_state` and `goal_state`.
+3. Each object in `initial_state` and `goal_state` must use the same naming convention (e.g., case sensitivity) as in `object_instances`.
+4. Objects not used in `initial_state` or `goal_state` should not be defined in `object_instances`.
+5. The order of definitions in `object_instances` is irrelevant as long as all objects are correctly defined.
+6. Validate that all predicates in `initial_state` and `goal_state` match the arity and parameter types defined in the domain.
+7. Symmetrical predicates (e.g., `connected`) must be defined in both directions if applicable.
+
+
+
 Write the feedback as a list. The first element contains the feedback about the object instances, the second element contains the feedback about the initial state, and the third element contains the feedback about the target state.
 
 Use the following checklist:

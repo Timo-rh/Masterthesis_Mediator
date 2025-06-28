@@ -438,15 +438,15 @@ def regular_initial_state_extraction(state: NL2PlanState):
         system_message = f.read().strip()
     task_extraction_llm = mediator_llm.with_structured_output(InitialState)
     input_prompt = ChatPromptTemplate(
-        [("system", "{system_message}"), ("human", "## Types\n{type_hierarchy}\n ## Predicates\n{predicates}\n## Domain\n{domain_desc}\n## Task\n{task}")])
+        [("system", "{system_message}"), ("human", "## Types\n{type_hierarchy}\n ## Predicates\n{predicates}\n## Domain\n{domain_desc}\n## Task\n{task}\n## Object Instances\n{object_instances}")])
     initial_state_chain = input_prompt | task_extraction_llm
     initial_state_call = initial_state_chain.invoke(
         {"system_message": system_message,
          "domain_desc": state.domain_desc,
          "task": state.natural_language_task,
          "type_hierarchy": state.type_hierarchy,
-         "predicates": state.predicates})
-    print(initial_state_call) #TODO: Überprüfen, ob der Fehler noch einmal auftritt
+         "predicates": state.predicates,
+         "object_instances": state.object_instances})
     # Gibt Zielzustand zurück
     return {"initial_state": initial_state_call.initial_state_predicates}
 
@@ -457,14 +457,15 @@ def regular_goal_state_extraction(state: NL2PlanState):
         system_message = f.read().strip()
     task_extraction_llm = mediator_llm.with_structured_output(GoalState)
     input_prompt = ChatPromptTemplate(
-        [("system", "{system_message}"), ("human", "## Types\n{type_hierarchy}\n ## Predicates\n{predicates}\n## Domain\n{domain_desc}\n## Task\n{task}")])
+        [("system", "{system_message}"), ("human", "## Types\n{type_hierarchy}\n ## Predicates\n{predicates}\n## Domain\n{domain_desc}\n## Task\n{task}\n## Objects\n{object_instances}")])
     goal_state_chain = input_prompt | task_extraction_llm
     goal_state_call = goal_state_chain.invoke(
         {"system_message": system_message,
          "domain_desc": state.domain_desc,
          "task": state.natural_language_task,
          "type_hierarchy": state.type_hierarchy,
-         "predicates": state.predicates})
+         "predicates": state.predicates,
+         "object_instances": state.object_instances})
 
     # Gibt Zielzustand zurück
     return {"goal_state": goal_state_call.goal_state_predicates}
@@ -499,7 +500,7 @@ def objects_extraction_with_feedback(state: NL2PlanState):
         system_message = f.read().strip()
     task_extraction_llm = mediator_llm.with_structured_output(ObjectInstances)
     input_prompt = ChatPromptTemplate(
-        [("system", "{system_message}"), ("human", "## Types\n{type_hierarchy}\n ## Predicates\n{predicates}\n## Domain\n{domain_desc}\n## Task\n{task}\n## Feedback\n{feedback}")])
+        [("system", "{system_message}"), ("human", "## Types\n{type_hierarchy}\n ## Predicates\n{predicates}\n## Domain\n{domain_desc}\n## Task\n{task}\n##Objects\n{object_instances}\n## Feedback\n{feedback}")])
     object_extraction_chain = input_prompt | task_extraction_llm
     object_extraction_call = object_extraction_chain.invoke(
         {"system_message": system_message,
@@ -507,6 +508,7 @@ def objects_extraction_with_feedback(state: NL2PlanState):
          "task": state.natural_language_task,
          "type_hierarchy": state.type_hierarchy,
          "predicates": state.predicates,
+         "object_instances": state.object_instances,
          "feedback": state.feedback[0]})
 
     # Gibt Objektinstanzen zurück
@@ -519,7 +521,7 @@ def initial_state_extraction_with_feedback(state: NL2PlanState):
         system_message = f.read().strip()
     task_extraction_llm = mediator_llm.with_structured_output(InitialState)
     input_prompt = ChatPromptTemplate(
-        [("system", "{system_message}"), ("human", "## Types\n{type_hierarchy}\n ## Predicates\n{predicates}\n## Domain\n{domain_desc}\n## Task\n{task}\n## Feedback\n{feedback}")])
+        [("system", "{system_message}"), ("human", "## Types\n{type_hierarchy}\n ## Predicates\n{predicates}\n## Domain\n{domain_desc}\n## Task\n{task}\n##Objects\n{object_instances}\n## Feedback\n{feedback}")])
     state_extraction_chain = input_prompt | task_extraction_llm
     state_extraction_call = state_extraction_chain.invoke(
         {"system_message": system_message,
@@ -527,6 +529,7 @@ def initial_state_extraction_with_feedback(state: NL2PlanState):
          "task": state.natural_language_task,
          "type_hierarchy": state.type_hierarchy,
          "predicates": state.predicates,
+         "object_instances": state.object_instances,
          "feedback": state.feedback[1]})
 
     # Gibt Objektinstanzen zurück
@@ -539,7 +542,7 @@ def goal_state_extraction_with_feedback(state: NL2PlanState):
         system_message = f.read().strip()
     task_extraction_llm = mediator_llm.with_structured_output(GoalState)
     input_prompt = ChatPromptTemplate(
-        [("system", "{system_message}"), ("human", "## Types\n{type_hierarchy}\n ## Predicates\n{predicates}\n## Domain\n{domain_desc}\n## Task\n{task}\n## Feedback\n{feedback}")])
+        [("system", "{system_message}"), ("human", "## Types\n{type_hierarchy}\n ## Predicates\n{predicates}\n## Domain\n{domain_desc}\n## Task\n{task}\n##Objects\n{object_instances}\n## Feedback\n{feedback}")])
     goal_extraction_chain = input_prompt | task_extraction_llm
     goal_extraction_call = goal_extraction_chain.invoke(
         {"system_message": system_message,
@@ -547,13 +550,46 @@ def goal_state_extraction_with_feedback(state: NL2PlanState):
          "task": state.natural_language_task,
          "type_hierarchy": state.type_hierarchy,
          "predicates": state.predicates,
+         "object_instances": state.object_instances,
          "feedback": state.feedback[2]})
 
     # Gibt Objektinstanzen zurück
     return {"goal_state": goal_extraction_call.goal_state_predicates}
 
 
+# =============================================================================
+# Ausgabe des States
+# =============================================================================
 
+def save_complete_state(state: NL2PlanState):
+    """
+    Speichert den kompletten State als JSON.
+
+    Args:
+        state (NL2PlanState): Der aktuelle State mit allen Komponenten.
+
+    Returns:
+        dict: Dictionary mit dem kompletten State.
+    """
+    # Erstelle Ordnername nach Schema DDMMYYYY-domain-task
+    from datetime import datetime
+    timestamp = datetime.now().strftime("%d%m%Y")
+    folder_name = f"{timestamp}-{state.domain_name}-{state.task_name}"
+
+    # Bestimme den Basispfad basierend auf Feedback
+    base_dir = 'results/mit_feedback' if state.feedback else 'results/ohne_feedback'
+    target_dir = os.path.join(base_dir, folder_name)
+
+    # Erstelle Ordner falls nicht vorhanden
+    os.makedirs(target_dir, exist_ok=True)
+
+    # Speichere den State als JSON
+    state_path = os.path.join(target_dir, 'state.json')
+    with open(state_path, 'w') as f:
+        f.write(state.model_dump_json(indent=2))
+
+    print(f"Kompletter State wurde in {state_path} gespeichert.")
+    return {"complete_state": state}
 # =============================================================================
 # Planning Schritt
 # =============================================================================
@@ -565,6 +601,10 @@ def domain_to_state(state: NL2PlanState):
 
 #Problem erzeugen
 def problem_to_state(state: NL2PlanState):
+    # Prüfe ob object_instances korrekt gesetzt sind
+    if not state.object_instances or not state.object_instances.objects:
+        raise ValueError("Keine Objektinstanzen im State gefunden")
+
     problem = create_problem(state)
-    pddl_problem=str(problem)
+    pddl_problem = str(problem)
     return {"pddl_problem": pddl_problem}

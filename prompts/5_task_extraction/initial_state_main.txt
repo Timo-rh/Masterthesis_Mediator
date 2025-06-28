@@ -5,12 +5,26 @@ For now only define the initial state.
 
 #Rules
 1. All objects used in `initial_state` and `goal_state` must be defined in `object_instances`.
-2. The types of objects in `object_instances` must match the types of predicates in `initial_state` and `goal_state`.
-3. Each object in `initial_state` and `goal_state` must use the same naming convention (e.g., case sensitivity) as in `object_instances`.
-4. Objects not used in `initial_state` or `goal_state` should not be defined in `object_instances`.
-5. The order of definitions in `object_instances` is irrelevant as long as all objects are correctly defined.
-6. Validate that all predicates in `initial_state` and `goal_state` match the arity and parameter types defined in the domain.
-7. Symmetrical predicates (e.g., `connected`) must be defined in both directions if applicable.
+2. Each object in `initial_state` and `goal_state` must use the same naming convention and case sensitivity as in `object_instances`.
+   Example: If an object is defined as "ado_city" in `object_instances`, it should be referred to as "ado_city" in `initial_state` and `goal_state`.
+3. The order of definitions in `object_instances` is irrelevant as long as all objects are correctly defined.
+4. Make sure to include predicates for all objects that are relevant to the initial state and goal state.
+   Example:
+    objects={
+            "package1": "package",
+            "package2": "package",
+            "package3": "package",
+            "package4": "package",
+            "package5": "package"
+        }
+   },
+
+   initial_state_predicates=[
+            Predicate_Instance(name="at", parameters=["package1","ado_storage"]),
+            Predicate_Instance(name="at", parameters=["package2", "ado_storage"]),
+            Predicate_Instance(name="at", parameters=["package3", "ado_storage"]),
+            Predicate_Instance(name="at", parameters=["package4", "betar_storage"]),
+            Predicate_Instance(name="at", parameters=["package5", "betar_storage"])]
 
 # Example
 ## Domain

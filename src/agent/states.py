@@ -104,7 +104,7 @@ class Action_(BaseModel):
 
 #Klasse für alle Objektinstanzen
 class ObjectInstances(BaseModel):
-    objects: Dict[str, str] = Field(description="A dictionary of object instances with object name and type, e.g., {'L1': 'package', 'L2': 'package'.")
+    objects: Dict[str, str] = Field(default_factory=dict,description="A dictionary of object instances with object name and type, e.g., {'L1': 'package', 'L2': 'package'.")
 
 #Klasse für den Ausgangszustand
 class InitialState(BaseModel):

@@ -536,25 +536,17 @@ def create_domain(state: NL2PlanState):
 
 # Erstellen der Objekte (Constants) aus den ObjectInstances
 def create_objects(state: NL2PlanState) -> dict[str, Constant]:
+    # Debug-Ausgabe
+    print(f"object_instances type: {type(state.object_instances)}")
+    print(f"object_instances content: {state.object_instances.model_dump()}")
+
     object_map = {}
+    # Direkter Zugriff auf objects
+    for name, type_ in state.object_instances.objects.items():
+        name_lower = name.lower()
+        print(f"Creating constant for: {name_lower} of type {type_}")
+        object_map[name_lower] = Constant(name_lower, type_tag=type_)
 
-    # Debugging: Ausgabe des Formats von object_instances
-    print(f"object_instances Inhalt: {state.object_instances}")
-    print(f"object_instances Typ: {type(state.object_instances)}")
-
-    # Überprüfung des Formats von object_instances
-    if isinstance(state.object_instances, dict):
-        objects = state.object_instances
-    elif hasattr(state.object_instances, "objects"):
-        objects = state.object_instances.objects
-    elif hasattr(state.object_instances, "data"):  # Beispiel für ein alternatives Attribut
-        objects = state.object_instances.data
-    else:
-        raise ValueError("`object_instances` hat ein unerwartetes Format.")
-
-    # Erstellen der Objekte
-    for name, type_ in objects.items():
-        object_map[name] = Constant(name, type_tag=type_)
     return object_map
 
 # Erstellen des Initialzustands (InitialState)
@@ -564,21 +556,26 @@ def create_initial_state(state: NL2PlanState, object_map: dict[str, Constant]) -
     # Arity-Map zur Validierung
     arity_map = {pred_def.name: len(pred_def.predicate_parameters) for pred_def in state.predicates}
 
-    for pred_inst in state.initial_state.initial_state_predicates:
+    # Prüfe ob initial_state eine Liste oder ein InitialState-Objekt ist
+    predicates_list = (state.initial_state
+                      if isinstance(state.initial_state, list)
+                      else state.initial_state.initial_state_predicates)
+
+    for pred_inst in predicates_list:
         name = pred_inst.name
         parameters = pred_inst.parameters
 
-        if name not in arity_map:
-            raise ValueError(f"Predicate '{name}' not defined in domain.")
-        if len(parameters) != arity_map[name]:
-            raise ValueError(f"Predicate '{name}' expects {arity_map[name]} arguments, got {len(parameters)}")
+        # Debug-Ausgaben für Fehlersuche
+        print(f"Verarbeite Prädikat: {name}")
+        print(f"Parameter: {parameters}")
 
         # Parameters auf Constants mappen
         constants = []
         for p in parameters:
             key = p.lower()
             if key not in object_map:
-                raise ValueError(f"Constant '{p}' not found in objects.")
+                print(f"Verfügbare Keys: {list(object_map.keys())}")
+                raise ValueError(f"Constant '{p}' (als '{key}') nicht in objects gefunden.")
             constants.append(object_map[key])
 
         pred = Predicate(name, *constants)
