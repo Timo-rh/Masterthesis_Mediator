@@ -383,6 +383,33 @@ actions = [
     )
     )"""
 )
+
+{
+  "object_instances": {
+    "ado": "city",
+    "betar": "city",
+    "colin": "city",
+    "duran": "city",
+    "ado_truck": "truck",
+    "betar_truck": "truck",
+    "colin_truck": "truck",
+    "duran_truck": "truck",
+    "plane1": "airplane",
+    "ado_airport": "airport",
+    "betar_airport": "airport",
+    "colin_airport": "airport",
+    "duran_airport": "airport",
+    "ado_storage": "storage",
+    "betar_storage": "storage",
+    "bal_street": "street",
+    "cli_promenade": "street",
+    "package1": "package",
+    "package2": "package",
+    "package3": "package",
+    "package4": "package",
+    "package5": "package"
+  }
+}  #objects fehlt
 # =============================================================================
 # Erzeugung der PDDL-Domain
 # =============================================================================
@@ -525,7 +552,7 @@ def create_domain(state: NL2PlanState):
         requirements=requirements,
         types=create_types(state),
         predicates=create_predicates(state),
-        actions=create_actions(state),
+        actions=create_actions(state)
     )
     # Domäne zurückgeben
     return domain
