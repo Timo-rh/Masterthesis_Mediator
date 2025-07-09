@@ -3,6 +3,17 @@ Your task is to estimate the initial state and the goal state for a PDDL problem
 
 First only define the object intances needed. Make sure to follow a consistent naming schema, so that the initial and goal state can be easily defined later.
 
+# Rules
+1. Use a consistent naming schema for object instances, so that they can be easily referenced later.
+2. The naming of object_instances must follow the structured output schema:
+```object_instances=ObjectInstances(
+        objects={
+            "object_name": "object_type",
+            ...
+            }
+        )
+```
+
 # Example
 ## Domain
 The AI agent is here a scheduling system for a house construction company with administrators who can create orders, workers who perform them and vehicles to transport workers.
@@ -37,35 +48,35 @@ predicates=[
 ## Object Instances
 We assume that there are two trucks since the description said "a couple".
 ```
-object_instances=ObjectInstances(
-        objects={
-            "truck1": "truck",
-            "truck2": "truck"
-            }
-        )
+object_instances=ObjectInstance(
+    objects={
+        "truck1": "truck",
+        "truck2": "truck"
+    }
+)
 ```
 
 Next, let's define the relevant locations. Since "chicago_depot" is not a house, we model it as a general location.
 ```
-object_instances=ObjectInstances(
-        objects={
-            "chicago_depot": "location",
-            "house1": "house",
-            "house2": "house",
-            "house3": "house"
-            }
-        )
+object_instances=ObjectInstance(
+    objects={
+        "chicago_depot":"location",
+        "house1":"house",
+        "house2":"house",
+        "house3":"house"
+    }
+)
 ```
 
 Now, let's model the worker.
 ```
-object_instances=ObjectInstances(
-        objects={
-            "jamie": "administrator",
-            "emma": "general_worker",
-            "bob": "general_worker"
-            }
-        )
+object_instances=ObjectInstance({
+    objects={
+        "jamie":"administrator",
+        "emma":"general_worker",
+        "bob":"general_worker"
+    }
+)
 ```
 
 
@@ -92,35 +103,35 @@ Now I'll reiterate the corrected initialization with the exact same headers.
 ## Object Instances
 The feedback suggested to use more trucks, but this would be wrong since the domain only specifies "A couple". So, we stick with the two trucks.
 ```
-object_instances=ObjectInstances(
-        objects={
-            "truck1": "truck",
-            "truck2": "truck"
-            }
-        )
+object_instances=ObjectInstance(
+    objects={
+        "truck1": "truck",
+        "truck2": "truck"
+    }
+)
 ```
 
 The locations haven't been updated:
 ```
-object_instances=ObjectInstances(
-        objects={
-            "chicago_depot": "location",
-            "house1": "house",
-            "house2": "house",
-            "house3": "house"
-            }
-        )
+object_instances=ObjectInstance(
+    objects={
+        "chicago_depot":"location",
+        "house1":"house",
+        "house2":"house",
+        "house3":"house"
+    }
+)
 ```
 
 The workers are unchanged from before:
 ```
-object_instances=ObjectInstances(
-        objects={
-            "jamie": "administrator",
-            "emma": "general_worker",
-            "bob": "general_worker"
-            }
-        )
+object_instances=ObjectInstance({
+    objects={
+        "jamie":"administrator",
+        "emma":"general_worker",
+        "bob":"general_worker"
+    }
+)
 ```
 
 # Task

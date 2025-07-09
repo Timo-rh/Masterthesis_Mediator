@@ -10,21 +10,34 @@ For now only define the initial state.
 3. The order of definitions in `object_instances` is irrelevant as long as all objects are correctly defined.
 4. Make sure to include predicates for all objects that are relevant to the initial state and goal state.
    Example:
-    objects={
+    object_instances=ObjectInstance(
+        objects={
             "package1": "package",
             "package2": "package",
             "package3": "package",
             "package4": "package",
             "package5": "package"
         }
-   },
+   ),
 
-   initial_state_predicates=[
+   initial_state=InitialState(
+        initial_state_predicates=[
             Predicate_Instance(name="at", parameters=["package1","ado_storage"]),
             Predicate_Instance(name="at", parameters=["package2", "ado_storage"]),
             Predicate_Instance(name="at", parameters=["package3", "ado_storage"]),
             Predicate_Instance(name="at", parameters=["package4", "betar_storage"]),
             Predicate_Instance(name="at", parameters=["package5", "betar_storage"])]
+    )
+5. The naming of initial_state must follow the structured output schema:
+    Example:
+    initial_state=InitialState(
+        initial_state_predicates=[
+            Predicate_Instance(name="at", parameters=["package1","ado_storage"]),
+            Predicate_Instance(name="at", parameters=["package2", "ado_storage"]),
+            Predicate_Instance(name="at", parameters=["package3", "ado_storage"]),
+            Predicate_Instance(name="at", parameters=["package4", "betar_storage"]),
+            Predicate_Instance(name="at", parameters=["package5", "betar_storage"])]
+    )
 
 # Example
 ## Domain
@@ -82,44 +95,49 @@ object_instances=ObjectInstances(
 Now, let's model the worker.
 ```
 object_instances=ObjectInstances(
-        objects={
-            "jamie": "administrator",
-            "emma": "general_worker",
-            "bob": "general_worker"
-            }
-        )
+    objects={
+        "jamie": "administrator",
+        "emma": "general_worker",
+        "bob": "general_worker"
+    }
+)
 ```
 
 ## Initial State
 Let's start by specifying where everyone is. It's a reasonable assumption that everyone starts at the Chicago depot.
 ```
 initial_state=InitialState(
-        initial_state_predicates=[
-    Predicate_Instance(name="at", parameters=["truck1", "chicago_depot"]),
-    Predicate_Instance(name="at", parameters=["truck2", "chicago_depot"]),
-    Predicate_Instance(name="at", parameters=["jamie", "chicago_depot"]),
-    Predicate_Instance(name="at", parameters=["emma", "chicago_depot"])
-]
+    initial_state_predicates=[
+        Predicate_Instance(name="at", parameters=["truck1", "chicago_depot"]),
+        Predicate_Instance(name="at", parameters=["truck2", "chicago_depot"]),
+        Predicate_Instance(name="at", parameters=["jamie", "chicago_depot"]),
+        Predicate_Instance(name="at", parameters=["emma", "chicago_depot"])
+    ]
+)
 ```
 
 We assume that all the houses are entirely unbuilt, that the trucks are unloaded and that no orders are written. As such, all these conditions are false and don't need to be specified. 
 
 Finally, we need to specify how the various locations are connected. Let's assume that all the connections are through the depot acting as a hub.
 ```
-inital_state_predicates=[
-    Predicate_Instance(name="connected", parameters=["house1", "chicago_depot"]),
-    Predicate_Instance(name="connected", parameters=["house2", "chicago_depot"]),
-    Predicate_Instance(name="connected", parameters=["house3", "chicago_depot"]),
-]
+initial_state=InitialState(
+    initial_state_predicates=[
+        Predicate_Instance(name="connected", parameters=["house1", "chicago_depot"]),
+        Predicate_Instance(name="connected", parameters=["house2", "chicago_depot"]),
+        Predicate_Instance(name="connected", parameters=["house3", "chicago_depot"])
+    ]
+)
 ```
 
 Finally, the "connected" predicate states that two locations are connected if there exists a road between them. So, clearly if (connected A B) then (connected B A) since roads go both ways. So, we need to mirror all the "connected" constraints.
 ```
-initial_state_predicates=[
-    Predicate_Instance(name="connected", parameters=["chicago_depot", "house1"]),
-    Predicate_Instance(name="connected", parameters=["chicago_depot", "house2"]),
-    Predicate_Instance(name="connected", parameters=["chicago_depot", "house3"]),
-]
+initial_state=InitialState(
+    initial_state_predicates=[
+        Predicate_Instance(name="connected", parameters=["chicago_depot", "house1"]),
+        Predicate_Instance(name="connected", parameters=["chicago_depot", "house2"]),
+        Predicate_Instance(name="connected", parameters=["chicago_depot", "house3"])
+    ]
+)
 ```
 
 
@@ -153,14 +171,15 @@ My concrete suggestions are the following:
     - Remove the requirement for truck1:s location in the goal. This results in the following goal:
         ```
         goal_state=GoalState(
-        goal_state_predicates={
-            "and": [
-                Predicate_Instance(name="finalized", parameters=["house1"]),
-                Predicate_Instance(name="finalized", parameters=["house2"]),
-                Predicate_Instance(name="finalized", parameters=["house3"])
-            ]
-        }
-    )
+            goal_state_predicates = {
+                "and": [
+                    Predicate_Instance(name="finalised", parameters=["house1"]),
+                    Predicate_Instance(name="finalised", parameters=["house2"]),
+                    Predicate_Instance(name="finalised", parameters=["house3"]),
+                    Predicate_Instance(name="at", parameters=["truck1", "house1"])
+                ]
+            }
+        )
         ```
 Regenerate an entire response correcting the above error. Make sure to use the exact same headers as requested before, but start with a "## Response" header to analyze the error.
 
@@ -174,62 +193,65 @@ Now I'll reiterate the corrected initialization with the exact same headers.
 ## Object Instances
 The feedback suggested to use more trucks, but this would be wrong since the domain only specifies "A couple". So, we stick with the two trucks.
 ```
-object_instances=ObjectInstances(
-        objects={
-            "truck1": "truck",
-            "truck2": "truck"
-            }
-        )
+object_instances=ObjectInstance(
+    objects={
+        "truck1": "truck",
+        "truck2": "truck"
+    }
+)
 ```
 
 The locations haven't been updated:
 ```
-object_instances=ObjectInstances(
-        objects={
-            "chicago_depot": "location",
-            "house1": "house",
-            "house2": "house",
-            "house3": "house"
-            }
-        )
+object_instances=ObjectInstance(
+    objects={
+        "chicago_depot":"location",
+        "house1":"house",
+        "house2":"house",
+        "house3":"house"
+    }
+)
 ```
 
 The workers are unchanged from before:
 ```
-object_instances=ObjectInstances(
-        objects={
-            "jamie": "administrator",
-            "emma": "general_worker",
-            "bob": "general_worker"
-            }
-        )
+object_instances=ObjectInstance({
+    objects={
+        "jamie":"administrator",
+        "emma":"general_worker",
+        "bob":"general_worker"
+    }
+)
 ```
 
 ## Initial State
 Let's start by specifying where everyone is again. This time, we  make sure to include Bob.
 ```
 initial_state=InitialState(
-        initial_state_predicates=[
-    Predicate_Instance(name="at", parameters=["truck1", "chicago_depot"]),
-    Predicate_Instance(name="at", parameters=["truck2", "chicago_depot"]),
-    Predicate_Instance(name="at", parameters=["jamie", "chicago_depot"]),
-    Predicate_Instance(name="at", parameters=["emma", "chicago_depot"]),
-    Predicate_Instance(name="at", parameters=["bob", "chicago_depot"])
-]
+    initial_state_predicates=[
+        Predicate_Instance(name="at", parameters=["truck1", "chicago_depot"]),
+        Predicate_Instance(name="at", parameters=["truck2", "chicago_depot"]),
+        Predicate_Instance(name="at", parameters=["jamie", "chicago_depot"]),
+        Predicate_Instance(name="at", parameters=["emma", "chicago_depot"]),
+        Predicate_Instance(name="at", parameters=["bob", "chicago_depot"])
+    ]
+)
 ```
 
 We still assume that all the houses are entirely unbuilt and no orders are written. 
 
 The connections between the locations are the same bi-directional connections as before.
 ```
-inital_state_predicates=[
-    Predicate_Instance(name="connected", parameters=["house1", "chicago_depot"]),
-    Predicate_Instance(name="connected", parameters=["house2", "chicago_depot"]),
-    Predicate_Instance(name="connected", parameters=["house3", "chicago_depot"]),
-    Predicate_Instance(name="connected", parameters=["chicago_depot", "house1"]),
-    Predicate_Instance(name="connected", parameters=["chicago_depot", "house2"]),
-    Predicate_Instance(name="connected", parameters=["chicago_depot", "house3"])
-]
+initial_state=InitialState(
+    initial_state_predicates=[
+        Predicate_Instance(name="connected", parameters=["house1", "chicago_depot"]),
+        Predicate_Instance(name="connected", parameters=["house2", "chicago_depot"]),
+        Predicate_Instance(name="connected", parameters=["house3", "chicago_depot"]),
+        Predicate_Instance(name="connected", parameters=["chicago_depot", "house1"]),
+        Predicate_Instance(name="connected", parameters=["chicago_depot", "house2"]),
+        Predicate_Instance(name="connected", parameters=["chicago_depot", "house3"])
+    ]
+)
 ```
 
 
