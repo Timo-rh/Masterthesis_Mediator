@@ -1,5 +1,4 @@
 from langgraph.constants import START
-
 from src.agent.states import NL2PlanState
 from langgraph.graph import StateGraph, START, END
 from src.agent.nodes_and_edges import *
@@ -29,9 +28,8 @@ graph.add_node("Task Extraction - Initial State with Feedback", initial_state_ex
 graph.add_node("Task Extraction - Goal State with Feedback", goal_state_extraction_with_feedback)
 graph.add_node("PDDL Creation - Domain", domain_to_state)
 graph.add_node("PDDL Creation - Problem", problem_to_state)
-#graph.add_node("PDDL Creation", create_pddl)
-#graph.add_node("Automatic Planner", generate_plan)
-
+graph.add_node("Save Complete State", save_complete_state)
+graph.add_node("Save PDDL Files", save_pddl_files)
 
 #Edges
 graph.add_edge(START, "Type Extraction")
@@ -55,28 +53,12 @@ graph.add_edge("Task Extraction - Objects with Feedback", "Task Extraction - Ini
 graph.add_edge("Task Extraction - Initial State with Feedback", "Task Extraction - Goal State with Feedback")
 graph.add_edge("Task Extraction - Goal State with Feedback", "PDDL Creation - Domain")
 graph.add_edge("PDDL Creation - Domain", "PDDL Creation - Problem")
-graph.add_edge("PDDL Creation - Problem", END)
-
-
-
-# # Conditional_Edge
-# def route_to_hierarchy_construction(state: NL2PlanState):
-#     """Weiterleiten zum Hierarchy_Construction-Node oder mediator_llm-Node."""
-#     if state.feedback.get(0) == "blue":
-#         return "Hierarchy_Construction"
-#     else:
-#         return "mediator_llm"
-
+graph.add_edge("PDDL Creation - Problem", "Save Complete State")
+graph.add_edge("Save Complete State", "Save PDDL Files")
+graph.add_edge("Save PDDL Files", END)
 #Compile
 graph.compile(name="Mediator mit einfachem Feedback")
 
-# # Define the graph
-# graph = (
-#     StateGraph(NL2PlanState, config_schema=Config_Schema)
-#     .add_node(call_model)
-#     .add_edge("__start__", "call_model")
-#     .compile(name="New Graph")
-# )
 
 nfgraph = StateGraph(NL2PlanState)
 #Nodes
@@ -87,9 +69,10 @@ nfgraph.add_node("Action Construction", action_construction)
 nfgraph.add_node("Task Extraction - Objects", regular_objects_extraction)
 nfgraph.add_node("Task Extraction - Initial State", regular_initial_state_extraction)
 nfgraph.add_node("Task Extraction - Goal State", regular_goal_state_extraction)
+nfgraph.add_node("PDDL Creation - Domain", domain_to_state)
+nfgraph.add_node("PDDL Creation - Problem", problem_to_state)
 nfgraph.add_node("Save Complete State", save_complete_state)
-# nfgraph.add_node("PDDL Creation - Domain", domain_to_state)
-# nfgraph.add_node("PDDL Creation - Problem", problem_to_state)
+nfgraph.add_node("Save PDDL Files", save_pddl_files)
 
 #Edges
 nfgraph.add_edge(START, "Type Extraction")
@@ -99,11 +82,11 @@ nfgraph.add_edge("Action Extraction", "Action Construction")
 nfgraph.add_edge("Action Construction", "Task Extraction - Objects")
 nfgraph.add_edge("Task Extraction - Objects", "Task Extraction - Initial State")
 nfgraph.add_edge("Task Extraction - Initial State", "Task Extraction - Goal State")
-nfgraph.add_edge("Task Extraction - Goal State", "Save Complete State")
-nfgraph.add_edge("Save Complete State", END)
-# nfgraph.add_edge("Task Extraction - Goal State", "PDDL Creation - Domain")
-# nfgraph.add_edge("PDDL Creation - Domain", "PDDL Creation - Problem")
-# nfgraph.add_edge("PDDL Creation - Problem", END)
+nfgraph.add_edge("Task Extraction - Goal State", "PDDL Creation - Domain")
+nfgraph.add_edge("PDDL Creation - Domain", "PDDL Creation - Problem")
+nfgraph.add_edge("PDDL Creation - Problem", "Save Complete State")
+nfgraph.add_edge("Save Complete State", "Save PDDL Files")
+nfgraph.add_edge("Save PDDL Files", END)
 
 #Compile
 nfgraph.compile(name="Mediator ohne Feedback")

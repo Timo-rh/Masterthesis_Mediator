@@ -428,8 +428,9 @@ def regular_objects_extraction(state: NL2PlanState):
          "type_hierarchy": state.type_hierarchy,
          "predicates": state.predicates})
 
+
     # Gibt Objektinstanzen zurück
-    return {"object_instances": object_extraction_call.objects}
+    return {"object_instances": object_extraction_call}
 
 
 def regular_initial_state_extraction(state: NL2PlanState):
@@ -448,7 +449,7 @@ def regular_initial_state_extraction(state: NL2PlanState):
          "predicates": state.predicates,
          "object_instances": state.object_instances})
     # Gibt Zielzustand zurück
-    return {"initial_state": initial_state_call.initial_state_predicates}
+    return {"initial_state": initial_state_call}
 
 
 def regular_goal_state_extraction(state: NL2PlanState):
@@ -468,7 +469,7 @@ def regular_goal_state_extraction(state: NL2PlanState):
          "object_instances": state.object_instances})
 
     # Gibt Zielzustand zurück
-    return {"goal_state": goal_state_call.goal_state_predicates}
+    return {"goal_state": goal_state_call}
 
 
 def give_task_extraction_feedback(state: NL2PlanState):
@@ -512,7 +513,7 @@ def objects_extraction_with_feedback(state: NL2PlanState):
          "feedback": state.feedback[0]})
 
     # Gibt Objektinstanzen zurück
-    return {"object_instances": object_extraction_call.objects}
+    return {"object_instances": object_extraction_call}
 
 
 def initial_state_extraction_with_feedback(state: NL2PlanState):
@@ -533,7 +534,7 @@ def initial_state_extraction_with_feedback(state: NL2PlanState):
          "feedback": state.feedback[1]})
 
     # Gibt Objektinstanzen zurück
-    return {"initial_state": state_extraction_call.initial_state_predicates}
+    return {"initial_state": state_extraction_call}
 
 
 def goal_state_extraction_with_feedback(state: NL2PlanState):
@@ -554,11 +555,27 @@ def goal_state_extraction_with_feedback(state: NL2PlanState):
          "feedback": state.feedback[2]})
 
     # Gibt Objektinstanzen zurück
-    return {"goal_state": goal_extraction_call.goal_state_predicates}
+    return {"goal_state": goal_extraction_call}
 
 
 # =============================================================================
-# Ausgabe des States
+# Planning Schritt
+# =============================================================================
+
+def domain_to_state(state: NL2PlanState):
+    domain = create_domain(state)
+    pddl_domain=str(domain)
+    return {"pddl_domain": pddl_domain}
+
+#Problem erzeugen
+def problem_to_state(state: NL2PlanState):
+    problem = create_problem(state)
+    pddl_problem = str(problem)
+    return {"pddl_problem": pddl_problem}
+
+
+# =============================================================================
+# Speichern des States und der PDDL
 # =============================================================================
 
 def save_complete_state(state: NL2PlanState):
@@ -590,21 +607,32 @@ def save_complete_state(state: NL2PlanState):
 
     print(f"Kompletter State wurde in {state_path} gespeichert.")
     return {"complete_state": state}
-# =============================================================================
-# Planning Schritt
-# =============================================================================
 
-def domain_to_state(state: NL2PlanState):
-    domain = create_domain(state)
-    pddl_domain=str(domain)
-    return {"pddl_domain": pddl_domain}
 
-#Problem erzeugen
-def problem_to_state(state: NL2PlanState):
-    # Prüfe ob object_instances korrekt gesetzt sind
-    if not state.object_instances or not state.object_instances.objects:
-        raise ValueError("Keine Objektinstanzen im State gefunden")
+def save_pddl_files(state: NL2PlanState):
+    """
+    Speichert die PDDL-Domain und das PDDL-Problem als separate Dateien im gleichen Verzeichnis
+    wie die state.json-Datei.
+    """
+    # Bestimme den Ordnerpfad, der bereits von save_complete_state erstellt wurde
+    timestamp = datetime.now().strftime("%d%m%Y")
+    folder_name = f"{timestamp}-{state.domain_name}-{state.task_name}"
 
-    problem = create_problem(state)
-    pddl_problem = str(problem)
-    return {"pddl_problem": pddl_problem}
+    # Basispfad basierend auf Feedback
+    base_dir = 'results/mit_feedback' if state.feedback else 'results/ohne_feedback'
+    target_dir = os.path.join(base_dir, folder_name)
+
+    # Speichere PDDL-Domain
+    domain_path = os.path.join(target_dir, 'domain.pddl')
+    with open(domain_path, 'w') as f:
+        f.write(state.pddl_domain)
+
+    # Speichere PDDL-Problem
+    problem_path = os.path.join(target_dir, 'problem.pddl')
+    with open(problem_path, 'w') as f:
+        f.write(state.pddl_problem)
+
+    print(f"PDDL-Domain wurde in {domain_path} gespeichert")
+    print(f"PDDL-Problem wurde in {problem_path} gespeichert")
+
+    return {"domain_path": domain_path, "problem_path": problem_path}

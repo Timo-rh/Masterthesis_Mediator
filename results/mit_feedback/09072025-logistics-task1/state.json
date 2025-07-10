@@ -1,0 +1,356 @@
+{
+  "natural_language_task": "Currently I've got five packages to ship, 3 in a storage in Ado and the rest in Betar's storage. Those from Ado should be sent 1 to Bal Street in Betar, 2 to Cli Promenade in Colin. Those from Betar should be moved to the Ado storage. The only plane is currently in Duran's airport, but each city has it's own truck and airport.",
+  "domain_desc": "The AI agent here is a logistics planner that has to plan to transport packages within the locations in a city through a truck and between cities through an airplane. Within a city, the locations are directly linked, allowing trucks to travel between any two of these locations. Similarly, cities are directly connected to each other allowing airplanes to travel between any two cities. Also, there is no limit to how many packages a truck or plane can carry (so in theory a truck or plane can carry an infinite number of packages).",
+  "domain_name": "logistics",
+  "task_name": "task1",
+  "types": [
+    {
+      "name": "city",
+      "description": "A city contains locations and has its own truck and airport"
+    },
+    {
+      "name": "location",
+      "description": "A place within a city where packages can be picked up or delivered"
+    },
+    {
+      "name": "street",
+      "description": "A type of location within a city"
+    },
+    {
+      "name": "storage",
+      "description": "A type of location where packages can be stored"
+    },
+    {
+      "name": "airport",
+      "description": "A type of location where planes can land and take off"
+    },
+    {
+      "name": "vehicle",
+      "description": "A means of transport that can carry packages"
+    },
+    {
+      "name": "truck",
+      "description": "A type of vehicle that transports packages between locations within a city"
+    },
+    {
+      "name": "airplane",
+      "description": "A type of vehicle that transports packages between cities"
+    },
+    {
+      "name": "package",
+      "description": "An item that needs to be transported from one location to another"
+    }
+  ],
+  "type_hierarchy": [
+    {
+      "parent_type": {
+        "name": "object",
+        "description": "Object is always root, everything is an object"
+      },
+      "child_types": [
+        {
+          "name": "city",
+          "description": "A city contains locations and has its own truck and airport"
+        },
+        {
+          "name": "location",
+          "description": "A place within a city where packages can be picked up or delivered"
+        },
+        {
+          "name": "vehicle",
+          "description": "A means of transport that can carry packages"
+        },
+        {
+          "name": "package",
+          "description": "An item that needs to be transported from one location to another"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "location",
+        "description": "A place within a city where packages can be picked up or delivered"
+      },
+      "child_types": [
+        {
+          "name": "street",
+          "description": "A type of location within a city"
+        },
+        {
+          "name": "storage",
+          "description": "A type of location where packages can be stored"
+        },
+        {
+          "name": "airport",
+          "description": "A type of location where planes can land and take off"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "vehicle",
+        "description": "A means of transport that can carry packages"
+      },
+      "child_types": [
+        {
+          "name": "truck",
+          "description": "A type of vehicle that transports packages between locations within a city"
+        },
+        {
+          "name": "airplane",
+          "description": "A type of vehicle that transports packages between cities"
+        }
+      ]
+    }
+  ],
+  "nominated_actions": [
+    {
+      "related_type": "truck",
+      "name": "load_truck",
+      "description": "A package is loaded onto a truck at a location. Requires that the package and the truck to be at the same location.",
+      "usage_example": "Load package_1 onto truck_1 at storage_1"
+    },
+    {
+      "related_type": "truck",
+      "name": "unload_truck",
+      "description": "A package is unloaded from a truck at a location. Requires that the truck with the package to be at the destination location.",
+      "usage_example": "Unload package_1 from truck_1 at street_2"
+    },
+    {
+      "related_type": "airplane",
+      "name": "load_airplane",
+      "description": "A package is loaded onto an airplane at an airport. Requires that the package and the airplane to be at the same airport.",
+      "usage_example": "Load package_2 onto airplane_1 at airport_1"
+    },
+    {
+      "related_type": "airplane",
+      "name": "unload_airplane",
+      "description": "A package is unloaded from an airplane at an airport. Requires that the airplane with the package to be at the destination airport.",
+      "usage_example": "Unload package_2 from airplane_1 at airport_2"
+    },
+    {
+      "related_type": "truck",
+      "name": "drive_truck",
+      "description": "A truck drives from one location to another within the same city. Requires the locations to be in the same city.",
+      "usage_example": "Drive truck_1 from storage_1 to airport_1"
+    },
+    {
+      "related_type": "airplane",
+      "name": "fly_airplane",
+      "description": "An airplane flies from one city to another. Requires the airplane to be at the source city's airport.",
+      "usage_example": "Fly airplane_1 from city_1 to city_2"
+    }
+  ],
+  "predicates": [
+    {
+      "name": "at",
+      "predicate_parameters": {
+        "obj": "object",
+        "loc": "location"
+      },
+      "description": "true if the object (package, truck, or airplane) is at the location"
+    },
+    {
+      "name": "in",
+      "predicate_parameters": {
+        "pkg": "package",
+        "veh": "vehicle"
+      },
+      "description": "true if the package is loaded in the vehicle (truck or airplane)"
+    },
+    {
+      "name": "in_city",
+      "predicate_parameters": {
+        "loc": "location",
+        "city": "city"
+      },
+      "description": "true if the location is in the specified city"
+    }
+  ],
+  "actions": [
+    {
+      "name": "load_truck",
+      "description": "A package is loaded onto a truck at a location. Requires that the package and the truck to be at the same location."
+    },
+    {
+      "name": "unload_truck",
+      "description": "A package is unloaded from a truck at a location. Requires that the truck with the package be at the destination location."
+    },
+    {
+      "name": "load_airplane",
+      "description": "A package is loaded onto an airplane at an airport. Requires that the package and the airplane to be at the same airport."
+    },
+    {
+      "name": "unload_airplane",
+      "description": "A package is unloaded from an airplane at an airport. Requires that the airplane with the package be at the destination airport."
+    },
+    {
+      "name": "drive_truck",
+      "description": "A truck drives from one location to another within the same city. Locations within a city are directly connected."
+    },
+    {
+      "name": "fly_airplane",
+      "description": "An airplane flies from one city's airport to another city's airport. Cities are directly connected."
+    }
+  ],
+  "object_instances": {
+    "objects": {
+      "ado_city": "The city of Ado",
+      "betar_city": "The city of Betar",
+      "colin_city": "The city of Colin",
+      "duran_city": "The city of Duran",
+      "ado_storage": "Storage location in Ado",
+      "ado_airport": "Airport in Ado",
+      "ado_truck": "Truck assigned to Ado city",
+      "betar_storage": "Storage location in Betar",
+      "betar_airport": "Airport in Betar",
+      "betar_street": "Street location in Betar",
+      "betar_truck": "Truck assigned to Betar city",
+      "colin_promenade": "Promenade location in Colin",
+      "colin_airport": "Airport in Colin",
+      "colin_truck": "Truck assigned to Colin city",
+      "duran_airport": "Airport in Duran",
+      "duran_truck": "Truck assigned to Duran city",
+      "airplane1": "The only airplane in the system, currently at Duran's airport",
+      "package1": "First package from Ado, needs to go to Betar Street",
+      "package2": "Second package from Ado, needs to go to Colin Promenade",
+      "package3": "Third package from Ado, needs to go to Colin Promenade",
+      "package4": "First package from Betar, needs to go to Ado Storage",
+      "package5": "Second package from Betar, needs to go to Ado Storage"
+    }
+  },
+  "initial_state": [
+    {
+      "name": "at",
+      "parameters": [
+        "package1",
+        "ado_storage"
+      ]
+    },
+    {
+      "name": "at",
+      "parameters": [
+        "package2",
+        "ado_storage"
+      ]
+    },
+    {
+      "name": "at",
+      "parameters": [
+        "package3",
+        "ado_storage"
+      ]
+    },
+    {
+      "name": "at",
+      "parameters": [
+        "package4",
+        "betar_storage"
+      ]
+    },
+    {
+      "name": "at",
+      "parameters": [
+        "package5",
+        "betar_storage"
+      ]
+    },
+    {
+      "name": "at",
+      "parameters": [
+        "airplane1",
+        "duran_airport"
+      ]
+    },
+    {
+      "name": "at",
+      "parameters": [
+        "ado_truck",
+        "ado_storage"
+      ]
+    },
+    {
+      "name": "at",
+      "parameters": [
+        "betar_truck",
+        "betar_storage"
+      ]
+    },
+    {
+      "name": "at",
+      "parameters": [
+        "colin_truck",
+        "colin_airport"
+      ]
+    },
+    {
+      "name": "at",
+      "parameters": [
+        "duran_truck",
+        "duran_airport"
+      ]
+    },
+    {
+      "name": "in_city",
+      "parameters": [
+        "ado_storage",
+        "ado_city"
+      ]
+    },
+    {
+      "name": "in_city",
+      "parameters": [
+        "ado_airport",
+        "ado_city"
+      ]
+    },
+    {
+      "name": "in_city",
+      "parameters": [
+        "betar_storage",
+        "betar_city"
+      ]
+    },
+    {
+      "name": "in_city",
+      "parameters": [
+        "betar_airport",
+        "betar_city"
+      ]
+    },
+    {
+      "name": "in_city",
+      "parameters": [
+        "betar_street",
+        "betar_city"
+      ]
+    },
+    {
+      "name": "in_city",
+      "parameters": [
+        "colin_promenade",
+        "colin_city"
+      ]
+    },
+    {
+      "name": "in_city",
+      "parameters": [
+        "colin_airport",
+        "colin_city"
+      ]
+    },
+    {
+      "name": "in_city",
+      "parameters": [
+        "duran_airport",
+        "duran_city"
+      ]
+    }
+  ],
+  "goal_state": {},
+  "feedback": [
+    "a"
+  ],
+  "pddl_domain": null,
+  "pddl_problem": null
+}
