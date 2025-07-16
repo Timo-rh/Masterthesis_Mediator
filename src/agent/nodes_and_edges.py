@@ -1,56 +1,22 @@
 from __future__ import annotations
-import os
-from utils.paths import *
-from langchain import chat_models
-from langchain_core.prompts import ChatPromptTemplate
-from pddl.core import Problem, Domain
-from pddl.requirements import Requirements
-from src.pddl_parser import *
-
-# class Config_Schema(TypedDict): #TODO: aus Obsidian übernehmen & Config festlegen für init_chat_model (.with_config-Methode?)
-#     """Configurable parameters for the agent.
-#
-#     Set these when creating assistants OR when invoking the graph.
-#     See: https://langchain-ai.github.io/langgraph/cloud/how-tos/configuration_cloud/
-#     https://langchain-ai.github.io/langgraph/concepts/low_level/#graph-migrations
-#     """
-#
-#     mediator_llm: Literal["anthropic:claude-4", "deepseek:deepseek-r-1", "openai:gpt-4o"] #TODO: neue Integrationspakete in die requirements packen
-#     feedback_llm: Literal["anthropic:claude-4", "deepseek:deepseek-r-1", "openai:gpt-4o"]
-#
-# #Config-Defaults
-#
-#
-#
-# # Initialisiere das Mediator-LLM direkt aus der config
-# mediator_llm = init_chat_model(config["configurable"]["mediator_llm"])
-#
-# # Initialisiere das Feedback-LLM direkt aus der config
-# feedback_llm = init_chat_model(config["configurable"]["feedback_llm"])
+from utils.pddl_parser import *
 
 # =============================================================================
 # Initialisierung
 # =============================================================================
 
-#https://python.langchain.com/api_reference/langchain/chat_models/langchain.chat_models.base.init_chat_model.html#langchain.chat_models.base.init_chat_model
 #Initalisierung des Mediator-LLMs (Temperatur = 0, Timeout nach 300 Sekunden)
 mediator_llm = chat_models.init_chat_model("anthropic:claude-3-5-sonnet-latest", temperature=0, timeout=300)
-#mediator_llm = chat_models.init_chat_model("gpt-4o", temperature=0, timeout=300)
-#mediator_llm = chat_models.init_chat_model("gemini-1.5-flash", temperature=0, timeout=300)
-#mediator_llm = chat_models.init_chat_model("deepseek:deepseek-r-1", temperature=0, timeout=300)
 
 #Initalisierung des Feedback-LLMs (Temperatur = 0, Timeout nach 300 Sekunden)
 feedback_llm = chat_models.init_chat_model("anthropic:claude-3-5-sonnet-latest", temperature=0, timeout=300)
-#feedback_llm = chat_models.init_chat_model("gpt-4o", temperature=0, timeout=300)
 
 
 # =============================================================================
 # Type-Extraction Schritt
 # =============================================================================
-#TODO: Few_shot_prompt - Beispiele für structured_output erzeugen (siehe :https://python.langchain.com/docs/how_to/structured_output/)
 
-#Type Extraction - Node
-def regular_type_extraction(state: NL2PlanState):  #TODO: domain_and_task ist variabel und wird bei Start angegeben
+def regular_type_extraction(state: NL2PlanState):
     """Führt Type_Extraction-Generierung aus."""
     with open(os.path.join(type_extraction_prompts, "main.txt")) as f:
         system_message = f.read().strip()
@@ -160,31 +126,6 @@ def hierarchy_construction_with_feedback(state: NL2PlanState):
     #Gibt Hierarchie zurück
     return {"type_hierarchy": hierarchy_construction_call.hierarchy}
 
-
-# def validate_hierarchy(state: NL2PlanState):
-#     """Validiert die Hierarchie auf Vollständigkeit und Duplikate der Typen."""
-#     # Sammle alle Typnamen aus der Hierarchie
-#     hierarchy_type_names = []
-#     for h_obj in state.type_hierarchy:
-#         hierarchy_type_names.append(h_obj.parent_type.name)
-#         if h_obj.child_types:
-#             for child in h_obj.child_types:
-#                 hierarchy_type_names.append(child.name)
-#
-#     # Prüfe, ob alle Typen aus state.types in der Hierarchie vorkommen
-#     for type_obj in state.types:
-#         if type_obj.name not in hierarchy_type_names:
-#             raise KeyError(f"Type '{type_obj.name}' is not in the hierarchy.")
-#
-#     # Prüfe auf Duplikate in der Hierarchie
-#     for type_name in hierarchy_type_names:
-#         if hierarchy_type_names.count(type_name) > 1:
-#             raise ValueError(f"Type '{type_name}' appears multiple times in the hierarchy.")
-#
-#     # Gibt den unveränderten State zurück
-#     return state
-
-
 # =============================================================================
 # Action-Extraction Schritt
 # =============================================================================
@@ -248,7 +189,7 @@ def action_extraction_with_feedback(state: NL2PlanState):
 # =============================================================================
 
 def construct_predicates_for_one_action(state: NL2PlanState, action: Nominated_Action):
-    """Konstruirert in einem Call alle benötigten Prädikate für alle Aktionen."""
+    """Konstruirert in einem Call alle benötigten Prädikate für eine Aktion."""
     with open(os.path.join(action_construction_prompts, "predicate_generation.txt")) as f:
         system_message = f.read().strip()
     predicate_construction_llm = mediator_llm.with_structured_output(Predicate_Defintion_List)
@@ -567,7 +508,7 @@ def domain_to_state(state: NL2PlanState):
     pddl_domain=str(domain)
     return {"pddl_domain": pddl_domain}
 
-#Problem erzeugen
+
 def problem_to_state(state: NL2PlanState):
     problem = create_problem(state)
     pddl_problem = str(problem)
@@ -624,13 +565,17 @@ def save_pddl_files(state: NL2PlanState):
 
     # Speichere PDDL-Domain
     domain_path = os.path.join(target_dir, 'domain.pddl')
-    with open(domain_path, 'w') as f:
-        f.write(state.pddl_domain)
+    # with open(domain_path, 'w') as f:
+    #     f.write(state.pddl_domain)
+    with open(domain_path, 'w', encoding='utf-8') as f:
+        f.write(state.pddl_domain.replace('−', '-').replace('–', '-').replace('—', '-'))
 
     # Speichere PDDL-Problem
     problem_path = os.path.join(target_dir, 'problem.pddl')
-    with open(problem_path, 'w') as f:
-        f.write(state.pddl_problem)
+    # with open(problem_path, 'w') as f:
+    #     f.write(state.pddl_problem)
+    with open(problem_path, 'w', encoding='utf-8') as f:
+        f.write(state.pddl_problem.replace('−', '-').replace('–', '-').replace('—', '-'))
 
     print(f"PDDL-Domain wurde in {domain_path} gespeichert")
     print(f"PDDL-Problem wurde in {problem_path} gespeichert")

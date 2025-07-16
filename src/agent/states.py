@@ -16,15 +16,15 @@ class NL2PlanState(BaseModel):
     task_name: str
 
     # === ZWISCHENERGEBNISSE (Pipeline-Outputs) ===
-    types: Optional[List[Type_]] = None                          # Step 1
-    type_hierarchy: Optional[List[Hierarchy_Object]] = None     # Step 2
-    nominated_actions: Optional[List[Nominated_Action]] = None  # Step 3
-    predicates: Optional[List[Predicate_Defintion]] = None               # Step 4
-    actions: Optional[List[Action_]] = None                      # Step 4
-    object_instances: Optional[ObjectInstances] = None          # Step 5
-    initial_state: Optional[InitialState] = None                # Step 5
-    goal_state: Optional[GoalState] = None                      # Step 5
-    feedback: Annotated[list, operator.add]                     # Entspricht dem Feedback-Schema
+    types: Optional[List[Type_]] = None                             # Step 1
+    type_hierarchy: Optional[List[Hierarchy_Object]] = None         # Step 2
+    nominated_actions: Optional[List[Nominated_Action]] = None      # Step 3
+    predicates: Optional[List[Predicate_Defintion]] = None          # Step 4
+    actions: Optional[List[Action_]] = None                         # Step 4
+    object_instances: Optional[ObjectInstances] = None              # Step 5
+    initial_state: Optional[InitialState] = None                    # Step 5
+    goal_state: Optional[GoalState] = None                          # Step 5
+    feedback: Annotated[list, operator.add]                         # Entspricht dem Feedback-Schema
 
     # === OUTPUT ===
     pddl_domain: Optional[str] = None
