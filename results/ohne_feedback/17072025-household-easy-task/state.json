@@ -1,0 +1,785 @@
+{
+  "natural_language_task": "Please toggle lamp_1 on and humidifier_1 off starting from the following state:\n\n- drawer_1 is opened\n- drawer_2 is opened\n- fridge_1 is opened\n- cabinet_1 is not opened\n- cabinet_2 is opened\n- cup_1 in/on cabinet_2\n- plate_1 in/on drawer_2\n- cutting_board_1 in/on countertop_1\n- cutting_board_1 is pickupable\n- blender_1 in/on dining_table_1\n- blender_1 is not pickupable\n- blender_1 is turned off\n- lamp_1 in/on side_table_1\n- lamp_1 is turned off\n- humidifier_1 in/on side_table_1\n- humidifier_1 is turned on\n- apple_1 in/on cabinet_2\n- book_1 in/on dining_table_1\n- book_2 in/on dining_table_1\n- robot at cabinet_1\n- robot is holding mug_1",
+  "domain_desc": "The AI agent here is a household robot that can navigate to various large and normally immovable furniture pieces or appliances in the house to carry out household tasks. Note that the robot has only one gripper, so (a) it can only hold one object; (b) it shouldn't hold any other irrelevant objects in its gripper while performing some manipulation tasks (e.g., opening a drawer or closing a window); (c) operations on small household items should be carried out on furniture with a flat surface to get enough space for manipulation. In this domain, the locations of the robot and small household items (e.g., apples, oranges, bowls, lunch boxes or lamps) are determined by large and normally immovable furniture pieces or appliances.",
+  "domain_name": "household",
+  "task_name": "easy-task",
+  "types": [
+    {
+      "name": "location",
+      "description": "Large, normally immovable furniture pieces or appliances that can be visited by the robot and hold other objects"
+    },
+    {
+      "name": "cabinet",
+      "description": "A storage location that can be opened/closed and store items inside"
+    },
+    {
+      "name": "drawer",
+      "description": "A storage location that can be opened/closed and store items inside"
+    },
+    {
+      "name": "fridge",
+      "description": "A storage location for food items that can be opened/closed"
+    },
+    {
+      "name": "countertop",
+      "description": "A flat surface location for food preparation and placing items"
+    },
+    {
+      "name": "dining_table",
+      "description": "A flat surface location for dining and placing items"
+    },
+    {
+      "name": "side_table",
+      "description": "A flat surface location for placing small items"
+    },
+    {
+      "name": "small_item",
+      "description": "Movable objects that can be picked up and placed on/in locations"
+    },
+    {
+      "name": "container",
+      "description": "Small items that can hold other items like cups, plates, bowls"
+    },
+    {
+      "name": "food",
+      "description": "Small items that are edible like fruits"
+    },
+    {
+      "name": "tool",
+      "description": "Small items used for food preparation like cutting boards"
+    },
+    {
+      "name": "appliance",
+      "description": "Small or large electrical devices that can be turned on/off"
+    },
+    {
+      "name": "book",
+      "description": "Small items that can be read and placed on surfaces"
+    },
+    {
+      "name": "robot",
+      "description": "The agent that can move between locations and manipulate objects"
+    }
+  ],
+  "type_hierarchy": [
+    {
+      "parent_type": {
+        "name": "object",
+        "description": "Object is always root, everything is an object"
+      },
+      "child_types": [
+        {
+          "name": "location",
+          "description": "Large, normally immovable furniture pieces or appliances that can be visited by the robot and hold other objects"
+        },
+        {
+          "name": "small_item",
+          "description": "Movable objects that can be picked up and placed on/in locations"
+        },
+        {
+          "name": "robot",
+          "description": "The agent that can move between locations and manipulate objects"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "location",
+        "description": "Large, normally immovable furniture pieces or appliances that can be visited by the robot and hold other objects"
+      },
+      "child_types": [
+        {
+          "name": "storage_location",
+          "description": "Locations that can be opened and closed to store items"
+        },
+        {
+          "name": "surface_location",
+          "description": "Flat surfaces for placing items"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "storage_location",
+        "description": "Locations that can be opened and closed to store items"
+      },
+      "child_types": [
+        {
+          "name": "cabinet",
+          "description": "A storage location that can be opened/closed and store items inside"
+        },
+        {
+          "name": "drawer",
+          "description": "A storage location that can be opened/closed and store items inside"
+        },
+        {
+          "name": "fridge",
+          "description": "A storage location for food items that can be opened/closed"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "surface_location",
+        "description": "Flat surfaces for placing items"
+      },
+      "child_types": [
+        {
+          "name": "countertop",
+          "description": "A flat surface location for food preparation and placing items"
+        },
+        {
+          "name": "dining_table",
+          "description": "A flat surface location for dining and placing items"
+        },
+        {
+          "name": "side_table",
+          "description": "A flat surface location for placing small items"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "small_item",
+        "description": "Movable objects that can be picked up and placed on/in locations"
+      },
+      "child_types": [
+        {
+          "name": "container",
+          "description": "Small items that can hold other items like cups, plates, bowls"
+        },
+        {
+          "name": "food",
+          "description": "Small items that are edible like fruits"
+        },
+        {
+          "name": "tool",
+          "description": "Small items used for food preparation like cutting boards"
+        },
+        {
+          "name": "appliance",
+          "description": "Small or large electrical devices that can be turned on/off"
+        },
+        {
+          "name": "book",
+          "description": "Small items that can be read and placed on surfaces"
+        }
+      ]
+    }
+  ],
+  "nominated_actions": [
+    {
+      "related_type": "robot",
+      "name": "move_to",
+      "description": "Robot moves from one location to another location. The locations must be different.",
+      "usage_example": "Robot moves from cabinet_1 to side_table_1"
+    },
+    {
+      "related_type": "robot",
+      "name": "pick_up",
+      "description": "Robot picks up a small item from a location. Requires the robot to be at the location, the item to be at the location, the item to be pickupable, and the robot's gripper to be empty.",
+      "usage_example": "Robot picks up apple_1 from countertop_1"
+    },
+    {
+      "related_type": "robot",
+      "name": "put_down",
+      "description": "Robot puts down a held item at its current location. Requires the robot to be holding something.",
+      "usage_example": "Robot puts down plate_1 on dining_table_1"
+    },
+    {
+      "related_type": "storage_location",
+      "name": "open_storage",
+      "description": "Robot opens a storage location (cabinet, drawer, or fridge). Requires the robot to be at the location, the storage to be closed, and the robot's gripper to be empty.",
+      "usage_example": "Robot opens cabinet_1"
+    },
+    {
+      "related_type": "storage_location",
+      "name": "close_storage",
+      "description": "Robot closes a storage location (cabinet, drawer, or fridge). Requires the robot to be at the location, the storage to be open, and the robot's gripper to be empty.",
+      "usage_example": "Robot closes drawer_1"
+    },
+    {
+      "related_type": "appliance",
+      "name": "toggle_on",
+      "description": "Robot turns on an appliance. Requires the robot to be at the location where the appliance is, the appliance to be off, and the robot's gripper to be empty.",
+      "usage_example": "Robot turns on lamp_1"
+    },
+    {
+      "related_type": "appliance",
+      "name": "toggle_off",
+      "description": "Robot turns off an appliance. Requires the robot to be at the location where the appliance is, the appliance to be on, and the robot's gripper to be empty.",
+      "usage_example": "Robot turns off humidifier_1"
+    }
+  ],
+  "predicates": [
+    {
+      "name": "at",
+      "predicate_parameters": {
+        "obj": "object",
+        "loc": "location"
+      },
+      "description": "true if the object (robot or small item) is at the location"
+    },
+    {
+      "name": "holding",
+      "predicate_parameters": {
+        "r": "robot",
+        "item": "small_item"
+      },
+      "description": "true if the robot is holding a small item in its gripper"
+    },
+    {
+      "name": "pickupable",
+      "predicate_parameters": {
+        "item": "small_item"
+      },
+      "description": "true if a small item can be picked up by the robot"
+    },
+    {
+      "name": "opened",
+      "predicate_parameters": {
+        "s": "storage_location"
+      },
+      "description": "true if a storage location (cabinet, drawer, or fridge) is opened"
+    },
+    {
+      "name": "is_on",
+      "predicate_parameters": {
+        "app": "appliance"
+      },
+      "description": "true if an appliance is turned on"
+    }
+  ],
+  "actions": [
+    {
+      "name": "move_to",
+      "description": "Robot moves from one location to another location. The locations must be different.",
+      "action_parameters": {
+        "robot": "robot",
+        "from": "location",
+        "to": "location"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "robot",
+              "from"
+            ]
+          },
+          {
+            "name": "are_different",
+            "parameters": [
+              "from",
+              "to"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": "not",
+            "conditions": {
+              "name": "at",
+              "parameters": [
+                "robot",
+                "from"
+              ]
+            }
+          },
+          {
+            "name": "at",
+            "parameters": [
+              "robot",
+              "to"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "pick_up",
+      "description": "Robot picks up a small item from a location. Requires the robot to be at the location, the item to be at the location, the item to be pickupable, and the robot's gripper to be empty.",
+      "action_parameters": {
+        "robot": "robot",
+        "item": "small_item",
+        "location": "location"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "robot",
+              "location"
+            ]
+          },
+          {
+            "name": "at",
+            "parameters": [
+              "item",
+              "location"
+            ]
+          },
+          {
+            "name": "pickupable",
+            "parameters": [
+              "item"
+            ]
+          },
+          {
+            "name": "gripper_empty",
+            "parameters": [
+              "robot"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": "not",
+            "conditions": {
+              "name": "at",
+              "parameters": [
+                "item",
+                "location"
+              ]
+            }
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "gripper_empty",
+              "parameters": [
+                "robot"
+              ]
+            }
+          },
+          {
+            "name": "holding",
+            "parameters": [
+              "robot",
+              "item"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "put_down",
+      "description": "Robot puts down a held item at its current location. Requires the robot to be holding something.",
+      "action_parameters": {
+        "robot": "robot",
+        "item": "small_item",
+        "location": "location"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "robot",
+              "location"
+            ]
+          },
+          {
+            "name": "holding",
+            "parameters": [
+              "robot",
+              "item"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "in_on",
+            "parameters": [
+              "item",
+              "location"
+            ]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "holding",
+              "parameters": [
+                "robot",
+                "item"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "open_storage",
+      "description": "Robot opens a storage location (cabinet, drawer, or fridge). Requires the robot to be at the location, the storage to be closed, and the robot's gripper to be empty.",
+      "action_parameters": {
+        "s": "storage_location",
+        "r": "robot"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "r",
+              "s"
+            ]
+          },
+          {
+            "name": "is_closed",
+            "parameters": [
+              "s"
+            ]
+          },
+          {
+            "name": "gripper_empty",
+            "parameters": [
+              "r"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": "not",
+            "conditions": {
+              "name": "is_closed",
+              "parameters": [
+                "s"
+              ]
+            }
+          },
+          {
+            "name": "is_open",
+            "parameters": [
+              "s"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "close_storage",
+      "description": "Robot closes a storage location (cabinet, drawer, or fridge). Requires the robot to be at the location, the storage to be open, and the robot's gripper to be empty.",
+      "action_parameters": {
+        "r": "robot",
+        "s": "storage_location"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "r",
+              "s"
+            ]
+          },
+          {
+            "name": "is_open",
+            "parameters": [
+              "s"
+            ]
+          },
+          {
+            "name": "gripper_empty",
+            "parameters": [
+              "r"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": "not",
+            "conditions": {
+              "name": "is_open",
+              "parameters": [
+                "s"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "toggle_on",
+      "description": "Robot turns on an appliance. Requires the robot to be at the location where the appliance is, the appliance to be off, and the robot's gripper to be empty.",
+      "action_parameters": {
+        "r": "robot",
+        "a": "appliance",
+        "l": "location"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "r",
+              "l"
+            ]
+          },
+          {
+            "name": "at",
+            "parameters": [
+              "a",
+              "l"
+            ]
+          },
+          {
+            "name": "turned_off",
+            "parameters": [
+              "a"
+            ]
+          },
+          {
+            "name": "gripper_empty",
+            "parameters": [
+              "r"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "turned_on",
+            "parameters": [
+              "a"
+            ]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "turned_off",
+              "parameters": [
+                "a"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "toggle_off",
+      "description": "Robot turns off an appliance. Requires the robot to be at the location where the appliance is, the appliance to be on, and the robot's gripper to be empty.",
+      "action_parameters": {
+        "robot": "robot",
+        "appliance": "appliance",
+        "location": "location"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "robot",
+              "location"
+            ]
+          },
+          {
+            "name": "at",
+            "parameters": [
+              "appliance",
+              "location"
+            ]
+          },
+          {
+            "name": "turned_on",
+            "parameters": [
+              "appliance"
+            ]
+          },
+          {
+            "name": "empty_gripper",
+            "parameters": [
+              "robot"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": "not",
+            "conditions": {
+              "name": "turned_on",
+              "parameters": [
+                "appliance"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "object_instances": {
+    "objects": {
+      "drawer_1": "drawer",
+      "drawer_2": "drawer",
+      "fridge_1": "fridge",
+      "cabinet_1": "cabinet",
+      "cabinet_2": "cabinet",
+      "cup_1": "container",
+      "plate_1": "container",
+      "cutting_board_1": "tool",
+      "blender_1": "appliance",
+      "lamp_1": "appliance",
+      "humidifier_1": "appliance",
+      "apple_1": "food",
+      "book_1": "book",
+      "book_2": "book",
+      "mug_1": "container",
+      "robot_1": "robot",
+      "countertop_1": "countertop",
+      "dining_table_1": "dining_table",
+      "side_table_1": "side_table"
+    }
+  },
+  "initial_state": {
+    "initial_state_predicates": [
+      {
+        "name": "opened",
+        "parameters": [
+          "drawer_1"
+        ]
+      },
+      {
+        "name": "opened",
+        "parameters": [
+          "drawer_2"
+        ]
+      },
+      {
+        "name": "opened",
+        "parameters": [
+          "fridge_1"
+        ]
+      },
+      {
+        "name": "opened",
+        "parameters": [
+          "cabinet_2"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "cup_1",
+          "cabinet_2"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "plate_1",
+          "drawer_2"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "cutting_board_1",
+          "countertop_1"
+        ]
+      },
+      {
+        "name": "pickupable",
+        "parameters": [
+          "cutting_board_1"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "blender_1",
+          "dining_table_1"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "lamp_1",
+          "side_table_1"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "humidifier_1",
+          "side_table_1"
+        ]
+      },
+      {
+        "name": "is_on",
+        "parameters": [
+          "humidifier_1"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "apple_1",
+          "cabinet_2"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "book_1",
+          "dining_table_1"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "book_2",
+          "dining_table_1"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "robot_1",
+          "cabinet_1"
+        ]
+      },
+      {
+        "name": "holding",
+        "parameters": [
+          "robot_1",
+          "mug_1"
+        ]
+      }
+    ]
+  },
+  "goal_state": {
+    "goal_state_predicates": {
+      "and": [
+        {
+          "name": "is_on",
+          "parameters": [
+            "lamp_1"
+          ]
+        },
+        {
+          "name": "is_on",
+          "parameters": [
+            "humidifier_1"
+          ]
+        }
+      ]
+    }
+  },
+  "feedback": [],
+  "pddl_domain": null,
+  "pddl_problem": null
+}

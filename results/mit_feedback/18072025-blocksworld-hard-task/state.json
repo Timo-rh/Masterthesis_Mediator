@@ -1,0 +1,382 @@
+{
+  "natural_language_task": "I've got five blocks of three colours and want to stack them in a single pile such that the red blocks are at the bottom, the blue are on those and the green are on top. Currently they're in two stacks, (red, blue, green) and (green, red) ordered from the bottom up.",
+  "domain_desc": "The AI agent here is a mechanical robot arm that can pick and place the blocks. Only one block may be moved at a time: it may either be placed on the table or placed atop another block. Because of this, any blocks that are, at a given time, under another block cannot be moved.",
+  "domain_name": "blocksworld",
+  "task_name": "hard-task",
+  "types": [
+    {
+      "name": "block",
+      "description": "A physical block that can be stacked on other blocks or placed on the table"
+    }
+  ],
+  "type_hierarchy": [
+    {
+      "parent_type": {
+        "name": "object",
+        "description": "Object is always root, everything is an object"
+      },
+      "child_types": [
+        {
+          "name": "block",
+          "description": "A physical block that can be stacked on other blocks or placed on the table"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "block",
+        "description": "A physical block that can be stacked on other blocks or placed on the table"
+      },
+      "child_types": [
+        {
+          "name": "red_block",
+          "description": "A block of red color, must be placed at the bottom of the stack"
+        },
+        {
+          "name": "blue_block",
+          "description": "A block of blue color, must be placed in the middle of the stack"
+        },
+        {
+          "name": "green_block",
+          "description": "A block of green color, must be placed at the top of the stack"
+        }
+      ]
+    }
+  ],
+  "nominated_actions": [
+    {
+      "related_type": "block",
+      "name": "pick_up_block",
+      "description": "The robot arm picks up a block. Requires the block to be clear (no blocks on top of it).",
+      "usage_example": "Pick up the green block from the top of the first stack"
+    },
+    {
+      "related_type": "block",
+      "name": "put_down_block_on_table",
+      "description": "The robot arm places a block it is holding onto the table. Requires the arm to be holding a block.",
+      "usage_example": "Place the held green block on the table"
+    },
+    {
+      "related_type": "block",
+      "name": "stack_block",
+      "description": "The robot arm places a block it is holding on top of another block. Requires the arm to be holding a block and the target block to be clear (no blocks on top).",
+      "usage_example": "Stack the held blue block on top of the red block"
+    }
+  ],
+  "predicates": [
+    {
+      "name": "clear",
+      "predicate_parameters": {
+        "b": "block"
+      },
+      "description": "true if no block is stacked on top of block b"
+    },
+    {
+      "name": "on_table",
+      "predicate_parameters": {
+        "b": "block"
+      },
+      "description": "true if block b is placed directly on the table"
+    },
+    {
+      "name": "on",
+      "predicate_parameters": {
+        "b1": "block",
+        "b2": "block"
+      },
+      "description": "true if block b1 is stacked directly on top of block b2"
+    },
+    {
+      "name": "holding",
+      "predicate_parameters": {
+        "b": "block"
+      },
+      "description": "true if the robot arm is holding block b"
+    },
+    {
+      "name": "arm_empty",
+      "predicate_parameters": {},
+      "description": "true if the robot arm is not holding any block"
+    }
+  ],
+  "actions": [
+    {
+      "name": "pick_up_block",
+      "description": "The robot arm picks up a block. Requires the block to be clear (no blocks on top of it).",
+      "action_parameters": {
+        "b": "block"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "clear",
+            "parameters": [
+              "b"
+            ]
+          },
+          {
+            "name": "on_table",
+            "parameters": [
+              "b"
+            ]
+          },
+          {
+            "name": "arm_empty",
+            "parameters": []
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": "not",
+            "conditions": {
+              "name": "on_table",
+              "parameters": [
+                "b"
+              ]
+            }
+          },
+          {
+            "name": "holding",
+            "parameters": [
+              "b"
+            ]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "arm_empty",
+              "parameters": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "put_down_block_on_table",
+      "description": "The robot arm places a block it is holding onto the table. Requires the arm to be holding a block.",
+      "action_parameters": {
+        "b": "block"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "holding",
+            "parameters": [
+              "b"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "on_table",
+            "parameters": [
+              "b"
+            ]
+          },
+          {
+            "name": "clear",
+            "parameters": [
+              "b"
+            ]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "holding",
+              "parameters": [
+                "b"
+              ]
+            }
+          },
+          {
+            "name": "arm_empty",
+            "parameters": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "stack_block",
+      "description": "The robot arm places a block it is holding on top of another block. Requires the arm to be holding a block and the target block to be clear (no blocks on top).",
+      "action_parameters": {
+        "held_block": "block",
+        "target_block": "block"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "holding",
+            "parameters": [
+              "held_block"
+            ]
+          },
+          {
+            "name": "clear",
+            "parameters": [
+              "target_block"
+            ]
+          },
+          {
+            "type": "not",
+            "conditions": [
+              {
+                "name": "on",
+                "parameters": [
+                  "held_block",
+                  "target_block"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "arm_empty",
+            "parameters": []
+          },
+          {
+            "name": "clear",
+            "parameters": [
+              "held_block"
+            ]
+          },
+          {
+            "name": "on",
+            "parameters": [
+              "held_block",
+              "target_block"
+            ]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "holding",
+              "parameters": [
+                "held_block"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "object_instances": {
+    "objects": {
+      "red1": "red_block",
+      "red2": "red_block",
+      "blue1": "blue_block",
+      "green1": "green_block",
+      "green2": "green_block"
+    }
+  },
+  "initial_state": {
+    "initial_state_predicates": [
+      {
+        "name": "on_table",
+        "parameters": [
+          "red1"
+        ]
+      },
+      {
+        "name": "on",
+        "parameters": [
+          "blue1",
+          "red1"
+        ]
+      },
+      {
+        "name": "on",
+        "parameters": [
+          "green1",
+          "blue1"
+        ]
+      },
+      {
+        "name": "clear",
+        "parameters": [
+          "green1"
+        ]
+      },
+      {
+        "name": "on_table",
+        "parameters": [
+          "red2"
+        ]
+      },
+      {
+        "name": "on",
+        "parameters": [
+          "green2",
+          "red2"
+        ]
+      },
+      {
+        "name": "clear",
+        "parameters": [
+          "green2"
+        ]
+      },
+      {
+        "name": "arm_empty",
+        "parameters": []
+      }
+    ]
+  },
+  "goal_state": {
+    "goal_state_predicates": {
+      "and": [
+        {
+          "name": "on_table",
+          "parameters": [
+            "red1"
+          ]
+        },
+        {
+          "name": "on",
+          "parameters": [
+            "red2",
+            "red1"
+          ]
+        },
+        {
+          "name": "on",
+          "parameters": [
+            "blue1",
+            "red2"
+          ]
+        },
+        {
+          "name": "on",
+          "parameters": [
+            "green1",
+            "blue1"
+          ]
+        },
+        {
+          "name": "on",
+          "parameters": [
+            "green2",
+            "green1"
+          ]
+        }
+      ]
+    }
+  },
+  "feedback": [
+    "Let me evaluate these types according to the checklist:\n\n1: Are there additional types which are needed to model the domain?\n    No additional types are needed.\n\n2: Are additional types needed for organising the type hierarchy?\n    The type hierarchy could be simplified. \"colored_block\" is redundant since all blocks have colors, and this should be handled with predicates instead.\n\n3: Are any of the types actually objects?\n    No, these are all proper types.\n\n4: Are any of the types actually actions?\n    No, none of these represent actions.\n\n5: Are any of the types actually properties?\n    The colors should be handled with predicates (is_red, is_blue, is_green) rather than types.\n\n6: Is the acting agent itself included?\n    No, the robot arm is correctly not included as a type.\n\n7: Will any of the included types only ever be used once?\n    Yes, there will only ever be one table, so this should be modelled implicitly.\n\n8: Is the acting agent itself or the resulting plans included?\n    \"Stack\" and \"position\" are better modelled through predicates (like \"on block1 block2\" or \"on_table block\") rather than as types.\n\nI'd suggest the following changes:\n- Keep only \"block\" as a type\n- Remove:\n    - \"colored_block\" (handle with predicates)\n    - \"stack\" (handle with predicates)\n    - \"table\" (handle implicitly)\n    - \"position\" (handle with predicates)\n\nThe colors, stacking relationships, and positions should all be handled through predicates rather than types.",
+    "Let me check the hierarchy according to the checklist:\n\n1: Is any child not a subtype of its parent? \n    \"block\" is correctly a subtype of \"object\". So: No.\n\n2: Is any subtype not a child of its parent type? \n    Given that we have blocks of different colors that seem to be important to the domain, these color variants should be subtypes of \"block\". Therefore: Yes.\n\n3: Are any new types needed for organisation? \n    No additional organizational types are needed since we only have blocks and their color variants. So: No.\n\nMy advice is that you perform the following concrete change:\n    - Add \"red_block\", \"blue_block\", and \"green_block\" as subtypes of \"block\" since they represent distinct categories of blocks with different properties (in this case, their required positioning in the final stack).",
+    "Let me evaluate the actions according to the checklist:\n\n1: Are there additional actions needed for this domain?\n    The domain has all necessary actions for picking up blocks, putting them on the table, and stacking them on other blocks. No additional actions are needed. No.\n\n2: Should any of the actions be split or combined?\n    The actions are atomic and well-defined. Each represents a distinct operation that cannot be meaningfully split or combined. No.\n\n3: Should any of the actions be removed?\n    All actions are necessary for the domain - picking up blocks, putting them down, and stacking them. No.\n\n4: Should any preconditions be changed?\n    The preconditions are well specified. They mention the key requirements like blocks needing to be clear to be picked up or stacked upon, and the arm needing to hold a block to place it. No.\n\n5: Should any effects be changed?\n    The effects are implicit but clear - blocks change position and the arm's state changes. No.\n\n6: Should any action examples be modified?\n    The examples are clear and demonstrate proper usage of the actions. No.\n\nTherefore: No feedback.\n\nThe actions cover all necessary operations for a blocks world domain with a robot arm:\n- Picking up clear blocks\n- Putting blocks on the table\n- Stacking blocks on other clear blocks\n\nThese are sufficient to solve the task of reorganizing blocks into the desired color-ordered stack.",
+    "Let me analyze each action:\n\n1. pick_up_block:\n1: Missing preconditions? No - checks block is clear, on table, and arm is empty\n2: Unnecessary preconditions? Yes - checking both arm_empty and not holding is redundant since they mean the same thing\n3: Missing effects? Yes - should negate arm_empty when picking up block\n4: Unnecessary effects? No\n5: Predicate improvements? No\n6: Symmetrical predicates? No\n\n2. put_down_block_on_table:\n1: Missing preconditions? Yes - needs to check which arm is holding the block\n2: Unnecessary preconditions? No\n3: Missing effects? Yes - needs to set arm_empty to true\n4: Unnecessary effects? No\n5: Predicate improvements? No\n6: Symmetrical predicates? No\n\n3. stack_block:\n1: Missing preconditions? Yes - needs to check which arm is holding the block and that held_block ≠ target_block\n2: Unnecessary preconditions? No\n3: Missing effects? Yes - needs to set arm_empty to true\n4: Unnecessary effects? No\n5: Predicate improvements? No\n6: Symmetrical predicates? No\n\nConcrete suggestions:\n\nFor pick_up_block:\n- Remove the redundant not(holding) precondition\n- Add (not (arm_empty)) to effects\n\nFor put_down_block_on_table:\n- Add arm parameter and check (holding arm b) in preconditions\n- Add (arm_empty) to effects\n\nFor stack_block:\n- Add arm parameter and check (holding arm held_block) in preconditions\n- Add (not (= held_block target_block)) to preconditions to prevent stacking block on itself\n- Add (arm_empty) to effects\n\nThe domain also has a redundant predicate \"ontable\" which appears to be the same as \"on_table\". One should be removed for clarity.",
+    [
+      "No feedback - all necessary objects are correctly defined with their proper types and no unnecessary objects are included.",
+      "The initial state is missing some necessary predicates. We need to explicitly state that red1 and red2 are not clear (they have blocks on top of them). Add:\n- Predicate_Instance(name='clear', parameters=['blue1'])",
+      "No feedback - the goal state correctly specifies the desired stack configuration with red blocks at the bottom (red1, red2), blue block in the middle (blue1), and green blocks on top (green1, green2)"
+    ]
+  ]
+}

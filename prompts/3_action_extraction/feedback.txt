@@ -27,7 +27,7 @@ Currently, there are a couple of trucks at the Chicago depot and we're trying to
         - house: What is constructed. Can be finalised when all components are built
 
 ### Actions
-- create_order: An administrator can create new orders. Example: administrator_1 creates a build_floor order. 
+- create_order: An administrator can create new orders. Example: administrator_1 creates a build_floor order.
 - build_floor: A worker performs an order to build a floor in a house. The worker has to be at the house's location and a build_floor_order for the house has to be available. Example: worker_1 builds a floor at house_1.
 - build_wall: A worker performs an order to build a wall in a house. The worker has to be at the house's location and a build_wall_order for the house has to be available. Example: worker_2 builds a wall at house_2.
 - build_roof: A worker performs an order to build a roof in a house. The worker has to be at the house's location and a build_roof_order for the house has to be available. Example: worker_3 builds a roof at house_3.

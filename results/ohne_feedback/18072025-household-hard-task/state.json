@@ -1,0 +1,883 @@
+{
+  "natural_language_task": "I want you to heat pizza_1 with pan_2.\n\nThe following are the current objects and their state:\n- drawer_1 is opened\n- drawer_2 is not opened\n- drawer_3 is opened\n- drawer_4 is not opened\n- fridge_1 is not opened\n- cabinet_1 is opened\n- cabinet_2 is not opened\n- cabinet_3 is not opened\n- cabinet_4 is opened\n- microwave_1 is not opened\n- carpet_1 is not clean\n- carpet_2 is not clean\n- dish_washer_1 is opened\n- garbage_can_1 is not opened\n- cup_1 in/on drawer_3\n- bowl_1 in/on dish_washer_1\n- bowl_2 in/on cabinet_4\n- plate_1 in/on dining_table_1\n- plate_2 in/on cabinet_3\n- pan_1 in/on stove_burner_1\n- pan_2 in/on dining_table_1\n- lunch_box_1 in/on fridge_1\n- lunch_box_1 is not opened\n- lunch_box_2 in/on cabinet_3\n- lunch_box_2 is not opened\n- pizza_box_1 in/on cabinet_2\n- pizza_box_1 is not opened\n- cutting_board_1 in/on countertop_2\n- cutting_board_1 is pickupable\n- toaster_1 in/on countertop_2\n- toaster_1 is not pickupable\n- toaster_1 is turned off\n- blender_1 in/on dining_table_1\n- blender_1 is not pickupable\n- blender_1 is turned off\n- lamp_1 in/on side_table_2\n- lamp_1 is turned on\n- lamp_1 is not pickupable\n- humidifier_1 in/on side_table_2\n- humidifier_1 is turned on\n- humidifier_1 is not pickupable\n- apple_1 in/on lunch_box_2\n- apple_1 is not sliced\n- apple_2 in/on drawer_2\n- apple_2 is not sliced\n- pizza_1 in/on pizza_box_1\n- pizza_1 is not pickupable\n- toast_1 in/on lunch_box_1\n- toast_1 is not sliced\n- orange_1 in/on lunch_box_1\n- orange_1 is not sliced\n- orange_2 in/on drawer_1\n- orange_2 is not sliced\n- banana_1 in/on cabinet_3\n- banana_1 is not sliced\n- potato_1 in/on cabinet_1\n- potato_1 is not sliced\n- fork_1 in/on cabinet_4\n- spoon_1 in/on drawer_4\n- knife_1 in/on cabinet_2\n- book_1 in/on dining_table_1\n- book_2 in/on side_table_2\n- book_3 in/on side_table_2\n- book_4 in/on side_table_1\n- book_5 in/on side_table_1\n- cloth_1 in/on cabinet_3\n- cloth_1 is clean\n- handheld_vacuum_1 in/on shelf_1\n- handheld_vacuum_1 has an empty dust bin\n- robot at drawer_1\n- robot is holding mug_1\n",
+  "domain_desc": "The AI agent here is a household robot that can navigate to various large and normally immovable furniture pieces or appliances in the house to carry out household tasks. Note that the robot has only one gripper, so (a) it can only hold one object; (b) it shouldn't hold any other irrelevant objects in its gripper while performing some manipulation tasks (e.g., opening a drawer or closing a window); (c) operations on small household items should be carried out on furniture with a flat surface to get enough space for manipulation. In this domain, the locations of the robot and small household items (e.g., apples, oranges, bowls, lunch boxes or lamps) are determined by large and normally immovable furniture pieces or appliances.",
+  "domain_name": "household",
+  "task_name": "hard-task",
+  "types": [
+    {
+      "name": "container",
+      "description": "Objects that can be opened/closed and store other items (drawers, cabinets, fridge, microwave, etc.)"
+    },
+    {
+      "name": "furniture",
+      "description": "Large immovable pieces that serve as locations and surfaces (tables, countertops, shelves)"
+    },
+    {
+      "name": "appliance",
+      "description": "Electronic or mechanical devices that can be turned on/off (stove, toaster, blender, lamp, humidifier)"
+    },
+    {
+      "name": "cookware",
+      "description": "Items used for cooking (pans, cutting boards)"
+    },
+    {
+      "name": "food",
+      "description": "Edible items that can be sliced, heated, etc. (fruits, pizza, toast)"
+    },
+    {
+      "name": "utensil",
+      "description": "Tools for eating or food preparation (forks, spoons, knives)"
+    },
+    {
+      "name": "cleaning_tool",
+      "description": "Items used for cleaning (vacuum, cloth)"
+    },
+    {
+      "name": "dishware",
+      "description": "Items for serving or containing food/drinks (plates, bowls, cups, mugs)"
+    },
+    {
+      "name": "storage_container",
+      "description": "Portable containers for storing food (lunch boxes, pizza boxes)"
+    },
+    {
+      "name": "carpet",
+      "description": "Floor covering that can be cleaned"
+    },
+    {
+      "name": "book",
+      "description": "Reading material that can be moved"
+    },
+    {
+      "name": "robot",
+      "description": "The agent that can move between locations and manipulate objects"
+    }
+  ],
+  "type_hierarchy": [
+    {
+      "parent_type": {
+        "name": "object",
+        "description": "Object is always root, everything is an object"
+      },
+      "child_types": [
+        {
+          "name": "location",
+          "description": "Objects that serve as physical locations for other objects"
+        },
+        {
+          "name": "movable_object",
+          "description": "Objects that can be moved or manipulated"
+        },
+        {
+          "name": "robot",
+          "description": "The agent that can move between locations and manipulate objects"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "location",
+        "description": "Objects that serve as physical locations for other objects"
+      },
+      "child_types": [
+        {
+          "name": "furniture",
+          "description": "Large immovable pieces that serve as locations and surfaces"
+        },
+        {
+          "name": "container",
+          "description": "Objects that can be opened/closed and store other items"
+        },
+        {
+          "name": "carpet",
+          "description": "Floor covering that can be cleaned"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "movable_object",
+        "description": "Objects that can be moved or manipulated"
+      },
+      "child_types": [
+        {
+          "name": "appliance",
+          "description": "Electronic or mechanical devices that can be turned on/off"
+        },
+        {
+          "name": "cookware",
+          "description": "Items used for cooking"
+        },
+        {
+          "name": "food",
+          "description": "Edible items that can be sliced, heated, etc."
+        },
+        {
+          "name": "utensil",
+          "description": "Tools for eating or food preparation"
+        },
+        {
+          "name": "cleaning_tool",
+          "description": "Items used for cleaning"
+        },
+        {
+          "name": "dishware",
+          "description": "Items for serving or containing food/drinks"
+        },
+        {
+          "name": "storage_container",
+          "description": "Portable containers for storing food"
+        },
+        {
+          "name": "book",
+          "description": "Reading material that can be moved"
+        }
+      ]
+    }
+  ],
+  "nominated_actions": [
+    {
+      "related_type": "robot",
+      "name": "move_to",
+      "description": "Robot moves from its current location to another location. The robot can move between any locations in the house.",
+      "usage_example": "Robot moves from drawer_1 to dining_table_1"
+    },
+    {
+      "related_type": "robot",
+      "name": "pick_up",
+      "description": "Robot picks up a movable object from a location. Requires the robot to be at the same location as the object and have an empty gripper.",
+      "usage_example": "Robot picks up pan_2 from dining_table_1"
+    },
+    {
+      "related_type": "robot",
+      "name": "put_down",
+      "description": "Robot puts down an object it is holding at its current location. Requires the robot to be holding the object.",
+      "usage_example": "Robot puts down mug_1 on dining_table_1"
+    },
+    {
+      "related_type": "container",
+      "name": "open",
+      "description": "Robot opens a closed container (drawer, cabinet, fridge, etc.). Requires the robot to be at the container's location and have an empty gripper.",
+      "usage_example": "Robot opens cabinet_2"
+    },
+    {
+      "related_type": "container",
+      "name": "close",
+      "description": "Robot closes an open container. Requires the robot to be at the container's location and have an empty gripper.",
+      "usage_example": "Robot closes drawer_1"
+    },
+    {
+      "related_type": "movable_object",
+      "name": "get_from_container",
+      "description": "Robot retrieves an object from inside a container. Requires the container to be open, the robot to be at the container's location, and have an empty gripper.",
+      "usage_example": "Robot gets pizza_1 from pizza_box_1"
+    },
+    {
+      "related_type": "movable_object",
+      "name": "put_in_container",
+      "description": "Robot puts an object into a container. Requires the container to be open, the robot to be at the container's location, and be holding the object.",
+      "usage_example": "Robot puts pizza_1 in pizza_box_1"
+    },
+    {
+      "related_type": "appliance",
+      "name": "turn_on",
+      "description": "Robot turns on an appliance. Requires the robot to be at the appliance's location and have an empty gripper.",
+      "usage_example": "Robot turns on stove_burner_1"
+    },
+    {
+      "related_type": "appliance",
+      "name": "turn_off",
+      "description": "Robot turns off an appliance. Requires the robot to be at the appliance's location and have an empty gripper.",
+      "usage_example": "Robot turns off stove_burner_1"
+    },
+    {
+      "related_type": "cookware",
+      "name": "place_on_burner",
+      "description": "Robot places cookware on a stove burner. Requires the robot to be at the stove's location and be holding the cookware.",
+      "usage_example": "Robot places pan_2 on stove_burner_1"
+    },
+    {
+      "related_type": "food",
+      "name": "place_food_in_cookware",
+      "description": "Robot places food in cookware for cooking. Requires the robot to be at the cookware's location and be holding the food.",
+      "usage_example": "Robot places pizza_1 in pan_2"
+    }
+  ],
+  "predicates": [
+    {
+      "name": "at",
+      "predicate_parameters": {
+        "obj": "object",
+        "loc": "location"
+      },
+      "description": "true if the object is at the location"
+    },
+    {
+      "name": "holding",
+      "predicate_parameters": {
+        "r": "robot",
+        "obj": "movable_object"
+      },
+      "description": "true if the robot is holding the object"
+    },
+    {
+      "name": "turned_on",
+      "predicate_parameters": {
+        "a": "appliance"
+      },
+      "description": "true if the appliance is currently turned on"
+    },
+    {
+      "name": "on",
+      "predicate_parameters": {
+        "obj": "movable_object",
+        "surface": "location"
+      },
+      "description": "true if the movable object is on/in the specified location"
+    },
+    {
+      "name": "is_stove_burner",
+      "predicate_parameters": {
+        "loc": "location"
+      },
+      "description": "true if the location is a stove burner"
+    },
+    {
+      "name": "is_cookware",
+      "predicate_parameters": {
+        "obj": "movable_object"
+      },
+      "description": "true if the object is a piece of cookware"
+    },
+    {
+      "name": "in_on",
+      "predicate_parameters": {
+        "obj": "movable_object",
+        "container": "location"
+      },
+      "description": "true if the object is in or on the container/furniture"
+    },
+    {
+      "name": "pickupable",
+      "predicate_parameters": {
+        "obj": "movable_object"
+      },
+      "description": "true if the object can be picked up by the robot"
+    },
+    {
+      "name": "food_in_cookware",
+      "predicate_parameters": {
+        "food": "food",
+        "cookware": "cookware"
+      },
+      "description": "true if the food item is placed in the cookware for cooking"
+    },
+    {
+      "name": "is_clean",
+      "predicate_parameters": {
+        "obj": "movable_object"
+      },
+      "description": "true if the object is clean"
+    }
+  ],
+  "actions": [
+    {
+      "name": "move_to",
+      "description": "Robot moves from its current location to another location. The robot can move between any locations in the house.",
+      "action_parameters": {
+        "robot": "robot",
+        "from": "location",
+        "to": "location"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "robot",
+              "from"
+            ]
+          },
+          {
+            "name": "are_different",
+            "parameters": [
+              "from",
+              "to"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {},
+          {
+            "name": "at",
+            "parameters": [
+              "robot",
+              "to"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "put_down",
+      "description": "Robot puts down an object it is holding at its current location. Requires the robot to be holding the object.",
+      "action_parameters": {
+        "obj": "movable_object",
+        "loc": "location",
+        "r": "robot"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "holding",
+            "parameters": [
+              "r",
+              "obj"
+            ]
+          },
+          {
+            "name": "at",
+            "parameters": [
+              "r",
+              "loc"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {},
+          {
+            "name": "at",
+            "parameters": [
+              "obj",
+              "loc"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "open",
+      "description": "Robot opens a closed container (drawer, cabinet, fridge, etc.). Requires the robot to be at the container's location and have an empty gripper.",
+      "action_parameters": {
+        "c": "container",
+        "r": "robot"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "r",
+              "c"
+            ]
+          },
+          {
+            "name": "empty_gripper",
+            "parameters": [
+              "r"
+            ]
+          },
+          {}
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "is_opened",
+            "parameters": [
+              "c"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "close",
+      "description": "Robot closes an open container. Requires the robot to be at the container's location and have an empty gripper.",
+      "action_parameters": {
+        "c": "container",
+        "r": "robot"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "r",
+              "c"
+            ]
+          },
+          {
+            "name": "is_opened",
+            "parameters": [
+              "c"
+            ]
+          },
+          {
+            "name": "gripper_empty",
+            "parameters": [
+              "r"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {}
+        ]
+      }
+    },
+    {
+      "name": "get_from_container",
+      "description": "Robot retrieves an object from inside a container. Requires the container to be open, the robot to be at the container's location, and have an empty gripper.",
+      "action_parameters": {
+        "obj": "movable_object",
+        "r": "robot",
+        "c": "container"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "r",
+              "c"
+            ]
+          },
+          {
+            "name": "in",
+            "parameters": [
+              "obj",
+              "c"
+            ]
+          },
+          {
+            "name": "is_opened",
+            "parameters": [
+              "c"
+            ]
+          },
+          {
+            "name": "gripper_empty",
+            "parameters": [
+              "r"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "holding",
+            "parameters": [
+              "r",
+              "obj"
+            ]
+          },
+          {},
+          {}
+        ]
+      }
+    },
+    {
+      "name": "put_in_container",
+      "description": "Robot puts an object into a container. Requires the container to be open, the robot to be at the container's location, and be holding the object.",
+      "action_parameters": {
+        "obj": "movable_object",
+        "r": "robot",
+        "c": "container"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "r",
+              "c"
+            ]
+          },
+          {
+            "name": "is_opened",
+            "parameters": [
+              "c"
+            ]
+          },
+          {
+            "name": "holding",
+            "parameters": [
+              "r",
+              "obj"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "in",
+            "parameters": [
+              "obj",
+              "c"
+            ]
+          },
+          {}
+        ]
+      }
+    },
+    {
+      "name": "turn_on",
+      "description": "Robot turns on an appliance. Requires the robot to be at the appliance's location and have an empty gripper.",
+      "action_parameters": {
+        "r": "robot",
+        "a": "appliance",
+        "l": "location"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "r",
+              "l"
+            ]
+          },
+          {
+            "name": "at",
+            "parameters": [
+              "a",
+              "l"
+            ]
+          },
+          {
+            "name": "empty_gripper",
+            "parameters": [
+              "r"
+            ]
+          },
+          {
+            "name": "is_turned_off",
+            "parameters": [
+              "a"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "is_turned_on",
+            "parameters": [
+              "a"
+            ]
+          },
+          {}
+        ]
+      }
+    },
+    {
+      "name": "turn_off",
+      "description": "Robot turns off an appliance. Requires the robot to be at the appliance's location and have an empty gripper.",
+      "action_parameters": {
+        "r": "robot",
+        "a": "appliance",
+        "l": "location"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "r",
+              "l"
+            ]
+          },
+          {
+            "name": "at",
+            "parameters": [
+              "a",
+              "l"
+            ]
+          },
+          {
+            "name": "is_on",
+            "parameters": [
+              "a"
+            ]
+          },
+          {
+            "name": "empty_gripper",
+            "parameters": [
+              "r"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {}
+        ]
+      }
+    },
+    {
+      "name": "place_on_burner",
+      "description": "Robot places cookware on a stove burner. Requires the robot to be at the stove's location and be holding the cookware.",
+      "action_parameters": {
+        "cookware": "cookware",
+        "burner": "location",
+        "robot": "robot"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "holding",
+            "parameters": [
+              "robot",
+              "cookware"
+            ]
+          },
+          {
+            "name": "at",
+            "parameters": [
+              "robot",
+              "burner"
+            ]
+          },
+          {
+            "name": "is_stove_burner",
+            "parameters": [
+              "burner"
+            ]
+          },
+          {
+            "name": "is_empty",
+            "parameters": [
+              "burner"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {},
+          {
+            "name": "in_on",
+            "parameters": [
+              "cookware",
+              "burner"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "place_food_in_cookware",
+      "description": "Robot places food in cookware for cooking. Requires the robot to be at the cookware's location and be holding the food.",
+      "action_parameters": {
+        "robot": "robot",
+        "food": "food",
+        "cookware": "cookware",
+        "loc": "location"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "robot",
+              "loc"
+            ]
+          },
+          {
+            "name": "at",
+            "parameters": [
+              "cookware",
+              "loc"
+            ]
+          },
+          {
+            "name": "holding",
+            "parameters": [
+              "robot",
+              "food"
+            ]
+          },
+          {
+            "name": "pickupable",
+            "parameters": [
+              "food"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "in",
+            "parameters": [
+              "food",
+              "cookware"
+            ]
+          },
+          {}
+        ]
+      }
+    }
+  ],
+  "object_instances": {
+    "objects": {
+      "drawer_1": "container",
+      "drawer_2": "container",
+      "drawer_3": "container",
+      "drawer_4": "container",
+      "fridge_1": "container",
+      "cabinet_1": "container",
+      "cabinet_2": "container",
+      "cabinet_3": "container",
+      "cabinet_4": "container",
+      "microwave_1": "container",
+      "carpet_1": "carpet",
+      "carpet_2": "carpet",
+      "dish_washer_1": "container",
+      "garbage_can_1": "container",
+      "bowl_1": "dishware",
+      "bowl_2": "dishware",
+      "plate_1": "dishware",
+      "plate_2": "dishware",
+      "pan_1": "cookware",
+      "pan_2": "cookware",
+      "lunch_box_1": "storage_container",
+      "lunch_box_2": "storage_container",
+      "pizza_box_1": "storage_container",
+      "cutting_board_1": "cookware",
+      "toaster_1": "appliance",
+      "blender_1": "appliance",
+      "lamp_1": "appliance",
+      "humidifier_1": "appliance",
+      "apple_1": "food",
+      "apple_2": "food",
+      "pizza_1": "food",
+      "toast_1": "food",
+      "orange_1": "food",
+      "orange_2": "food",
+      "banana_1": "food",
+      "potato_1": "food",
+      "fork_1": "utensil",
+      "spoon_1": "utensil",
+      "knife_1": "utensil",
+      "book_1": "book",
+      "book_2": "book",
+      "book_3": "book",
+      "book_4": "book",
+      "book_5": "book",
+      "cloth_1": "cleaning_tool",
+      "handheld_vacuum_1": "cleaning_tool",
+      "shelf_1": "furniture",
+      "countertop_1": "furniture",
+      "countertop_2": "furniture",
+      "side_table_1": "furniture",
+      "side_table_2": "furniture",
+      "dust_bin_1": "container",
+      "robot1": "robot",
+      "stove_burner_1": "location",
+      "dining_table_1": "furniture",
+      "mug_1": "dishware",
+      "cup_1": "dishware"
+    }
+  },
+  "initial_state": {
+    "initial_state_predicates": [
+      {
+        "name": "at",
+        "parameters": [
+          "robot1",
+          "drawer_1"
+        ]
+      },
+      {
+        "name": "holding",
+        "parameters": [
+          "robot1",
+          "mug_1"
+        ]
+      },
+      {
+        "name": "in_on",
+        "parameters": [
+          "pizza_1",
+          "pizza_box_1"
+        ]
+      },
+      {
+        "name": "in_on",
+        "parameters": [
+          "pizza_box_1",
+          "cabinet_2"
+        ]
+      },
+      {
+        "name": "in_on",
+        "parameters": [
+          "pan_2",
+          "dining_table_1"
+        ]
+      },
+      {
+        "name": "is_stove_burner",
+        "parameters": [
+          "stove_burner_1"
+        ]
+      },
+      {
+        "name": "is_cookware",
+        "parameters": [
+          "pan_2"
+        ]
+      },
+      {
+        "name": "pickupable",
+        "parameters": [
+          "pan_2"
+        ]
+      },
+      {
+        "name": "pickupable",
+        "parameters": [
+          "mug_1"
+        ]
+      }
+    ]
+  },
+  "goal_state": {
+    "goal_state_predicates": {
+      "and": [
+        {
+          "name": "food_in_cookware",
+          "parameters": [
+            "pizza_1",
+            "pan_2"
+          ]
+        },
+        {
+          "name": "on",
+          "parameters": [
+            "pan_2",
+            "stove_burner_1"
+          ]
+        },
+        {
+          "name": "turned_on",
+          "parameters": [
+            "stove_burner_1"
+          ]
+        }
+      ]
+    }
+  },
+  "feedback": [],
+  "pddl_domain": "(define (domain household)\n    (:requirements :conditional-effects :disjunctive-preconditions :equality :negative-preconditions :strips :typing :universal-preconditions)\n    (:types\n        location movable_object robot - object\n        carpet container furniture - location\n        appliance book cleaning_tool cookware dishware food storage_container utensil - movable_object\n    )\n    (:predicates (at ?obj ?loc - location)  (food_in_cookware ?food - food ?cookware - cookware)  (holding ?r - robot ?obj)  (in_on ?obj ?container)  (is_cookware ?obj)  (is_stove_burner ?loc - location)  (on ?obj ?surface - location)  (pickupable ?obj)  (turned_on ?a - appliance))\n    (:action place_food_in_cookware\n        :parameters (?robot - robot ?food - food ?cookware - cookware ?loc - location)\n        :precondition (and (at ?robot ?loc) (at ?cookware ?loc) (holding ?robot ?food) (pickupable ?food))\n        :effect (and (in ?food ?cookware) (not (holding ?robot ?food)))\n    )\n     (:action place_on_burner\n        :parameters (?cookware - cookware ?burner - location ?robot - robot)\n        :precondition (and (holding ?robot ?cookware) (at ?robot ?burner) (is_stove_burner ?burner) (is_empty ?burner))\n        :effect (and (not (holding ?robot ?cookware)) (in_on ?cookware ?burner))\n    )\n     (:action turn_off\n        :parameters (?r - robot ?a - appliance ?l - location)\n        :precondition (and (at ?r ?l) (at ?a ?l) (is_on ?a) (empty_gripper ?r))\n        :effect (not (is_on ?a))\n    )\n)",
+  "pddl_problem": null
+}

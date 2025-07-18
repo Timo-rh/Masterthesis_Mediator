@@ -1,0 +1,668 @@
+{
+  "natural_language_task": "The robot currently only has a wrench, but the other tools and a spare (already inflated) tyre are in the open boot. The back left wheel is flat, and still attached. It should be safely replaced. ",
+  "domain_desc": "The AI agent here is a robot that has to replace a flat tyre with a spare one. This involves fetching the tools (wrench, jack, pump) from the boot, undoing the nuts on the flat tyre, jacking up the (appropriate) hub(s), removing the tyre, doing up the spare one, etc. Note that there is no restriction on how many objects the AI agent (i.e., the robot) can carry. Also note that each hub has only one nut.",
+  "domain_name": "tyreworld",
+  "task_name": "medium-task",
+  "types": [
+    {
+      "name": "tool",
+      "description": "Tools that can be used to work on the car"
+    },
+    {
+      "name": "wrench",
+      "description": "A type of tool used to loosen and tighten nuts on tyres"
+    },
+    {
+      "name": "jack",
+      "description": "A type of tool used to lift parts of the car off the ground"
+    },
+    {
+      "name": "pump",
+      "description": "A type of tool used to inflate tyres"
+    },
+    {
+      "name": "car_part",
+      "description": "Parts of the car that can be worked on"
+    },
+    {
+      "name": "tyre",
+      "description": "A wheel that can be attached to or removed from a hub"
+    },
+    {
+      "name": "hub",
+      "description": "The part of the car where tyres are attached, contains a single nut"
+    },
+    {
+      "name": "nut",
+      "description": "Fastener that secures a tyre to a hub"
+    },
+    {
+      "name": "location",
+      "description": "Places on the car where work needs to be done (e.g., back left, front right)"
+    }
+  ],
+  "type_hierarchy": [
+    {
+      "parent_type": {
+        "name": "object",
+        "description": "Object is always root, everything is an object"
+      },
+      "child_types": [
+        {
+          "name": "tool",
+          "description": "Tools that can be used to work on the car"
+        },
+        {
+          "name": "car_part",
+          "description": "Parts of the car that can be worked on"
+        },
+        {
+          "name": "location",
+          "description": "Places on the car where work needs to be done"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "tool",
+        "description": "Tools that can be used to work on the car"
+      },
+      "child_types": [
+        {
+          "name": "wrench",
+          "description": "A type of tool used to loosen and tighten nuts on tyres"
+        },
+        {
+          "name": "jack",
+          "description": "A type of tool used to lift parts of the car off the ground"
+        },
+        {
+          "name": "pump",
+          "description": "A type of tool used to inflate tyres"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "car_part",
+        "description": "Parts of the car that can be worked on"
+      },
+      "child_types": [
+        {
+          "name": "tyre",
+          "description": "A wheel that can be attached to or removed from a hub"
+        },
+        {
+          "name": "hub",
+          "description": "The part of the car where tyres are attached, contains a single nut"
+        },
+        {
+          "name": "nut",
+          "description": "Fastener that secures a tyre to a hub"
+        }
+      ]
+    }
+  ],
+  "nominated_actions": [
+    {
+      "related_type": "tool",
+      "name": "pickup_tool",
+      "description": "The robot picks up a tool from the boot. Requires the tool to be in the boot.",
+      "usage_example": "Pick up the wrench from the boot"
+    },
+    {
+      "related_type": "tool",
+      "name": "store_tool",
+      "description": "The robot puts a tool back in the boot. Requires the robot to have the tool.",
+      "usage_example": "Store the wrench in the boot"
+    },
+    {
+      "related_type": "tyre",
+      "name": "pickup_tyre",
+      "description": "The robot picks up a tyre from the boot. Requires the tyre to be in the boot.",
+      "usage_example": "Pick up the spare tyre from the boot"
+    },
+    {
+      "related_type": "tyre",
+      "name": "store_tyre",
+      "description": "The robot puts a tyre in the boot. Requires the robot to have the tyre.",
+      "usage_example": "Store the flat tyre in the boot"
+    },
+    {
+      "related_type": "nut",
+      "name": "loosen_nut",
+      "description": "The robot loosens a nut on a hub using a wrench. Requires the robot to have a wrench, the hub to not be jacked up, and a tyre to be attached to the hub.",
+      "usage_example": "Loosen the nut on the back left hub"
+    },
+    {
+      "related_type": "nut",
+      "name": "tighten_nut",
+      "description": "The robot tightens a nut on a hub using a wrench. Requires the robot to have a wrench, the hub to not be jacked up, and a tyre to be attached to the hub.",
+      "usage_example": "Tighten the nut on the back left hub"
+    },
+    {
+      "related_type": "hub",
+      "name": "jack_up_hub",
+      "description": "The robot jacks up a hub using a jack. Requires the robot to have a jack and the hub to not already be jacked up.",
+      "usage_example": "Jack up the back left hub"
+    },
+    {
+      "related_type": "hub",
+      "name": "lower_hub",
+      "description": "The robot lowers a hub using a jack. Requires the robot to have a jack and the hub to be jacked up.",
+      "usage_example": "Lower the back left hub"
+    },
+    {
+      "related_type": "tyre",
+      "name": "remove_tyre",
+      "description": "The robot removes a tyre from a hub. Requires the hub to be jacked up and its nut to be loose.",
+      "usage_example": "Remove the flat tyre from the back left hub"
+    },
+    {
+      "related_type": "tyre",
+      "name": "attach_tyre",
+      "description": "The robot attaches a tyre to a hub. Requires the robot to have the tyre, the hub to be jacked up, its nut to be loose, and no tyre currently attached.",
+      "usage_example": "Attach the spare tyre to the back left hub"
+    }
+  ],
+  "predicates": null,
+  "actions": [
+    {
+      "name": "pickup_tool",
+      "description": "The robot picks up a tool from the boot. Requires the tool to be in the boot.",
+      "action_parameters": {
+        "t": "tool"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "in_boot",
+            "parameters": [
+              "t"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {},
+          {
+            "name": "has",
+            "parameters": [
+              "t"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "store_tool",
+      "description": "The robot puts a tool back in the boot. Requires the robot to have the tool.",
+      "action_parameters": {
+        "t": "tool"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "has_tool",
+            "parameters": [
+              "robot",
+              "t"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {},
+          {
+            "name": "in_boot",
+            "parameters": [
+              "t"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "pickup_tyre",
+      "description": "The robot picks up a tyre from the boot. Requires the tyre to be in the boot.",
+      "action_parameters": {
+        "t": "tyre"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "in_boot",
+            "parameters": [
+              "t"
+            ]
+          },
+          {}
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "has",
+            "parameters": [
+              "t"
+            ]
+          },
+          {}
+        ]
+      }
+    },
+    {
+      "name": "store_tyre",
+      "description": "The robot puts a tyre in the boot. Requires the robot to have the tyre.",
+      "action_parameters": {
+        "t": "tyre"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "has",
+            "parameters": [
+              "robot",
+              "t"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {},
+          {
+            "name": "in_boot",
+            "parameters": [
+              "t"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "loosen_nut",
+      "description": "The robot loosens a nut on a hub using a wrench. Requires the robot to have a wrench, the hub to not be jacked up, and a tyre to be attached to the hub.",
+      "action_parameters": {
+        "n": "nut",
+        "h": "hub",
+        "w": "wrench"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "has",
+            "parameters": [
+              "robot",
+              "w"
+            ]
+          },
+          {
+            "name": "attached_to",
+            "parameters": [
+              "n",
+              "h"
+            ]
+          },
+          {
+            "name": "has_tyre",
+            "parameters": [
+              "h"
+            ]
+          },
+          {},
+          {}
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "loose",
+            "parameters": [
+              "n"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "tighten_nut",
+      "description": "The robot tightens a nut on a hub using a wrench. Requires the robot to have a wrench, the hub to not be jacked up, and a tyre to be attached to the hub.",
+      "action_parameters": {
+        "n": "nut",
+        "h": "hub",
+        "w": "wrench"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "has",
+            "parameters": [
+              "robot",
+              "w"
+            ]
+          },
+          {
+            "name": "on",
+            "parameters": [
+              "n",
+              "h"
+            ]
+          },
+          {
+            "name": "loose",
+            "parameters": [
+              "n"
+            ]
+          },
+          {
+            "name": "has_tyre",
+            "parameters": [
+              "h"
+            ]
+          },
+          {
+            "name": "not_jacked_up",
+            "parameters": [
+              "h"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "tight",
+            "parameters": [
+              "n"
+            ]
+          },
+          {}
+        ]
+      }
+    },
+    {
+      "name": "jack_up_hub",
+      "description": "The robot jacks up a hub using a jack. Requires the robot to have a jack and the hub to not already be jacked up.",
+      "action_parameters": {
+        "h": "hub",
+        "j": "jack"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "has",
+            "parameters": [
+              "robot",
+              "j"
+            ]
+          },
+          {
+            "name": "jacked_up",
+            "parameters": [
+              "h"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "jacked_up",
+            "parameters": [
+              "h"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "lower_hub",
+      "description": "The robot lowers a hub using a jack. Requires the robot to have a jack and the hub to be jacked up.",
+      "action_parameters": {
+        "h": "hub",
+        "j": "jack"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "has",
+            "parameters": [
+              "robot",
+              "j"
+            ]
+          },
+          {
+            "name": "jacked_up",
+            "parameters": [
+              "h"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {}
+        ]
+      }
+    },
+    {
+      "name": "remove_tyre",
+      "description": "The robot removes a tyre from a hub. Requires the hub to be jacked up and its nut to be loose.",
+      "action_parameters": {
+        "t": "tyre",
+        "h": "hub"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "attached",
+            "parameters": [
+              "t",
+              "h"
+            ]
+          },
+          {
+            "name": "jacked_up",
+            "parameters": [
+              "h"
+            ]
+          },
+          {
+            "name": "loose",
+            "parameters": [
+              "h"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {},
+          {
+            "name": "has",
+            "parameters": [
+              "robot",
+              "t"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "attach_tyre",
+      "description": "The robot attaches a tyre to a hub. Requires the robot to have the tyre, the hub to be jacked up, its nut to be loose, and no tyre currently attached.",
+      "action_parameters": {
+        "t": "tyre",
+        "h": "hub",
+        "n": "nut"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "has",
+            "parameters": [
+              "robot",
+              "t"
+            ]
+          },
+          {
+            "name": "jacked_up",
+            "parameters": [
+              "h"
+            ]
+          },
+          {
+            "name": "loose",
+            "parameters": [
+              "n"
+            ]
+          },
+          {
+            "name": "nut_on",
+            "parameters": [
+              "n",
+              "h"
+            ]
+          },
+          {}
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "tyre_on",
+            "parameters": [
+              "t",
+              "h"
+            ]
+          },
+          {}
+        ]
+      }
+    }
+  ],
+  "object_instances": {
+    "objects": {
+      "wrench1": "wrench",
+      "jack1": "jack",
+      "pump1": "pump",
+      "flat_tyre": "tyre",
+      "spare_tyre": "tyre",
+      "bl_hub": "hub",
+      "bl_nut": "nut"
+    }
+  },
+  "initial_state": {
+    "initial_state_predicates": [
+      {
+        "name": "at",
+        "parameters": [
+          "wrench1",
+          "robot"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "jack1",
+          "boot"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "pump1",
+          "boot"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "spare_tyre",
+          "boot"
+        ]
+      },
+      {
+        "name": "attached",
+        "parameters": [
+          "flat_tyre",
+          "bl_hub"
+        ]
+      },
+      {
+        "name": "fastened",
+        "parameters": [
+          "bl_nut",
+          "bl_hub"
+        ]
+      },
+      {
+        "name": "on_ground",
+        "parameters": [
+          "bl_hub"
+        ]
+      },
+      {
+        "name": "flat",
+        "parameters": [
+          "flat_tyre"
+        ]
+      },
+      {
+        "name": "inflated",
+        "parameters": [
+          "spare_tyre"
+        ]
+      }
+    ]
+  },
+  "goal_state": {
+    "goal_state_predicates": {
+      "and": [
+        {
+          "name": "at",
+          "parameters": [
+            "spare_tyre",
+            "bl_hub"
+          ]
+        },
+        {
+          "name": "attached",
+          "parameters": [
+            "bl_nut",
+            "bl_hub"
+          ]
+        },
+        {
+          "name": "tight",
+          "parameters": [
+            "bl_nut"
+          ]
+        },
+        {
+          "name": "on_ground",
+          "parameters": [
+            "bl_hub"
+          ]
+        }
+      ]
+    }
+  },
+  "feedback": [
+    "Let me evaluate these types according to the checklist:\n\n1: Are there additional types needed?\n    No, all necessary types for the domain are covered.\n\n2: Are additional types needed for organizing the hierarchy?\n    Yes, both 'wrench', 'jack', and 'pump' are types of 'tool', but this hierarchy isn't explicitly defined.\n\n3: Are any of the types actually objects?\n    No, all listed types are genuinely types, not specific objects.\n\n4: Are any of the types actually actions?\n    No, none of the types represent actions.\n\n5: Are any of the types actually properties?\n    No, all types represent physical objects or parts.\n\n6: Is the acting agent included?\n    No, the robot agent isn't included in the types (which is correct).\n\n7: Will any types only be used once?\n    The 'boot' type will only ever have one instance in this problem. It should be modelled implicitly instead.\n\n8: Is the domain better modelled differently?\n    No, the current object-based approach is appropriate.\n\nSuggested changes:\n- Remove 'boot' as it will only have one instance and can be handled implicitly\n- Explicitly define the type hierarchy for tools:\n  - Keep 'tool' as a parent type\n  - Make 'wrench', 'jack', and 'pump' subtypes of 'tool'\n\nThe revised types should be:\n- tool\n  - wrench\n  - jack\n  - pump\n- car_part\n- tyre\n- hub\n- nut\n- location",
+    "Let me evaluate this type hierarchy according to the checklist:\n\n1: Is any child not a subtype of its parent? \n    All children are proper subtypes of their parents. A wrench, jack, and pump are all types of tools. A tyre, hub, and nut are all types of car parts. So: No.\n\n2: Is any subtype not a child of its parent type? \n    All subtypes are properly placed under their parent types. So: No.\n\n3: Are any new types needed for organisation? \n    The current organization with tools, car parts, and locations as main categories under object is logical and complete. No additional organizational types are needed. So: No.\n\nTherefore: No feedback.\n\nThe hierarchy is well-structured with clear and logical relationships between types. The three main categories (tool, car_part, location) appropriately organize all the specific types needed for the tire-changing task.",
+    "Let me evaluate these types according to the checklist:\n\n1: Are there additional types needed?\n    No, all necessary types for the domain are covered.\n\n2: Are additional types needed for organizing the hierarchy?\n    Yes, both 'wrench', 'jack', and 'pump' are types of 'tool', but this hierarchy isn't explicitly defined.\n\n3: Are any of the types actually objects?\n    No, all listed types are genuinely types, not specific objects.\n\n4: Are any of the types actually actions?\n    No, none of the types represent actions.\n\n5: Are any of the types actually properties?\n    No, all types represent physical objects or parts.\n\n6: Is the acting agent included?\n    No, the robot agent isn't included in the types (which is correct).\n\n7: Will any types only be used once?\n    The 'boot' type will only ever have one instance in this problem. It should be modelled implicitly instead.\n\n8: Is the domain better modelled differently?\n    No, the current object-based approach is appropriate.\n\nSuggested changes:\n- Remove 'boot' as it will only have one instance and can be handled implicitly\n- Explicitly define the type hierarchy for tools:\n  - Keep 'tool' as a parent type\n  - Make 'wrench', 'jack', and 'pump' subtypes of 'tool'\n\nThe revised types should be:\n- tool\n  - wrench\n  - jack\n  - pump\n- car_part\n- tyre\n- hub\n- nut\n- location",
+    "Let me evaluate this type hierarchy according to the checklist:\n\n1: Is any child not a subtype of its parent? \n    All children are proper subtypes of their parents. A wrench, jack, and pump are all types of tools. A tyre, hub, and nut are all types of car parts. So: No.\n\n2: Is any subtype not a child of its parent type? \n    All subtypes are properly placed under their parent types. So: No.\n\n3: Are any new types needed for organisation? \n    The current organization with tools, car parts, and locations as main categories under object is logical and complete. No additional organizational types are needed. So: No.\n\nTherefore: No feedback.\n\nThe hierarchy is well-structured with clear and logical relationships between types. The three main categories (tool, car_part, location) appropriately organize all the specific types needed for the tire-changing task.",
+    "Let me evaluate the actions according to the checklist:\n\n1: Are there additional actions needed?\n   - We need actions to put tools back in the boot after use. Add \"store_tool\" action.\n   - We need an action to store the removed flat tyre in the boot. Add \"store_tyre\" action.\n\n2: Should any actions be split or combined?\n   No, all actions represent atomic operations that can't be meaningfully split or combined.\n\n3: Should any actions be removed?\n   The \"pump\" tool exists in types but isn't used in any action, and since the spare tyre is already inflated, we don't need pump-related actions. The pump type could be removed.\n\n4: Should any preconditions be changed?\n   - \"attach_tyre\" should check that the nut is loose before attaching\n   - \"tighten_nut\" should check that a tyre is actually attached to the hub\n   - \"loosen_nut\" should check that a tyre is actually attached to the hub\n\n5: Should any effects be changed?\n   No, the effects seem appropriate for each action.\n\n6: Should any action examples be modified?\n   No, the examples are clear and include the necessary objects.\n\nMy concrete suggestions:\n1. Add these actions:\n   - store_tool: The robot puts a tool back in the boot. Requires the robot to have the tool. Example: \"Store the wrench in the boot\"\n   - store_tyre: The robot puts a tyre in the boot. Requires the robot to have the tyre. Example: \"Store the flat tyre in the boot\"\n\n2. Modify these action descriptions:\n   - attach_tyre: \"The robot attaches a tyre to a hub. Requires the robot to have the tyre, the hub to be jacked up, its nut to be loose, and no tyre currently attached.\"\n   - tighten_nut: \"The robot tightens a nut on a hub using a wrench. Requires the robot to have a wrench, the hub to not be jacked up, and a tyre to be attached to the hub.\"\n   - loosen_nut: \"The robot loosens a nut on a hub using a wrench. Requires the robot to have a wrench, the hub to not be jacked up, and a tyre to be attached to the hub.\"\n\n3. Consider removing the pump type since it's not needed for this scenario.",
+    [
+      "No objects are missing, unnecessary, or incorrectly typed. All objects mentioned in the domain description are properly defined with correct types.",
+      "The initial state has some issues:\n1. The predicate 'attached' should be included for the flat_tyre since it's on the hub\n2. The predicate 'tight' should be included for bl_nut since it's fastened\nThese predicates are used in the goal state, so they should also be defined in the initial state for consistency.",
+      "The goal state is well-defined and includes all necessary conditions:\n- The spare tyre should be at and attached to the back left hub\n- The flat tyre should be in the boot\n- The nut should be tight\nNo unnecessary conditions are included."
+    ]
+  ],
+  "pddl_domain": null,
+  "pddl_problem": null
+}

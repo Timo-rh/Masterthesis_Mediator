@@ -1,0 +1,970 @@
+{
+  "natural_language_task": "Your task is to transfer potato_1 from a lunch box to plate_1 and close the fridge after yourself.\n\nThis is the current state:\n- drawer_1 is not opened\n- fridge_1 is opened\n- cabinet_1 is not opened\n- bowl_1 in_on cabinet_2\n- bowl_2 in_on drawer_2\n- plate_1 in_on dining_table_1\n- plate_2 in_on dish_washer_1\n- pan_1 in_on cabinet_3\n- pan_2 in_on cabinet_4\n- lunch_box_1 in_on fridge_1\n- lunch_box_1 is not opened\n- lunch_box_2 in_on fridge_1\n- lunch_box_2 is not opened\n- pizza_box_1 in_on drawer_4\n- pizza_box_1 is not opened\n- cutting_board_1 in_on drawer_1\n- cutting_board_1 is pickupable\n- apple_1 in_on cabinet_1\n- apple_1 is not sliced\n- apple_2 in_on fridge_1\n- apple_2 is not sliced\n- pizza_1 in_on lunch_box_1\n- pizza_1 is not pickupable\n- toast_1 in_on lunch_box_1\n- toast_1 is not sliced\n- banana_1 in_on cabinet_2\n- banana_1 is not sliced\n- potato_1 in_on lunch_box_2\n- potato_1 is not sliced\n- robot at cabinet_2\n- robot is not holding anything",
+  "domain_desc": "The AI agent here is a household robot that can navigate to various large and normally immovable furniture pieces or appliances in the house to carry out household tasks. Note that the robot has only one gripper, so (a) it can only hold one object; (b) it shouldn't hold any other irrelevant objects in its gripper while performing some manipulation tasks (e.g., opening a drawer or closing a window); (c) operations on small household items should be carried out on furniture with a flat surface to get enough space for manipulation. In this domain, the locations of the robot and small household items (e.g., apples, oranges, bowls, lunch boxes or lamps) are determined by large and normally immovable furniture pieces or appliances.",
+  "domain_name": "household",
+  "task_name": "medium-task",
+  "types": [
+    {
+      "name": "location",
+      "description": "Large furniture pieces or appliances that determine positions in the house and can store items"
+    },
+    {
+      "name": "container",
+      "description": "Locations that can be opened and closed to store items inside"
+    },
+    {
+      "name": "surface",
+      "description": "Locations with flat surfaces where items can be placed and manipulated"
+    },
+    {
+      "name": "cabinet",
+      "description": "A container mounted on walls for storing items"
+    },
+    {
+      "name": "drawer",
+      "description": "A container that slides out for storing items"
+    },
+    {
+      "name": "fridge",
+      "description": "A container for storing food items at low temperature"
+    },
+    {
+      "name": "dish_washer",
+      "description": "A container for cleaning dishes and kitchen items"
+    },
+    {
+      "name": "dining_table",
+      "description": "A surface for dining and food preparation"
+    },
+    {
+      "name": "storage_item",
+      "description": "Portable items that can contain other items"
+    },
+    {
+      "name": "lunch_box",
+      "description": "A storage item that can be opened_closed to store food"
+    },
+    {
+      "name": "pizza_box",
+      "description": "A storage item specifically for storing pizza"
+    },
+    {
+      "name": "kitchenware",
+      "description": "Items used for food preparation or serving"
+    },
+    {
+      "name": "plate",
+      "description": "A kitchenware item for serving food"
+    },
+    {
+      "name": "bowl",
+      "description": "A kitchenware item for serving liquid or small items"
+    },
+    {
+      "name": "pan",
+      "description": "A kitchenware item for cooking"
+    },
+    {
+      "name": "cutting_board",
+      "description": "A kitchenware item for food preparation"
+    },
+    {
+      "name": "food",
+      "description": "Edible items that can be stored, prepared, or served"
+    },
+    {
+      "name": "robot",
+      "description": "The agent that can navigate between locations and manipulate objects"
+    }
+  ],
+  "type_hierarchy": [
+    {
+      "parent_type": {
+        "name": "object",
+        "description": "Object is always root, everything is an object"
+      },
+      "child_types": [
+        {
+          "name": "location",
+          "description": "Large furniture pieces or appliances that determine positions in the house and can store items"
+        },
+        {
+          "name": "storage_item",
+          "description": "Portable items that can contain other items"
+        },
+        {
+          "name": "kitchenware",
+          "description": "Items used for food preparation or serving"
+        },
+        {
+          "name": "food",
+          "description": "Edible items that can be stored, prepared, or served"
+        },
+        {
+          "name": "robot",
+          "description": "The agent that can navigate between locations and manipulate objects"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "location",
+        "description": "Large furniture pieces or appliances that determine positions in the house and can store items"
+      },
+      "child_types": [
+        {
+          "name": "container",
+          "description": "Locations that can be opened and closed to store items"
+        },
+        {
+          "name": "surface",
+          "description": "Locations with flat surfaces where items can be placed and manipulated"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "container",
+        "description": "Locations that can be opened and closed to store items"
+      },
+      "child_types": [
+        {
+          "name": "cabinet",
+          "description": "A container mounted on walls for storing items"
+        },
+        {
+          "name": "drawer",
+          "description": "A container that slides out for storing items"
+        },
+        {
+          "name": "fridge",
+          "description": "A container for storing food items at low temperature"
+        },
+        {
+          "name": "dish_washer",
+          "description": "A container for cleaning dishes and kitchen items"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "surface",
+        "description": "Locations with flat surfaces where items can be placed and manipulated"
+      },
+      "child_types": [
+        {
+          "name": "dining_table",
+          "description": "A surface for dining and food preparation"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "storage_item",
+        "description": "Portable items that can contain other items"
+      },
+      "child_types": [
+        {
+          "name": "lunch_box",
+          "description": "A storage item that can be opened_closed to store food"
+        },
+        {
+          "name": "pizza_box",
+          "description": "A storage item specifically for storing pizza"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "kitchenware",
+        "description": "Items used for food preparation or serving"
+      },
+      "child_types": [
+        {
+          "name": "plate",
+          "description": "A kitchenware item for serving food"
+        },
+        {
+          "name": "bowl",
+          "description": "A kitchenware item for serving liquid or small items"
+        },
+        {
+          "name": "pan",
+          "description": "A kitchenware item for cooking"
+        },
+        {
+          "name": "cutting_board",
+          "description": "A kitchenware item for food preparation"
+        }
+      ]
+    }
+  ],
+  "nominated_actions": [
+    {
+      "related_type": "robot",
+      "name": "move",
+      "description": "Robot moves from one location to another location. Locations are determined by large furniture pieces or appliances.",
+      "usage_example": "Robot moves from cabinet_1 to dining_table_1"
+    },
+    {
+      "related_type": "robot",
+      "name": "pick_up",
+      "description": "Robot picks up a pickupable item from a location or storage item. Requires the robot to be at the same location and not holding anything.",
+      "usage_example": "Robot picks up bowl_1 from cabinet_1"
+    },
+    {
+      "related_type": "robot",
+      "name": "put_down",
+      "description": "Robot puts down an item it is holding onto a location or into a storage item. Requires the robot to be at the target location.",
+      "usage_example": "Robot puts down plate_1 on dining_table_1"
+    },
+    {
+      "related_type": "container",
+      "name": "open_container",
+      "description": "Robot opens a container (cabinet, drawer, fridge, dish_washer) or storage item (lunch_box, pizza_box). Requires the robot to be at the container's location and not holding anything.",
+      "usage_example": "Robot opens fridge_1"
+    },
+    {
+      "related_type": "container",
+      "name": "close_container",
+      "description": "Robot closes a container (cabinet, drawer, fridge, dish_washer) or storage item (lunch_box, pizza_box). Requires the robot to be at the container's location and not holding anything.",
+      "usage_example": "Robot closes drawer_1"
+    },
+    {
+      "related_type": "food",
+      "name": "slice",
+      "description": "Robot slices a food item. Requires the robot to be at a surface location, the food item to be on that surface, and a cutting board to be present on the same surface.",
+      "usage_example": "Robot slices apple_1 on dining_table_1 using cutting_board_1"
+    }
+  ],
+  "predicates": [
+    {
+      "name": "at",
+      "predicate_parameters": {
+        "obj": "object",
+        "loc": "location"
+      },
+      "description": "true if the object (robot, items) is at_in the location (furniture_appliance)"
+    },
+    {
+      "name": "connected",
+      "predicate_parameters": {
+        "l1": "location",
+        "l2": "location"
+      },
+      "description": "true if there is a path for the robot to move directly between locations l1 and l2"
+    },
+    {
+      "name": "in_on",
+      "predicate_parameters": {
+        "item": "object",
+        "container": "object"
+      },
+      "description": "true if the item is in or on the container_location"
+    },
+    {
+      "name": "holding",
+      "predicate_parameters": {
+        "robot": "robot",
+        "obj": "object"
+      },
+      "description": "true if the robot is holding the object"
+    },
+    {
+      "name": "pickupable",
+      "predicate_parameters": {
+        "obj": "object"
+      },
+      "description": "true if the object can be picked up by the robot"
+    },
+    {
+      "name": "in_storage",
+      "predicate_parameters": {
+        "obj": "object",
+        "container": "storage_item"
+      },
+      "description": "true if an object is inside a storage item (lunch box or pizza box)"
+    },
+    {
+      "name": "opened",
+      "predicate_parameters": {
+        "c": "container"
+      },
+      "description": "true if the container is opened"
+    },
+    {
+      "name": "sliced",
+      "predicate_parameters": {
+        "f": "food"
+      },
+      "description": "true if a food item has been sliced"
+    },
+    {
+      "name": "on_surface",
+      "predicate_parameters": {
+        "obj": "object",
+        "s": "surface"
+      },
+      "description": "true if an object is placed on a surface location for manipulation"
+    }
+  ],
+  "actions": [
+    {
+      "name": "move",
+      "description": "Robot moves from one location to another location. Locations are determined by large furniture pieces or appliances.",
+      "action_parameters": {
+        "robot": "robot",
+        "from": "location",
+        "to": "location"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "robot",
+              "from"
+            ]
+          },
+          {
+            "name": "are_different",
+            "parameters": [
+              "from",
+              "to"
+            ]
+          },
+          {
+            "name": "connected",
+            "parameters": [
+              "from",
+              "to"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": "not",
+            "conditions": {
+              "name": "at",
+              "parameters": [
+                "robot",
+                "from"
+              ]
+            }
+          },
+          {
+            "name": "at",
+            "parameters": [
+              "robot",
+              "to"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "pick_up",
+      "description": "Robot picks up a pickupable item from a location or storage item. Requires the robot to be at the same location and not holding anything.",
+      "action_parameters": {
+        "robot": "robot",
+        "item": "object",
+        "source": "object"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "robot",
+              "source"
+            ]
+          },
+          {
+            "name": "in_on",
+            "parameters": [
+              "item",
+              "source"
+            ]
+          },
+          {
+            "name": "pickupable",
+            "parameters": [
+              "item"
+            ]
+          },
+          {
+            "name": "not_holding_anything",
+            "parameters": [
+              "robot"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "holding",
+            "parameters": [
+              "robot",
+              "item"
+            ]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "in_on",
+              "parameters": [
+                "item",
+                "source"
+              ]
+            }
+          }
+        ]
+      }
+  },
+    {
+      "name": "put_down",
+      "description": "Robot puts down an item it is holding onto a location or into a storage item. Requires the robot to be at the target location.",
+      "action_parameters": {
+        "robot": "robot",
+        "item": "object",
+        "target": "location"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "robot",
+              "target"
+            ]
+          },
+          {
+            "name": "holding",
+            "parameters": [
+              "robot",
+              "item"
+            ]
+          },
+          {
+            "name": "pickupable",
+            "parameters": [
+              "item"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "in_on",
+            "parameters": [
+              "item",
+              "target"
+            ]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "holding",
+              "parameters": [
+                "robot",
+                "item"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "open_container",
+      "description": "Robot opens a container (cabinet, drawer, fridge, dish_washer) or storage item (lunch_box, pizza_box). Requires the robot to be at the container's location and not holding anything.",
+      "action_parameters": {
+        "c": "container",
+        "l": "location"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "robot",
+              "l"
+            ]
+          },
+          {
+            "name": "at",
+            "parameters": [
+              "c",
+              "l"
+            ]
+          },
+          {
+            "name": "not_opened",
+            "parameters": [
+              "c"
+            ]
+          },
+          {
+            "name": "not_holding",
+            "parameters": [
+              "robot"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "opened",
+            "parameters": [
+              "c"
+            ]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "not_opened",
+              "parameters": [
+                "c"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "close_container",
+      "description": "Robot closes a container (cabinet, drawer, fridge, dish_washer) or storage item (lunch_box, pizza_box). Requires the robot to be at the container's location and not holding anything.",
+      "action_parameters": {
+        "c": "container",
+        "r": "robot"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "r",
+              "c"
+            ]
+          },
+          {
+            "name": "opened",
+            "parameters": [
+              "c"
+            ]
+          },
+          {
+            "type" : "not",
+            "conditions": {
+              "name": "holding",
+              "parameters": [
+                "r"
+              ]
+            }
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": "not",
+            "conditions": {
+              "name": "opened",
+              "parameters": [
+                "c"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "slice",
+      "description": "Robot slices a food item. Requires the robot to be at a surface location, the food item to be on that surface, and a cutting board to be present on the same surface.",
+      "action_parameters": {
+        "f": "food",
+        "s": "surface",
+        "c": "cutting_board",
+        "robot": "robot"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": [
+              "robot",
+              "s"
+            ]
+          },
+          {
+            "name": "at",
+            "parameters": [
+              "f",
+              "s"
+            ]
+          },
+          {
+            "name": "at",
+            "parameters": [
+              "c",
+              "s"
+            ]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "sliced",
+              "parameters": [
+                "f"
+              ]
+            }
+          },
+          {
+            "type" : "not",
+            "conditions": {
+              "name": "holding",
+              "parameters": [
+                "robot",
+                "c"
+              ]
+            }
+          },
+          {
+            "name": "pickupable",
+            "parameters": [
+              "c"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "sliced",
+            "parameters": [
+              "f"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "object_instances": {
+    "objects": {
+      "drawer_1": "drawer",
+      "drawer_2": "drawer",
+      "drawer_4": "drawer",
+      "fridge_1": "fridge",
+      "cabinet_1": "cabinet",
+      "cabinet_2": "cabinet",
+      "cabinet_3": "cabinet",
+      "cabinet_4": "cabinet",
+      "dining_table_1": "dining_table",
+      "dish_washer_1": "dish_washer",
+      "bowl_1": "bowl",
+      "bowl_2": "bowl",
+      "plate_1": "plate",
+      "plate_2": "plate",
+      "pan_1": "pan",
+      "pan_2": "pan",
+      "lunch_box_1": "lunch_box",
+      "lunch_box_2": "lunch_box",
+      "pizza_box_1": "pizza_box",
+      "cutting_board_1": "cutting_board",
+      "apple_1": "food",
+      "apple_2": "food",
+      "pizza_1": "food",
+      "toast_1": "food",
+      "banana_1": "food",
+      "potato_1": "food",
+      "robot_1": "robot"
+    }
+  },
+  "initial_state": {
+    "initial_state_predicates": [
+      {
+        "name": "at",
+        "parameters": [
+          "robot_1",
+          "cabinet_2"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "lunch_box_1",
+          "fridge_1"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "lunch_box_2",
+          "fridge_1"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "pizza_box_1",
+          "drawer_4"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "bowl_1",
+          "cabinet_2"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "bowl_2",
+          "drawer_2"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "plate_1",
+          "dining_table_1"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "plate_2",
+          "dish_washer_1"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "pan_1",
+          "cabinet_3"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "pan_2",
+          "cabinet_4"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "cutting_board_1",
+          "drawer_1"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "apple_1",
+          "cabinet_1"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "apple_2",
+          "fridge_1"
+        ]
+      },
+      {
+        "name": "at",
+        "parameters": [
+          "banana_1",
+          "cabinet_2"
+        ]
+      },
+      {
+        "name": "opened",
+        "parameters": [
+          "fridge_1"
+        ]
+      },
+      {
+        "name": "in_storage",
+        "parameters": [
+          "pizza_1",
+          "lunch_box_1"
+        ]
+      },
+      {
+        "name": "in_storage",
+        "parameters": [
+          "toast_1",
+          "lunch_box_1"
+        ]
+      },
+      {
+        "name": "in_storage",
+        "parameters": [
+          "potato_1",
+          "lunch_box_2"
+        ]
+      },
+      {
+        "name": "pickupable",
+        "parameters": [
+          "cutting_board_1"
+        ]
+      },
+      {
+        "name": "connected",
+        "parameters": [
+          "cabinet_1",
+          "cabinet_2"
+        ]
+      },
+      {
+        "name": "connected",
+        "parameters": [
+          "cabinet_2",
+          "cabinet_1"
+        ]
+      },
+      {
+        "name": "connected",
+        "parameters": [
+          "cabinet_2",
+          "cabinet_3"
+        ]
+      },
+      {
+        "name": "connected",
+        "parameters": [
+          "cabinet_3",
+          "cabinet_2"
+        ]
+      },
+      {
+        "name": "connected",
+        "parameters": [
+          "cabinet_3",
+          "cabinet_4"
+        ]
+      },
+      {
+        "name": "connected",
+        "parameters": [
+          "cabinet_4",
+          "cabinet_3"
+        ]
+      },
+      {
+        "name": "connected",
+        "parameters": [
+          "cabinet_2",
+          "fridge_1"
+        ]
+      },
+      {
+        "name": "connected",
+        "parameters": [
+          "fridge_1",
+          "cabinet_2"
+        ]
+      },
+      {
+        "name": "connected",
+        "parameters": [
+          "cabinet_2",
+          "drawer_1"
+        ]
+      },
+      {
+        "name": "connected",
+        "parameters": [
+          "drawer_1",
+          "cabinet_2"
+        ]
+      },
+      {
+        "name": "connected",
+        "parameters": [
+          "cabinet_2",
+          "drawer_2"
+        ]
+      },
+      {
+        "name": "connected",
+        "parameters": [
+          "drawer_2",
+          "cabinet_2"
+        ]
+      },
+      {
+        "name": "connected",
+        "parameters": [
+          "cabinet_2",
+          "drawer_4"
+        ]
+      },
+      {
+        "name": "connected",
+        "parameters": [
+          "drawer_4",
+          "cabinet_2"
+        ]
+      },
+      {
+        "name": "connected",
+        "parameters": [
+          "cabinet_2",
+          "dining_table_1"
+        ]
+      },
+      {
+        "name": "connected",
+        "parameters": [
+          "dining_table_1",
+          "cabinet_2"
+        ]
+      },
+      {
+        "name": "connected",
+        "parameters": [
+          "cabinet_2",
+          "dish_washer_1"
+        ]
+      },
+      {
+        "name": "connected",
+        "parameters": [
+          "dish_washer_1",
+          "cabinet_2"
+        ]
+      }
+    ]
+  },
+  "goal_state": {
+    "goal_state_predicates": {
+      "and": [
+        {
+          "name": "in_on",
+          "parameters": [
+            "potato_1",
+            "plate_1"
+          ]
+        },
+        {
+          "name": "opened",
+          "parameters": [
+            "fridge_1"
+          ]
+        }
+      ]
+    }
+  },
+  "feedback": [],
+  "pddl_domain": null,
+  "pddl_problem": null
+}

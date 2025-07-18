@@ -1,0 +1,7 @@
+(define (problem medium-task)
+    (:domain blocksworld)
+    (:requirements :conditional-effects :disjunctive-preconditions :equality :negative-preconditions :strips :typing :universal-preconditions)
+    (:objects blue_block green_block red_block yellow_block - block)
+    (:init (clear blue_block) (clear green_block) (hand_empty) (on blue_block red_block) (on green_block yellow_block) (on_table red_block) (on_table yellow_block))
+    (:goal (and (on_table red_block) (on green_block red_block) (on blue_block green_block) (on yellow_block blue_block) (clear yellow_block)))
+)

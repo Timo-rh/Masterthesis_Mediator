@@ -1,0 +1,817 @@
+{
+    "natural_language_task": "Your task is to transfer potato_1 from a lunch box to plate_1 and close the fridge after yourself.\n\nThis is the current state:\n- drawer_1 is not opened\n- fridge_1 is opened\n- cabinet_1 is not opened\n- bowl_1 in/on cabinet_2\n- bowl_2 in/on drawer_2\n- plate_1 in/on dining_table_1\n- plate_2 in/on dish_washer_1\n- pan_1 in/on cabinet_3\n- pan_2 in/on cabinet_4\n- lunch_box_1 in/on fridge_1\n- lunch_box_1 is not opened\n- lunch_box_2 in/on fridge_1\n- lunch_box_2 is not opened\n- pizza_box_1 in/on drawer_4\n- pizza_box_1 is not opened\n- cutting_board_1 in/on drawer_1\n- cutting_board_1 is pickupable\n- apple_1 in/on cabinet_1\n- apple_1 is not sliced\n- apple_2 in/on fridge_1\n- apple_2 is not sliced\n- pizza_1 in/on lunch_box_1\n- pizza_1 is not pickupable\n- toast_1 in/on lunch_box_1\n- toast_1 is not sliced\n- banana_1 in/on cabinet_2\n- banana_1 is not sliced\n- potato_1 in/on lunch_box_2\n- potato_1 is not sliced\n- robot at cabinet_2\n- robot is not holding anything",
+    "domain_desc": "The AI agent here is a household robot that can navigate to various large and normally immovable furniture pieces or appliances in the house to carry out household tasks. Note that the robot has only one gripper, so (a) it can only hold one object; (b) it shouldn't hold any other irrelevant objects in its gripper while performing some manipulation tasks (e.g., opening a drawer or closing a window); (c) operations on small household items should be carried out on furniture with a flat surface to get enough space for manipulation. In this domain, the locations of the robot and small household items (e.g., apples, oranges, bowls, lunch boxes or lamps) are determined by large and normally immovable furniture pieces or appliances.",
+    "domain_name": "household",
+    "task_name": "medium-task",
+    "types": [
+      {
+        "name": "location",
+        "description": "Large furniture pieces or appliances that determine positions of small items"
+      },
+      {
+        "name": "cabinet",
+        "description": "A storage location that can be opened/closed and contains items"
+      },
+      {
+        "name": "drawer",
+        "description": "A storage location that can be opened/closed and contains items"
+      },
+      {
+        "name": "fridge",
+        "description": "A storage location for food items that can be opened/closed"
+      },
+      {
+        "name": "dining_table",
+        "description": "A flat surface location for dining and food preparation"
+      },
+      {
+        "name": "dish_washer",
+        "description": "An appliance location for cleaning dishes"
+      },
+      {
+        "name": "container",
+        "description": "Objects that can contain other items and may be opened/closed"
+      },
+      {
+        "name": "lunch_box",
+        "description": "A container that can hold food items"
+      },
+      {
+        "name": "pizza_box",
+        "description": "A container specifically for pizza"
+      },
+      {
+        "name": "tableware",
+        "description": "Items used for serving or preparing food"
+      },
+      {
+        "name": "bowl",
+        "description": "A piece of tableware for serving food"
+      },
+      {
+        "name": "plate",
+        "description": "A piece of tableware for serving food"
+      },
+      {
+        "name": "pan",
+        "description": "A piece of cookware for cooking food"
+      },
+      {
+        "name": "cutting_board",
+        "description": "A surface for food preparation that can be moved"
+      },
+      {
+        "name": "food",
+        "description": "Edible items that can be sliced or processed"
+      },
+      {
+        "name": "fruit",
+        "description": "A type of food that can be sliced"
+      },
+      {
+        "name": "vegetable",
+        "description": "A type of food that can be sliced"
+      },
+      {
+        "name": "bread",
+        "description": "A type of food that can be sliced"
+      }
+    ],
+    "type_hierarchy": [
+      {
+        "parent_type": {
+          "name": "object",
+          "description": "Object is always root, everything is an object"
+        },
+        "child_types": [
+          {
+            "name": "location",
+            "description": "Large furniture pieces or appliances that determine positions of small items"
+          },
+          {
+            "name": "container",
+            "description": "Objects that can contain other items and may be opened/closed"
+          },
+          {
+            "name": "tableware",
+            "description": "Items used for serving or preparing food"
+          },
+          {
+            "name": "food",
+            "description": "Edible items that can be sliced or processed"
+          }
+        ]
+      },
+      {
+        "parent_type": {
+          "name": "location",
+          "description": "Large furniture pieces or appliances that determine positions of small items"
+        },
+        "child_types": [
+          {
+            "name": "cabinet",
+            "description": "A storage location that can be opened/closed and contains items"
+          },
+          {
+            "name": "drawer",
+            "description": "A storage location that can be opened/closed and contains items"
+          },
+          {
+            "name": "fridge",
+            "description": "A storage location for food items that can be opened/closed"
+          },
+          {
+            "name": "dining_table",
+            "description": "A flat surface location for dining and food preparation"
+          },
+          {
+            "name": "dish_washer",
+            "description": "An appliance location for cleaning dishes"
+          }
+        ]
+      },
+      {
+        "parent_type": {
+          "name": "container",
+          "description": "Objects that can contain other items and may be opened/closed"
+        },
+        "child_types": [
+          {
+            "name": "lunch_box",
+            "description": "A container that can hold food items"
+          },
+          {
+            "name": "pizza_box",
+            "description": "A container specifically for pizza"
+          }
+        ]
+      },
+      {
+        "parent_type": {
+          "name": "tableware",
+          "description": "Items used for serving or preparing food"
+        },
+        "child_types": [
+          {
+            "name": "serving_ware",
+            "description": "Tableware used for serving food"
+          },
+          {
+            "name": "cookware",
+            "description": "Tableware used for cooking food"
+          },
+          {
+            "name": "preparation_ware",
+            "description": "Tableware used for food preparation"
+          }
+        ]
+      },
+      {
+        "parent_type": {
+          "name": "serving_ware",
+          "description": "Tableware used for serving food"
+        },
+        "child_types": [
+          {
+            "name": "bowl",
+            "description": "A piece of tableware for serving food"
+          },
+          {
+            "name": "plate",
+            "description": "A piece of tableware for serving food"
+          }
+        ]
+      },
+      {
+        "parent_type": {
+          "name": "cookware",
+          "description": "Tableware used for cooking food"
+        },
+        "child_types": [
+          {
+            "name": "pan",
+            "description": "A piece of cookware for cooking food"
+          }
+        ]
+      },
+      {
+        "parent_type": {
+          "name": "preparation_ware",
+          "description": "Tableware used for food preparation"
+        },
+        "child_types": [
+          {
+            "name": "cutting_board",
+            "description": "A surface for food preparation that can be moved"
+          }
+        ]
+      },
+      {
+        "parent_type": {
+          "name": "food",
+          "description": "Edible items that can be sliced or processed"
+        },
+        "child_types": [
+          {
+            "name": "fruit",
+            "description": "A type of food that can be sliced"
+          },
+          {
+            "name": "vegetable",
+            "description": "A type of food that can be sliced"
+          },
+          {
+            "name": "bread",
+            "description": "A type of food that can be sliced"
+          }
+        ]
+      }
+    ],
+    "nominated_actions": [
+      {
+        "related_type": "location",
+        "name": "move_robot",
+        "description": "Robot moves from one location to another. Locations are large furniture pieces or appliances.",
+        "usage_example": "Move robot from cabinet_1 to fridge_1"
+      },
+      {
+        "related_type": "container",
+        "name": "open_container",
+        "description": "Robot opens a container (lunch box, pizza box) that is at robot's current location. Robot's gripper must be empty.",
+        "usage_example": "Open lunch_box_1 while robot is at its location"
+      },
+      {
+        "related_type": "container",
+        "name": "close_container",
+        "description": "Robot closes a container (lunch box, pizza box) that is at robot's current location. Robot's gripper must be empty.",
+        "usage_example": "Close lunch_box_2 while robot is at its location"
+      },
+      {
+        "related_type": "location",
+        "name": "open_location",
+        "description": "Robot opens a location (cabinet, drawer, fridge) that it is currently at. Robot's gripper must be empty.",
+        "usage_example": "Open cabinet_1 while robot is at cabinet_1"
+      },
+      {
+        "related_type": "location",
+        "name": "close_location",
+        "description": "Robot closes a location (cabinet, drawer, fridge) that it is currently at. Robot's gripper must be empty.",
+        "usage_example": "Close fridge_1 while robot is at fridge_1"
+      },
+      {
+        "related_type": "object",
+        "name": "pickup",
+        "description": "Robot picks up a pickupable object from its current location. Robot's gripper must be empty.",
+        "usage_example": "Pick up bowl_1 from cabinet_1"
+      },
+      {
+        "related_type": "object",
+        "name": "putdown",
+        "description": "Robot puts down the object it is holding at its current location.",
+        "usage_example": "Put down plate_1 on dining_table_1"
+      },
+      {
+        "related_type": "container",
+        "name": "get_from_container",
+        "description": "Robot takes an item from an opened container at its current location. Robot's gripper must be empty, container must be opened, and container must be at robot's location.",
+        "usage_example": "Get potato_1 from opened lunch_box_2 while at fridge_1"
+      },
+      {
+        "related_type": "container",
+        "name": "put_in_container",
+        "description": "Robot puts the held item into an opened container at its current location. Container must be opened and must be at robot's location.",
+        "usage_example": "Put apple_1 into opened lunch_box_1 while at fridge_1"
+      },
+      {
+        "related_type": "food",
+        "name": "slice",
+        "description": "Robot slices a food item using a cutting board. Both the food item and cutting board must be at robot's current location, and robot's gripper must be empty.",
+        "usage_example": "Slice apple_1 on cutting_board_1 while at dining_table_1"
+      }
+    ],
+  "actions": [
+    {
+      "name": "move_robot",
+      "description": "Robot moves from one location to another. Locations are large furniture pieces or appliances.",
+      "action_parameters": {
+        "from": "location",
+        "to": "location"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": ["robot", "from"]
+          },
+          {
+            "name": "are_different",
+            "parameters": ["from", "to"]
+          },
+          {
+            "name": "connected",
+            "parameters": ["from", "to"]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": "not",
+            "conditions": {
+              "name": "at",
+              "parameters": ["robot", "from"]
+            }
+          },
+          {
+            "name": "at",
+            "parameters": ["robot", "to"]
+          }
+        ]
+      }
+    },
+    {
+      "name": "open_container",
+      "description": "Robot opens a container (lunch box, pizza box) that is at robot's current location. Robot's gripper must be empty.",
+      "action_parameters": {
+        "c": "container",
+        "l": "location"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": ["robot", "l"]
+          },
+          {
+            "name": "at",
+            "parameters": ["c", "l"]
+          },
+          {
+            "name": "not_holding",
+            "parameters": ["robot"]
+          },
+          {
+            "name": "not_opened",
+            "parameters": ["c"]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "opened",
+            "parameters": ["c"]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "not_opened",
+              "parameters": ["c"]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "close_container",
+      "description": "Robot closes a container (lunch box, pizza box) that is at robot's current location. Robot's gripper must be empty.",
+      "action_parameters": {
+        "c": "container",
+        "l": "location"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": ["robot", "l"]
+          },
+          {
+            "name": "at",
+            "parameters": ["c", "l"]
+          },
+          {
+            "name": "opened",
+            "parameters": ["c"]
+          },
+          {
+            "name": "not_holding",
+            "parameters": ["robot"]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": "not",
+            "conditions": {
+              "name": "opened",
+              "parameters": ["c"]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "open_location",
+      "description": "Robot opens a location (cabinet, drawer, fridge) that it is currently at. Robot's gripper must be empty.",
+      "action_parameters": {
+        "l": "location",
+        "robot": "object"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": ["robot", "l"]
+          },
+          {
+            "name": "is_not_opened",
+            "parameters": ["l"]
+          },
+          {
+            "name": "is_not_holding",
+            "parameters": ["robot", "anything"]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "is_opened",
+            "parameters": ["l"]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "is_not_opened",
+              "parameters": ["l"]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "close_location",
+      "description": "Robot closes a location (cabinet, drawer, fridge) that it is currently at. Robot's gripper must be empty.",
+      "action_parameters": {
+        "l": "location",
+        "r": "robot"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "at",
+            "parameters": ["r", "l"]
+          },
+          {
+            "name": "opened",
+            "parameters": ["l"]
+          },
+          {
+            "name": "not_holding",
+            "parameters": ["r"]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": "not",
+            "conditions": {
+              "name": "opened",
+              "parameters": ["l"]
+            }
+          }
+        ]
+      }
+    },
+    {
+            "name": "pickup",
+            "description": "Robot picks up a pickupable object from its current location. Robot's gripper must be empty.",
+            "action_parameters": {
+              "obj": "object",
+              "loc": "location"
+            },
+            "preconditions": {
+              "and": [
+                {
+                  "name": "at",
+                  "parameters": [
+                    "robot",
+                    "loc"
+                  ]
+                },
+                {
+                  "name": "in_on",
+                  "parameters": [
+                    "obj",
+                    "loc"
+                  ]
+                },
+                {
+                  "name": "pickupable",
+                  "parameters": [
+                    "obj"
+                  ]
+                },
+                {
+                  "name": "not_holding_anything",
+                  "parameters": [
+                    "robot"
+                  ]
+                }
+              ]
+            },
+            "effects": {
+              "and": [
+                {
+                  "name": "holding",
+                  "parameters": [
+                    "robot",
+                    "obj"
+                  ]
+                },
+                {
+                  "type": "not",
+                  "conditions": {
+                    "name": "in_on",
+                    "parameters": [
+                      "obj",
+                      "loc"
+                    ]
+                  }
+                },
+                {
+                  "type": "not",
+                  "conditions": {
+                    "name": "not_holding_anything",
+                    "parameters": [
+                      "robot"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "putdown",
+            "description": "Robot puts down the object it is holding at its current location.",
+            "action_parameters": {
+              "obj": "object",
+              "loc": "location"
+            },
+            "preconditions": {
+              "and": [
+                {
+                  "name": "holding",
+                  "parameters": [
+                    "obj"
+                  ]
+                },
+                {
+                  "name": "at",
+                  "parameters": [
+                    "robot",
+                    "loc"
+                  ]
+                }
+              ]
+            },
+            "effects": {
+              "and": [
+                {
+                  "type": "not",
+                  "conditions": {
+                    "name": "holding",
+                    "parameters": [
+                      "obj"
+                    ]
+                  }
+                },
+                {
+                  "name": "in/on",
+                  "parameters": [
+                    "obj",
+                    "loc"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "get_from_container",
+            "description": "Robot takes an item from an opened container at its current location. Robot's gripper must be empty, container must be opened, and container must be at robot's location.",
+            "action_parameters": {
+              "robot": "object",
+              "item": "object",
+              "container": "container",
+              "location": "location"
+            },
+            "preconditions": {
+              "and": [
+                {
+                  "name": "at",
+                  "parameters": [
+                    "robot",
+                    "location"
+                  ]
+                },
+                {
+                  "name": "at",
+                  "parameters": [
+                    "container",
+                    "location"
+                  ]
+                },
+                {
+                  "name": "in",
+                  "parameters": [
+                    "item",
+                    "container"
+                  ]
+                },
+                {
+                  "name": "opened",
+                  "parameters": [
+                    "container"
+                  ]
+                },
+                {
+                  "name": "empty_gripper",
+                  "parameters": [
+                    "robot"
+                  ]
+                }
+              ]
+            },
+            "effects": {
+              "and": [
+                {
+                  "name": "holding",
+                  "parameters": [
+                    "robot",
+                    "item"
+                  ]
+                },
+                {
+                  "type": "not",
+                  "conditions": {
+                    "name": "in",
+                    "parameters": [
+                      "item",
+                      "container"
+                    ]
+                  }
+                },
+                {
+                  "type": "not",
+                  "conditions": {
+                    "name": "empty_gripper",
+                    "parameters": [
+                      "robot"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "put_in_container",
+            "description": "Robot puts the held item into an opened container at its current location. Container must be opened and must be at robot's location.",
+            "action_parameters": {
+              "obj": "object",
+              "container": "container",
+              "loc": "location"
+            },
+            "preconditions": {
+              "and": [
+                {
+                  "name": "at",
+                  "parameters": [
+                    "robot",
+                    "loc"
+                  ]
+                },
+                {
+                  "name": "at",
+                  "parameters": [
+                    "container",
+                    "loc"
+                  ]
+                },
+                {
+                  "name": "holding",
+                  "parameters": [
+                    "robot",
+                    "obj"
+                  ]
+                },
+                {
+                  "name": "opened",
+                  "parameters": [
+                    "container"
+                  ]
+                }
+              ]
+            },
+            "effects": {
+              "and": [
+                {
+                  "name": "in",
+                  "parameters": [
+                    "obj",
+                    "container"
+                  ]
+                },
+                {
+                  "type": "not",
+                  "conditions": {
+                    "name": "holding",
+                    "parameters": [
+                      "robot",
+                      "obj"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "slice",
+            "description": "Robot slices a food item using a cutting board. Both the food item and cutting board must be at robot's current location, and robot's gripper must be empty.",
+            "action_parameters": {
+              "f": "food",
+              "c": "cutting_board",
+              "l": "location"
+            },
+            "preconditions": {
+              "and": [
+                {
+                  "name": "at",
+                  "parameters": [
+                    "robot",
+                    "l"
+                  ]
+                },
+                {
+                  "name": "at",
+                  "parameters": [
+                    "f",
+                    "l"
+                  ]
+                },
+                {
+                  "name": "at",
+                  "parameters": [
+                    "c",
+                    "l"
+                  ]
+                },
+                {
+                  "name": "not_holding",
+                  "parameters": [
+                    "robot"
+                  ]
+                },
+                {
+                  "name": "not_sliced",
+                  "parameters": [
+                    "f"
+                  ]
+                },
+                {
+                  "name": "pickupable",
+                  "parameters": [
+                    "c"
+                  ]
+                }
+              ]
+            },
+            "effects": {
+              "and": [
+                {
+                  "name": "sliced",
+                  "parameters": [
+                    "f"
+                  ]
+                },
+                {
+                  "type": "not",
+                  "conditions": {
+                    "name": "not_sliced",
+                    "parameters": [
+                      "f"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+  ],
+
+    "feedback": [
+      "Let me evaluate these types according to the checklist:\n\n1: Are there additional types which are needed to model the domain?\n    No, all necessary types are included.\n\n2: Are additional types needed for organising the type hierarchy?\n    The hierarchy is well structured with meta-types like 'location', 'container', 'tableware', and 'food'. No additional organization needed.\n\n3: Are any of the types actually objects?\n    No, all listed items are proper types, not specific instances.\n\n4: Are any of the types actually actions?\n    No, none of the types represent actions.\n\n5: Are any of the types actually properties?\n    No, properties like \"opened\", \"sliced\", \"pickupable\" are correctly not included as types and should be handled with predicates.\n\n6: Is the acting agent itself or the resulting plans included?\n    Yes, the 'robot' type is included. Since there's only one robot in the domain, this should be removed and modeled implicitly.\n\n7: Will any of the included types only ever be used once?\n    No, all types (except robot) could have multiple instances.\n\n8: Is the acting agent itself or the resulting plans included?\n    Yes, as mentioned in point 6, the robot agent should be removed.\n\nSuggestion:\nRemove the 'robot' type since it represents the single acting agent and should be modeled implicitly through predicates like (at ?loc - location) rather than (at ?robot - robot ?loc - location).\n\nOtherwise, the type hierarchy is well-structured and appropriate for the domain.",
+      "Let me evaluate the type hierarchy:\n\n1: Is any child not a subtype of its parent? \n    All children are proper subtypes of their parents. For example, cabinet/drawer/fridge are types of locations, lunch_box/pizza_box are types of containers, bowl/plate/pan are types of tableware, and fruit/vegetable/bread are types of food. So: No.\n\n2: Is any subtype not a child of its parent type? \n    All subtypes appear to be properly connected to their parent types. So: No.\n\n3: Are any new types needed for organisation? \n    Looking at the tableware category, \"pan\" seems to be more specifically a type of cookware, which is different from serving ware like bowls and plates. A new \"cookware\" type could be added under tableware to better organize these distinctions. Additionally, cutting_board seems distinct from both cookware and serving ware, suggesting a possible \"preparation_ware\" type. Therefore: Yes.\n\nMy advice is to add the following organizational types:\n- Add \"cookware\" as a new type under \"tableware\" and make \"pan\" a child of \"cookware\"\n- Add \"preparation_ware\" as a new type under \"tableware\" and make \"cutting_board\" a child of \"preparation_ware\"\n- Add \"serving_ware\" as a new type under \"tableware\" and make \"bowl\" and \"plate\" children of \"serving_ware\"\n\nThis would better organize the different functional categories of tableware.",
+      "Let me evaluate the actions for this household robot domain:\n\n1: Are there additional actions needed for this domain?\nNo, the provided actions cover all necessary operations for the given task and domain constraints.\n\n2: Should any of the actions be split or combined?\nNo, all actions are atomic and well-defined. They represent single steps that can't be meaningfully split or combined.\n\n3: Should any of the actions be removed?\nNo, all actions serve distinct purposes that are relevant for household tasks.\n\n4: Should any preconditions be changed?\nYes, some preconditions need clarification:\n- For \"get_from_container\" and \"put_in_container\", it should be specified that the container must be at the robot's current location.\n- For \"slice\", it should be specified that both the food item and cutting board must be at the robot's current location.\n\n5: Should any effects be changed?\nNo, the effects of all actions are clear and appropriate.\n\n6: Should any action examples be modified?\nYes, some examples could be more specific:\n- For \"get_from_container\", the example should specify the location: \"Get potato_1 from opened lunch_box_2 while at fridge_1\"\n- For \"put_in_container\", similarly: \"Put apple_1 into opened lunch_box_1 while at fridge_1\"\n- For \"slice\", the example should specify the location: \"Slice apple_1 on cutting_board_1 while at dining_table_1\"\n\nMy suggestions:\n1. Modify the descriptions of these actions:\n   - get_from_container: \"Robot takes an item from an opened container at its current location. Robot's gripper must be empty, container must be opened, and container must be at robot's location.\"\n   - put_in_container: \"Robot puts the held item into an opened container at its current location. Container must be opened and must be at robot's location.\"\n   - slice: \"Robot slices a food item using a cutting board. Both the food item and cutting board must be at robot's current location, and robot's gripper must be empty.\"\n\n2. Update the examples as specified above to be more explicit about locations."
+    ]
+  }

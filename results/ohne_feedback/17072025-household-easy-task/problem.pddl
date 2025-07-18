@@ -1,0 +1,7 @@
+(define (problem easy-task)
+    (:domain household)
+    (:requirements :conditional-effects :disjunctive-preconditions :equality :negative-preconditions :strips :typing :universal-preconditions)
+    (:objects blender_1 humidifier_1 lamp_1 - appliance book_1 book_2 - book cabinet_1 cabinet_2 - cabinet cup_1 mug_1 plate_1 - container countertop_1 - countertop dining_table_1 - dining_table drawer_1 drawer_2 - drawer apple_1 - food fridge_1 - fridge robot_1 - robot side_table_1 - side_table cutting_board_1 - tool)
+    (:init (at apple_1 cabinet_2) (at blender_1 dining_table_1) (at book_1 dining_table_1) (at book_2 dining_table_1) (at cup_1 cabinet_2) (at cutting_board_1 countertop_1) (at humidifier_1 side_table_1) (at lamp_1 side_table_1) (at plate_1 drawer_2) (at robot_1 cabinet_1) (holding robot_1 mug_1) (is_on humidifier_1) (opened cabinet_2) (opened drawer_1) (opened drawer_2) (opened fridge_1) (pickupable cutting_board_1))
+    (:goal (and (is_on lamp_1) (is_on humidifier_1)))
+)

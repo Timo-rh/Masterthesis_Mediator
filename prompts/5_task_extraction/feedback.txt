@@ -43,47 +43,57 @@ Currently, there are a couple of trucks at the Chicago depot and we're trying to
 
 ### Predicates
 The following are the available predicates which can be used:
-- (at ?o - object ?l - location): true if the object ?o (which should be a worker or vehicle) is at location ?l
-- (inside ?w - worker ?v - vehicle): true if the worker ?w is in the vehicle ?v
-- (wall_order ?h - house): true if there is an order to build a wall at house ?h
-- (wall_built ?h - house): true if a wall has been built for house ?h
-- (floor_order ?h - house): true if there is an order to build a floor at house ?h
-- (floor_built ?h - house): true if a floor has been built for house ?h
-- (floor_order ?h - house): true if there is an order to build a roof at house ?h
-- (roof_built ?h - house): true if a roof has been built for house ?h
-- (finalized ?h - house): true if the house ?h has been completed. 
-- (connected ?l1 - location ?l2 - location): true if there is a road between l1 and l2 allowing travel between them.
+- Predicate_Definition(name= "at", predicate_parameters= {"o":"object", "l":"location"}, description= "true if object (which should be a worker or vehicle) is at the location")
+- Predicate_Definition(name= "inside", predicate_parameters= {"w":"worker", "v":"vehicle"}, description= "true if worker is in vehicle")
+- Predicate_Definition(name= "wall_order", predicate_parameters= {"h":"house"}, description= "true if there is an order to build a wall at house")
+- Predicate_Definition(name= "wall_built", predicate_parameters= {"h":"house"}, description= "true if a wall has been built for house")
+- Predicate_Definition(name= "floor_order", predicate_parameters= {"h":"house"}, description= "true if there is an order to build a floor at house")
+- Predicate_Definition(name= "floor_built", predicate_parameters= {"h":"house"}, description= "true if a floor has been built for house")
+- Predicate_Definition(name= "roof_order", predicate_parameters= {"h":"house"}, description= "true if there is an order to build a roof at house")
+- Predicate_Definition(name= "roof_built", predicate_parameters= {"h":"house"}, description= "true if a roof has been built for house")
+- Predicate_Definition(name= "finalized", predicate_parameters= {"h":"house"}, description= "true if the house has been completed")
+- Predicate_Definition(name= "connected", predicate_parameters= {"l1":"location", "l2":"location"}, description= "true if there is a road between l1 and l2 allowing travel between them")
 
 ### State
 This is the state to give feedback on based on the domain and predicates above.
 
 #### Objects
-truck1 - truck - the truck at the Chicago depot
-chicago_depot - house: The Chicago depot
-house1 - The first house to build
-house2 - The second house to build
-house3 - The third house to build
-jamie - administrator: The administrator Jamie
-emma - general_worker: The first worker, Emma
-bob - general_worker: The second worker, Bob
+object_instances=Object_Instance(
+    objects={
+        "truck1":"truck",
+        "chicago_depot":"house",
+        "house1":"house",
+        "house2":"house",
+        "house3":"house",
+        "jamie":"administrator",
+        "emma":"general_worker",
+        "bob":"general_worker"
+    }
+)
 
 #### Initial State
-(at truck1 chicago_depot): the truck is at the chicago_depot
-(at jamie chicago_depot): Jamie is at the depot
-(at emma chicago_depot): Emma is at the depot
-(connected house1 chicago_depot): house1 is connected to the chicago_depot
-(connected house2 chicago_depot): house2 is connected to the chicago_depot
-(connected house3 chicago_depot): house3 is connected to the chicago_depot
+initial_state=Initial_State(
+    initial_state_predicates=[
+        Predicate_Instance(name="at", parameters=["truck1", "chicago_depot"]),
+        Predicate_Instance(name="at", parameters=["jamie", "chicago_depot"]),
+        Predicate_Instance(name="at", parameters=["emma", "chicago_depot"]),
+        Predicate_Instance(name="connected", parameters=["house1", "chicago_depot"]),
+        Predicate_Instance(name="connected", parameters=["house2", "chicago_depot"]),
+        Predicate_Instance(name="connected", parameters=["house3", "chicago_depot"])
+    ]
+)
 
 #### Goal State
 ```
-(AND ; all the following should be done
-   (AND ; all the houses should be done
-      (finalized house1) ; house 1 is done
-      (finalized house2) ; house 2 is done
-      (finalized house3) ; house 3 is done
-   )
-   (at truck1 chicago_depot); the truck is returned
+goal_state=Goal_State(
+    goal_state_predicates={
+        "and": [
+            Predicate_Instance(name="finalized", parameters=["house1"]),
+            Predicate_Instance(name="finalized", parameters=["house2"]),
+            Predicate_Instance(name="finalized", parameters=["house3"]),
+            Predicate_Instance(name="at", parameters=["truck1", "chicago_depot"])
+        ]
+    }
 )
 ```
 
@@ -117,26 +127,30 @@ bob - general_worker: The second worker, Bob
 
 My concrete suggestions are the following:
     - Add a second truck ("truck2"). Initialize it with the following:
-        - (at truck2 chicago_depot)
+        - Predicate_Instance(name="at", parameters=["truck2", "chicago_depot"])
     - The "chicago_depot" is incorrectly modelled as a "house". It should instead be a "location". Correct this:
-        - chicago_depot - location
+        - {"chicago_depot":"location"}
     - The starting location for "bob" is missing. Add this in with the following predicate:
-        - (at bob chicago_depot)
+        - Predicate_Instance(name="at", parameters=["bob", "chicago_depot"])
     - Remove the requirement for truck1:s location in the goal. This results in the following goal:
         ```
-        (AND ; all the houses should be done
-            (finalized house1) ; house 1 is done
-            (finalized house2) ; house 2 is done
-            (finalized house3) ; house 3 is done
+        goal_state=Goal_State(
+            goal_state_predicates={
+                "and": [
+                    Predicate_Instance(name="finalized", parameters=["house1"]),
+                    Predicate_Instance(name="finalized", parameters=["house2"]),
+                    Predicate_Instance(name="finalized", parameters=["house3"])
+                ]
+            }
         )
         ```
     - Make sure that the "connected" predicates are all used symmetrically. For this, you need to include all the following in the initial state:
-        - (connected house1 chicago_depot): house1 is connected to the chicago_depot
-        - (connected chicago_depot house1): chicago_depot is connected to house1
-        - (connected house2 chicago_depot): house2 is connected to the chicago_depot
-        - (connected chicago_depot house2): chicago_depot is connected to house2
-        - (connected house3 chicago_depot): house3 is connected to the chicago_depot
-        - (connected chicago_depot house3): chicago_depot is connected to house3
+        - Predicate_Instance(name="connected", parameters=["chicago_depot", "house1"])
+        - Predicate_Instance(name="connected", parameters=["house1", "chicago_depot"])
+        - Predicate_Instance(name="connected", parameters=["chicago_depot", "house2"])
+        - Predicate_Instance(name="connected", parameters=["house2", "chicago_depot"])
+        - Predicate_Instance(name="connected", parameters=["chicago_depot", "house3"])
+        - Predicate_Instance(name="connected", parameters=["house3", "chicago_depot"])
 
 ## Example 2
 ### Domain
@@ -153,51 +167,59 @@ There are four habitats currently, one centered and three around it. The surroun
 
 ### Predicates
 The following are the available predicates which can be used:
-1. (at ?o - object ?l - location): true if the object ?o (animal or ranger) is at the location ?l
-2. (guarding ?r - ranger): true if the ranger ?r is guarding its current location
-3. (guaded ?l - location): true if the location ?l is guarded by any ranger
+- Predicate_Definition(name= "at", predicate_parameters= {"o":"object", "l":"location"}, description= "true if object (which should be an animal or ranger) is at the location")
+- Predicate_Definition(name= "guarding", predicate_parameters= {"r":"ranger"}, description= "true if ranger is guarding its current location")
+- Predicate_Definition(name= "protected", predicate_parameters= {"l":"location"}, description= "true if location is protected by any ranger")
 
 ### State
 This is the state to give feedback on based on the domain and predicates above.
 
 #### Objects
-outer1 - habitat: The first outer habitat
-outer2 - habitat: The second outer habitat
-outer3 - habitat: The third outer habitat
-outer4 - habitat: The fourth outer habitat
-center - habitat: The central habitat
-base - location: The location where the rangers currently are
-deer1 - animal: The animal living in outer1
-deer2 - animal: The animal living in outer2
-deer3 - animal: The animal living in outer3
-deer4 - animal: The animal living in outer4
-ranger1 - ranger: One of the available rangers
-ranger2 - ranger: One of the available rangers
+object_instances=Object_Instance(
+    objects={
+        "outer1":"habitat",
+        "outer2":"habitat",
+        "outer3":"habitat",
+        "outer4":"habitat",
+        "center":"habitat",
+        "base":"location",
+        "deer1":"animal",
+        "deer2":"animal",
+        "deer3":"animal",
+        "deer4":"animal",
+        "ranger1":"ranger",
+        "ranger2":"ranger"
+    }
+)
 
 #### Initial state
-(at deer1 outer1)
-(at deer2 outer2)
-(at deer3 outer3)
-(at deer4 outer4)
-(at ranger1 base)
-(at ranger2 base)
-(protected base)
+initial_state=Initial_State(
+    initial_state_predicates=[
+        Predicate_Instance(name="at", parameters=["deer1", "outer1"]),
+        Predicate_Instance(name="at", parameters=["deer2", "outer2"]),
+        Predicate_Instance(name="at", parameters=["deer3", "outer3"]),
+        Predicate_Instance(name="at", parameters=["deer4", "outer4"]),
+        Predicate_Instance(name="at", parameters=["ranger1", "base"]),
+        Predicate_Instance(name="at", parameters=["ranger2", "base"]),
+        Predicate_Instance(name="protected", parameters=["base"])
+    ]
+)
 
 #### Goal State
 ```
-(AND ; all the following should be done
-    (AND ; all the deer should be centered
-        (at deer1 center) ; deer1 is at center
-        (at deer2 center) ; deer2 is at center
-        (at deer3 center) ; deer3 is at center
-        (at deer4 center) ; deer4 is at center
-    )
-    (AND ; all the outer locations should be protected
-        (protected outer1) ; outer1 is protected
-        (protected outer2) ; outer2 is protected
-        (protected outer3) ; outer3 is protected
-        (protected outer4) ; outer4 is protected
-    )
+goal_state=Goal_State(
+    goal_state_predicates={
+        "and": [
+            Predicate_Instance(name="at", parameters=["deer1", "center"]),
+            Predicate_Instance(name="at", parameters=["deer2", "center"]),
+            Predicate_Instance(name="at", parameters=["deer3", "center"]),
+            Predicate_Instance(name="at", parameters=["deer4", "center"]),
+            Predicate_Instance(name="protected", parameters=["outer1"]),
+            Predicate_Instance(name="protected", parameters=["outer2"]),
+            Predicate_Instance(name="protected", parameters=["outer3"]),
+            Predicate_Instance(name="protected", parameters=["outer4"])
+        ]
+    }
 )
 ```
 
@@ -232,21 +254,21 @@ ranger2 - ranger: One of the available rangers
 My concrete suggestions are the following:
     - Remove the "deer4" and "outer4" objects from the domain entirely. They're incorrectly included.
     - Add at least one more ranger object. For example, "ranger3" could be added an initalized like this:
-        - (at ranger3 base)
-    - Remove the specification that base is protected ("(protected base)").
+        - Predicate_Instance(name= "at", parameters=["ranger3", "base"])
+    - Remove the specification that base is protected ("Predicate_Instance(name= "protected", parameters=["base"]").
     - The updated goal state with outer4 and deer4 removed should be:
         ```
-        (AND ; all the following should be done
-            (AND ; all the deer should be centered
-                (at deer1 center) ; deer1 is at center
-                (at deer2 center) ; deer2 is at center
-                (at deer3 center) ; deer3 is at center
-            )
-            (AND ; all the outer locations should be protected
-                (protected outer1) ; outer1 is protected
-                (protected outer2) ; outer2 is protected
-                (protected outer3) ; outer3 is protected
-            )
+        goal_state=Goal_State(
+            goal_state_predicates={
+                "and": [
+                    Predicate_Instance(name="at", parameters=["deer1", "center"]),
+                    Predicate_Instance(name="at", parameters=["deer2", "center"]),
+                    Predicate_Instance(name="at", parameters=["deer3", "center"]),
+                    Predicate_Instance(name="protected", parameters=["outer1"]),
+                    Predicate_Instance(name="protected", parameters=["outer2"]),
+                    Predicate_Instance(name="protected", parameters=["outer3"])
+                ]
+            }
         )
         ```
 
@@ -262,32 +284,44 @@ I've got a building with five floors and two elevators, and I want you to plan t
 
 ### Predicates
 The following are the available predicates which can be used:
-1. (at ?o - object ?f - floor): true if the object ?o (floor or elevator) is at the floor ?f
-2. (in ?p - person ?e - elevator): true if the person ?p is in the elevator ?e
+- Predicate_Definition(name= "at", predicate_parameters= {"o":"object", "f":"floor"}, description= "true if object is at the floor")
+- Predicate_Definition(name= "in", predicate_parameters= {"p":"person", "e":"elevator"}, description= "true if person is in the elevator")
 
 ### State
 This is the state to give feedback on based on the domain and predicates above.
 
 #### Objects
-bob - person: One of the two people who should meet. His exact floor is unknown.
-sally - person: The other person who should meet. Her exact floor is unknown.
-floor_bob - floor: The floor bob is on. Which (1-5) this is we don't know, so model generally.
-floor_sally - floor: The floor sally is on. Which (1-5) this is we don't know, so model generally.
-floor_5 - floor: The floor they should meet up at.
-elevator_1 - elevator: The first elevator in the building.
-elevator_2 - elevator: The second elevator in the building.
+object_instances=Object_Instance(
+    objects={
+        "bob":"person",
+        "sally":"person",
+        "floor_bob":"floor",
+        "floor_sally":"floor",
+        "floor_5":"floor",
+        "elevator_1":"elevator",
+        "elevator_2":"elevator"
+    }
+)
 
 #### Initial State
-(at bob floor_bob)
-(at sally floor_sally)
-(at elevator_1 floor_5)
-(at elevator_2 floor_5)
+initial_state=Initial_State(
+    initial_state_predicates=[
+        Predicate_Instance(name="at", parameters=["bob", "floor_bob"]),
+        Predicate_Instance(name="at", parameters=["sally", "floor_sally"]),
+        Predicate_Instance(name="at", parameters=["elevator_1", "floor_5"]),
+        Predicate_Instance(name="at", parameters=["elevator_2", "floor_5"])
+    ]
+)
 
 #### Goal State
 ```
-(AND ; all the following should be done
-    (at bob floor_5) ; bob is at floor 5
-    (at sally floor_5) ; sally is at floor 5
+goal_state=Goal_State(
+    goal_state_predicates={
+        "and": [
+            Predicate_Instance(name="at", parameters=["bob", "floor_5"]),
+            Predicate_Instance(name="at", parameters=["sally", "floor_5"])
+        ]
+    }
 )
 ```
 

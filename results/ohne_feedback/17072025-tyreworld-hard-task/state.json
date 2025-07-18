@@ -1,0 +1,968 @@
+{
+  "natural_language_task": "The car is already in the process of having wheels changed, so the front left hub is raised with the jack and its wheel removed. I want you to remove and replace the back left tyre. You'll find an uninflated tyre, the wrench and a pump in the closed trunk.",
+  "domain_desc": "The AI agent here is a robot that has to replace a flat tyre with a spare one. This involves fetching the tools (wrench, jack, pump) from the boot, undoing the nuts on the flat tyre, jacking up the (appropriate) hub(s), removing the tyre, doing up the spare one, etc. Note that there is no restriction on how many objects the AI agent (i.e., the robot) can carry. Also note that each hub has only one nut.",
+  "domain_name": "tyreworld",
+  "task_name": "hard-task",
+  "types": [
+    {
+      "name": "location",
+      "description": "A place where objects can be. Examples include the boot/trunk or the ground next to a hub"
+    },
+    {
+      "name": "hub",
+      "description": "A part of the car where wheels are mounted. Has exactly one nut"
+    },
+    {
+      "name": "tool",
+      "description": "Tools needed for changing tyres"
+    },
+    {
+      "name": "wrench",
+      "description": "A tool used to loosen and tighten nuts on hubs"
+    },
+    {
+      "name": "jack",
+      "description": "A tool used to lift the car to allow wheel removal and replacement"
+    },
+    {
+      "name": "pump",
+      "description": "A tool used to inflate tyres"
+    },
+    {
+      "name": "tyre",
+      "description": "A wheel that can be mounted on a hub. Can be inflated or deflated"
+    },
+    {
+      "name": "nut",
+      "description": "Fastens a tyre to a hub. One per hub"
+    },
+    {
+      "name": "trunk",
+      "description": "A storage location in the car that can be opened or closed. Also called boot"
+    },
+    {
+      "name": "car",
+      "description": "The vehicle being worked on. Has hubs where tyres are mounted"
+    }
+  ],
+  "type_hierarchy": [
+    {
+      "parent_type": {
+        "name": "object",
+        "description": "Object is always root, everything is an object"
+      },
+      "child_types": [
+        {
+          "name": "location",
+          "description": "A place where objects can be"
+        },
+        {
+          "name": "tool",
+          "description": "Tools needed for changing tyres"
+        },
+        {
+          "name": "car_part",
+          "description": "Parts that make up a car"
+        },
+        {
+          "name": "car",
+          "description": "The vehicle being worked on"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "location",
+        "description": "A place where objects can be"
+      },
+      "child_types": [
+        {
+          "name": "trunk",
+          "description": "A storage location in the car that can be opened or closed"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "tool",
+        "description": "Tools needed for changing tyres"
+      },
+      "child_types": [
+        {
+          "name": "wrench",
+          "description": "A tool used to loosen and tighten nuts on hubs"
+        },
+        {
+          "name": "jack",
+          "description": "A tool used to lift the car to allow wheel removal"
+        },
+        {
+          "name": "pump",
+          "description": "A tool used to inflate tyres"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "car_part",
+        "description": "Parts that make up a car"
+      },
+      "child_types": [
+        {
+          "name": "hub",
+          "description": "A part of the car where wheels are mounted"
+        },
+        {
+          "name": "tyre",
+          "description": "A wheel that can be mounted on a hub"
+        },
+        {
+          "name": "nut",
+          "description": "Fastens a tyre to a hub"
+        }
+      ]
+    }
+  ],
+  "nominated_actions": [
+    {
+      "related_type": "trunk",
+      "name": "open_trunk",
+      "description": "Opens a closed trunk to access its contents. Requires the trunk to be closed.",
+      "usage_example": "Open the trunk of the car"
+    },
+    {
+      "related_type": "trunk",
+      "name": "close_trunk",
+      "description": "Closes an open trunk. Requires the trunk to be open.",
+      "usage_example": "Close the trunk of the car"
+    },
+    {
+      "related_type": "object",
+      "name": "take_from_trunk",
+      "description": "Takes an object from the trunk. Requires the trunk to be open and the object to be in the trunk.",
+      "usage_example": "Take the wrench from the trunk"
+    },
+    {
+      "related_type": "object",
+      "name": "put_in_trunk",
+      "description": "Puts an object into the trunk. Requires the trunk to be open.",
+      "usage_example": "Put the flat tyre in the trunk"
+    },
+    {
+      "related_type": "nut",
+      "name": "loosen_nut",
+      "description": "Loosens a nut on a hub using a wrench. Requires the wrench and the hub to not be raised (car weight keeps wheel steady).",
+      "usage_example": "Loosen the nut on the back left hub using the wrench"
+    },
+    {
+      "related_type": "nut",
+      "name": "tighten_nut",
+      "description": "Tightens a nut on a hub using a wrench. Requires the wrench and the hub to not be raised.",
+      "usage_example": "Tighten the nut on the back left hub using the wrench"
+    },
+    {
+      "related_type": "hub",
+      "name": "raise_hub",
+      "description": "Raises a hub using the jack. Requires the jack and the hub to not already be raised.",
+      "usage_example": "Raise the back left hub using the jack"
+    },
+    {
+      "related_type": "hub",
+      "name": "lower_hub",
+      "description": "Lowers a raised hub using the jack. Requires the jack and the hub to be raised.",
+      "usage_example": "Lower the back left hub using the jack"
+    },
+    {
+      "related_type": "tyre",
+      "name": "remove_tyre",
+      "description": "Removes a tyre from a hub. Requires the hub to be raised and its nut to be loosened.",
+      "usage_example": "Remove the tyre from the back left hub"
+    },
+    {
+      "related_type": "tyre",
+      "name": "mount_tyre",
+      "description": "Mounts a tyre on a hub. Requires the hub to be raised and have no tyre mounted.",
+      "usage_example": "Mount the spare tyre on the back left hub"
+    },
+    {
+      "related_type": "tyre",
+      "name": "inflate_tyre",
+      "description": "Inflates a tyre using the pump. Requires the pump and the tyre to be uninflated.",
+      "usage_example": "Inflate the spare tyre using the pump"
+    }
+  ],
+  "predicates": [
+    {
+      "name": "open",
+      "predicate_parameters": {
+        "t": "trunk"
+      },
+      "description": "true if the trunk is open."
+    },
+    {
+      "name": "closed",
+      "predicate_parameters": {
+        "t": "trunk"
+      },
+      "description": "true if the trunk is closed."
+    },
+    {
+      "name": "trunk_open",
+      "predicate_parameters": {
+        "t": "trunk"
+      },
+      "description": "true if the trunk is open, false if closed"
+    },
+    {
+      "name": "in_trunk",
+      "predicate_parameters": {
+        "obj": "object",
+        "t": "trunk"
+      },
+      "description": "true if the object is located in the trunk."
+    },
+    {
+      "name": "holding",
+      "predicate_parameters": {
+        "obj": "object"
+      },
+      "description": "true if the robot is holding the object."
+    },
+    {
+      "name": "has_nut",
+      "predicate_parameters": {
+        "h": "hub",
+        "n": "nut"
+      },
+      "description": "true if the hub h has the nut n mounted on it"
+    },
+    {
+      "name": "loose",
+      "predicate_parameters": {
+        "n": "nut"
+      },
+      "description": "true if the nut is loosened"
+    },
+    {
+      "name": "raised",
+      "predicate_parameters": {
+        "h": "hub"
+      },
+      "description": "true if the hub is raised with a jack"
+    },
+    {
+      "name": "nut_tight",
+      "predicate_parameters": {
+        "n": "nut"
+      },
+      "description": "true if the nut is tightened"
+    },
+    {
+      "name": "has_wrench",
+      "predicate_parameters": {
+        "w": "wrench"
+      },
+      "description": "true if the robot has the wrench"
+    },
+    {
+      "name": "hub_raised",
+      "predicate_parameters": {
+        "h": "hub"
+      },
+      "description": "true if the hub is raised with a jack"
+    },
+    {
+      "name": "has",
+      "predicate_parameters": {
+        "o1": "object",
+        "o2": "object"
+      },
+      "description": "true if object o1 has/holds/possesses object o2"
+    },
+    {
+      "name": "mounted_on",
+      "predicate_parameters": {
+        "t": "tyre",
+        "h": "hub"
+      },
+      "description": "true if tyre t is mounted on hub h"
+    },
+    {
+      "name": "nut_loosened",
+      "predicate_parameters": {
+        "h": "hub"
+      },
+      "description": "true if the nut on hub h is loosened"
+    },
+    {
+      "name": "inflated",
+      "predicate_parameters": {
+        "t": "tyre"
+      },
+      "description": "true if tyre t is inflated"
+    }
+  ],
+  "actions": [
+    {
+      "name": "open_trunk",
+      "description": "Opens a closed trunk to access its contents. Requires the trunk to be closed.",
+      "action_parameters": {
+        "t": "trunk"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "closed",
+            "parameters": [
+              "t"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": "not",
+            "conditions": {
+              "name": "closed",
+              "parameters": [
+                "t"
+              ]
+            }
+          },
+          {
+            "name": "open",
+            "parameters": [
+              "t"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "close_trunk",
+      "description": "Closes an open trunk. Requires the trunk to be open.",
+      "action_parameters": {
+        "t": "trunk"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "is_open",
+            "parameters": [
+              "t"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": "not",
+            "conditions": {
+              "name": "is_open",
+              "parameters": [
+                "t"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "take_from_trunk",
+      "description": "Takes an object from the trunk. Requires the trunk to be open and the object to be in the trunk.",
+      "action_parameters": {
+        "obj": "object",
+        "t": "trunk"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "open",
+            "parameters": [
+              "t"
+            ]
+          },
+          {
+            "name": "in",
+            "parameters": [
+              "obj",
+              "t"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": "not",
+            "conditions": {
+              "name": "in",
+              "parameters": [
+                "obj",
+                "t"
+              ]
+            }
+          },
+          {
+            "name": "has",
+            "parameters": [
+              "obj"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "put_in_trunk",
+      "description": "Puts an object into the trunk. Requires the trunk to be open.",
+      "action_parameters": {
+        "o": "object",
+        "t": "trunk"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "open",
+            "parameters": [
+              "t"
+            ]
+          },
+          {
+            "name": "holding",
+            "parameters": [
+              "o"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "in_trunk",
+            "parameters": [
+              "o"
+            ]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "holding",
+              "parameters": [
+                "o"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "loosen_nut",
+      "description": "Loosens a nut on a hub using a wrench. Requires the wrench and the hub to not be raised (car weight keeps wheel steady).",
+      "action_parameters": {
+        "h": "hub",
+        "n": "nut",
+        "w": "wrench"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "has",
+            "parameters": [
+              "h",
+              "n"
+            ]
+          },
+          {
+            "name": "has",
+            "parameters": [
+              "robot",
+              "w"
+            ]
+          },
+          {
+            "name": "tight",
+            "parameters": [
+              "n"
+            ]
+          },
+          {
+            "type": null,
+            "conditions": {
+              "name": "raised",
+              "parameters": [
+                "h"
+              ]
+            }
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": null,
+            "conditions": {
+              "name": "tight",
+              "parameters": [
+                "n"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "tighten_nut",
+      "description": "Tightens a nut on a hub using a wrench. Requires the wrench and the hub to not be raised.",
+      "action_parameters": {
+        "n": "nut",
+        "h": "hub",
+        "w": "wrench"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "has",
+            "parameters": [
+              "w"
+            ]
+          },
+          {
+            "name": "on_hub",
+            "parameters": [
+              "n",
+              "h"
+            ]
+          },
+          {
+            "name": "loose",
+            "parameters": [
+              "n"
+            ]
+          },
+          {
+            "type": null,
+            "conditions": {
+              "name": "raised",
+              "parameters": [
+                "h"
+              ]
+            }
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "tight",
+            "parameters": [
+              "n"
+            ]
+          },
+          {
+            "type": null,
+            "conditions": {
+              "name": "loose",
+              "parameters": [
+                "n"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "raise_hub",
+      "description": "Raises a hub using the jack. Requires the jack and the hub to not already be raised.",
+      "action_parameters": {
+        "h": "hub",
+        "j": "jack"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "have",
+            "parameters": [
+              "j"
+            ]
+          },
+          {
+            "name": "not_raised",
+            "parameters": [
+              "h"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "raised",
+            "parameters": [
+              "h"
+            ]
+          },
+          {
+            "name": "using",
+            "parameters": [
+              "j",
+              "h"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "lower_hub",
+      "description": "Lowers a raised hub using the jack. Requires the jack and the hub to be raised.",
+      "action_parameters": {
+        "h": "hub",
+        "j": "jack"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "raised",
+            "parameters": [
+              "h"
+            ]
+          },
+          {
+            "name": "has",
+            "parameters": [
+              "j"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": "not",
+            "conditions": {
+              "name": "raised",
+              "parameters": [
+                "h"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "remove_tyre",
+      "description": "Removes a tyre from a hub. Requires the hub to be raised and its nut to be loosened.",
+      "action_parameters": {
+        "h": "hub",
+        "t": "tyre",
+        "n": "nut"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "mounted",
+            "parameters": [
+              "t",
+              "h"
+            ]
+          },
+          {
+            "name": "raised",
+            "parameters": [
+              "h"
+            ]
+          },
+          {
+            "name": "has_nut",
+            "parameters": [
+              "h",
+              "n"
+            ]
+          },
+          {
+            "name": "loosened",
+            "parameters": [
+              "n"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": "not",
+            "conditions": {
+              "name": "mounted",
+              "parameters": [
+                "t",
+                "h"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "mount_tyre",
+      "description": "Mounts a tyre on a hub. Requires the hub to be raised and have no tyre mounted.",
+      "action_parameters": {
+        "t": "tyre",
+        "h": "hub"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "is_raised",
+            "parameters": [
+              "h"
+            ]
+          },
+          {
+            "name": "has_no_tyre",
+            "parameters": [
+              "h"
+            ]
+          },
+          {
+            "name": "holding",
+            "parameters": [
+              "t"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "mounted",
+            "parameters": [
+              "t",
+              "h"
+            ]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "has_no_tyre",
+              "parameters": [
+                "h"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "inflate_tyre",
+      "description": "Inflates a tyre using the pump. Requires the pump and the tyre to be uninflated.",
+      "action_parameters": {
+        "t": "tyre",
+        "p": "pump"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "has",
+            "parameters": [
+              "robot",
+              "t"
+            ]
+          },
+          {
+            "name": "has",
+            "parameters": [
+              "robot",
+              "p"
+            ]
+          },
+          {
+            "name": "uninflated",
+            "parameters": [
+              "t"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "inflated",
+            "parameters": [
+              "t"
+            ]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "uninflated",
+              "parameters": [
+                "t"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "object_instances": {
+    "objects": {
+      "car1": "car",
+      "trunk1": "trunk",
+      "wrench1": "wrench",
+      "jack1": "jack",
+      "pump1": "pump",
+      "hub_fl": "hub",
+      "hub_fr": "hub",
+      "hub_bl": "hub",
+      "hub_br": "hub",
+      "tyre_fl": "tyre",
+      "tyre_fr": "tyre",
+      "tyre_bl": "tyre",
+      "tyre_bl_flat": "tyre",
+      "tyre_br": "tyre",
+      "spare_tyre": "tyre",
+      "nut_fl": "nut",
+      "nut_fr": "nut",
+      "nut_bl": "nut",
+      "nut_br": "nut"
+    }
+  },
+  "initial_state": {
+    "initial_state_predicates": [
+      {
+        "name": "closed",
+        "parameters": [
+          "trunk1"
+        ]
+      },
+      {
+        "name": "in_trunk",
+        "parameters": [
+          "wrench1",
+          "trunk1"
+        ]
+      },
+      {
+        "name": "in_trunk",
+        "parameters": [
+          "pump1",
+          "trunk1"
+        ]
+      },
+      {
+        "name": "in_trunk",
+        "parameters": [
+          "spare_tyre",
+          "trunk1"
+        ]
+      },
+      {
+        "name": "mounted_on",
+        "parameters": [
+          "tyre_fr",
+          "hub_fr"
+        ]
+      },
+      {
+        "name": "mounted_on",
+        "parameters": [
+          "tyre_bl_flat",
+          "hub_bl"
+        ]
+      },
+      {
+        "name": "mounted_on",
+        "parameters": [
+          "tyre_br",
+          "hub_br"
+        ]
+      },
+      {
+        "name": "has_nut",
+        "parameters": [
+          "hub_fr",
+          "nut_fr"
+        ]
+      },
+      {
+        "name": "has_nut",
+        "parameters": [
+          "hub_bl",
+          "nut_bl"
+        ]
+      },
+      {
+        "name": "has_nut",
+        "parameters": [
+          "hub_br",
+          "nut_br"
+        ]
+      },
+      {
+        "name": "nut_tight",
+        "parameters": [
+          "nut_fr"
+        ]
+      },
+      {
+        "name": "nut_tight",
+        "parameters": [
+          "nut_bl"
+        ]
+      },
+      {
+        "name": "nut_tight",
+        "parameters": [
+          "nut_br"
+        ]
+      },
+      {
+        "name": "hub_raised",
+        "parameters": [
+          "hub_fl"
+        ]
+      },
+      {
+        "name": "inflated",
+        "parameters": [
+          "tyre_fr"
+        ]
+      },
+      {
+        "name": "inflated",
+        "parameters": [
+          "tyre_br"
+        ]
+      }
+    ]
+  },
+  "goal_state": {
+    "goal_state_predicates": {
+      "and": [
+        {
+          "name": "mounted_on",
+          "parameters": [
+            "spare_tyre",
+            "hub_bl"
+          ]
+        },
+        {
+          "name": "nut_tight",
+          "parameters": [
+            "nut_bl"
+          ]
+        },
+        {
+          "name": "inflated",
+          "parameters": [
+            "spare_tyre"
+          ]
+        }
+      ]
+    }
+  },
+  "feedback": [],
+  "pddl_domain": null,
+  "pddl_problem": null
+}

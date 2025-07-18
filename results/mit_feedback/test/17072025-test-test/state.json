@@ -1,0 +1,141 @@
+{
+  "natural_language_task": "test",
+  "domain_desc": "test",
+  "domain_name": "test",
+  "task_name": "test",
+  "types": [
+    {
+      "name": "test",
+      "description": "A test type for testing purposes."
+    }
+  ],
+  "type_hierarchy": [
+    {
+      "parent_type": {
+        "name": "object",
+        "description": "Object is always root, everything is an object"
+      },
+      "child_types": [
+        {
+          "name": "test",
+          "description": "A test type for testing purposes."
+        }
+      ]
+    }
+  ],
+  "nominated_actions": [
+    {
+      "related_type": "test",
+      "name": "test_action",
+      "description": "A test action for testing purposes. Requires a test object.",
+      "usage_example": "test_1 performs test_action"
+    }
+  ],
+  "predicates": [
+    {
+      "name": "can_test",
+      "predicate_parameters": {
+        "t": "test"
+      },
+      "description": "true if the test object is ready to be tested"
+    },
+    {
+      "name": "tested",
+      "predicate_parameters": {
+        "t": "test"
+      },
+      "description": "true if the test object has been tested"
+    }
+  ],
+  "actions": [
+    {
+      "name": "test_action",
+      "description": "A test action for testing purposes. Requires a test object.",
+      "action_parameters": {
+        "t": "test"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "can_test",
+            "parameters": [
+              "t"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "tested",
+            "parameters": [
+              "t"
+            ]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "can_test",
+              "parameters": [
+                "t"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "object_instances": {
+    "objects": {
+      "test1": "test",
+      "test2": "test"
+    }
+  },
+  "initial_state": {
+    "initial_state_predicates": [
+      {
+        "name": "can_test",
+        "parameters": [
+          "test1"
+        ]
+      },
+      {
+        "name": "can_test",
+        "parameters": [
+          "test2"
+        ]
+      }
+    ]
+  },
+  "goal_state": {
+    "goal_state_predicates": {
+      "and": [
+        {
+          "name": "tested",
+          "parameters": [
+            "test1"
+          ]
+        },
+        {
+          "name": "tested",
+          "parameters": [
+            "test2"
+          ]
+        }
+      ]
+    }
+  },
+  "feedback": [
+    "Since this is just a test example without a real domain description, I can't properly evaluate if the types are sufficient. However, I can note that having a type just called \"test\" with a testing description suggests this isn't meant to model anything real.\n\nFor meaningful feedback, I'd need:\n1. A description of what domain/problem we're trying to model\n2. What objects and relationships exist in this domain\n3. What actions or changes we want to plan for\n\nPlease provide these details so I can properly evaluate if the types are correct and sufficient.",
+    "1: Is any child not a subtype of its parent? \n    \"test\" is a valid subtype of \"object\" since everything is an object. So: No.\n\n2: Is any subtype not a child of its parent type? \n    There are no subtypes that should be children. Therefore: No.\n\n3: Are any new types needed for organisation? \n    With only one type, no organisation is needed. As such: No.\n\nTherefore: No feedback.",
+    "Let me evaluate this test domain according to the checklist:\n\n1: Are there additional actions needed for this domain?\n    Given that this is just a test domain with a single test type, a single action that can be performed by that type is sufficient. Therefore: No.\n\n2: Should any of the actions be split or combined?\n    The test action is simple enough to be performed in a single step. So: No.\n\n3: Should any of the actions be removed?\n    The single action is needed to demonstrate functionality. Hence: No.\n\n4: Should any preconditions be changed?\n    The precondition that a test object is required is sufficient. Therefore: No.\n\n5: Should any effects be changed?\n    For a test action, no specific effects need to be added. So: No.\n\n6: Should any action examples be modified?\n    The example clearly shows a test object performing the test action. Thereby: No.\n\nAs such: No feedback.",
+    "I notice that you've provided a test domain, but haven't actually specified an action to review. Could you please provide the specific PDDL action (with parameters, preconditions, and effects) that you'd like me to analyze? \n\nThe domain appears to be a simple testing framework with:\n- A basic type hierarchy (object -> test)\n- Two predicates: can_test and tested\n- A placeholder action called test_action\n\nOnce you provide the specific PDDL action implementation, I can review it against the checklist and provide detailed feedback.",
+    [
+      "No feedback - all objects are correctly defined with appropriate types",
+      "No feedback - initial state correctly specifies that both test objects can be tested",
+      "No feedback - goal state correctly requires both objects to be tested"
+    ]
+  ],
+  "pddl_domain": "(define (domain test)\n    (:requirements :conditional-effects :disjunctive-preconditions :equality :negative-preconditions :strips :typing :universal-preconditions)\n    (:types\n        test - object\n    )\n    (:predicates (can_test ?t - test)  (tested ?t - test))\n    (:action test_action\n        :parameters (?t - test)\n        :precondition (can_test ?t)\n        :effect (and (tested ?t) (not (can_test ?t)))\n    )\n)",
+  "pddl_problem": "(define (problem test)\n    (:domain test)\n    (:requirements :conditional-effects :disjunctive-preconditions :equality :negative-preconditions :strips :typing :universal-preconditions)\n    (:objects test1 test2 - test)\n    (:init (can_test test1) (can_test test2))\n    (:goal (and (tested test1) (tested test2)))\n)"
+}

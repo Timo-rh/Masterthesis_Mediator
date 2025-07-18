@@ -1,0 +1,199 @@
+{
+  "natural_language_task": "I want you to heat pizza_1 with pan_2.\n\nThe following are the current objects and their state:\n- drawer_1 is opened\n- drawer_2 is not opened\n- drawer_3 is opened\n- drawer_4 is not opened\n- fridge_1 is not opened\n- cabinet_1 is opened\n- cabinet_2 is not opened\n- cabinet_3 is not opened\n- cabinet_4 is opened\n- microwave_1 is not opened\n- carpet_1 is not clean\n- carpet_2 is not clean\n- dish_washer_1 is opened\n- garbage_can_1 is not opened\n- cup_1 in/on drawer_3\n- bowl_1 in/on dish_washer_1\n- bowl_2 in/on cabinet_4\n- plate_1 in/on dining_table_1\n- plate_2 in/on cabinet_3\n- pan_1 in/on stove_burner_1\n- pan_2 in/on dining_table_1\n- lunch_box_1 in/on fridge_1\n- lunch_box_1 is not opened\n- lunch_box_2 in/on cabinet_3\n- lunch_box_2 is not opened\n- pizza_box_1 in/on cabinet_2\n- pizza_box_1 is not opened\n- cutting_board_1 in/on countertop_2\n- cutting_board_1 is pickupable\n- toaster_1 in/on countertop_2\n- toaster_1 is not pickupable\n- toaster_1 is turned off\n- blender_1 in/on dining_table_1\n- blender_1 is not pickupable\n- blender_1 is turned off\n- lamp_1 in/on side_table_2\n- lamp_1 is turned on\n- lamp_1 is not pickupable\n- humidifier_1 in/on side_table_2\n- humidifier_1 is turned on\n- humidifier_1 is not pickupable\n- apple_1 in/on lunch_box_2\n- apple_1 is not sliced\n- apple_2 in/on drawer_2\n- apple_2 is not sliced\n- pizza_1 in/on pizza_box_1\n- pizza_1 is not pickupable\n- toast_1 in/on lunch_box_1\n- toast_1 is not sliced\n- orange_1 in/on lunch_box_1\n- orange_1 is not sliced\n- orange_2 in/on drawer_1\n- orange_2 is not sliced\n- banana_1 in/on cabinet_3\n- banana_1 is not sliced\n- potato_1 in/on cabinet_1\n- potato_1 is not sliced\n- fork_1 in/on cabinet_4\n- spoon_1 in/on drawer_4\n- knife_1 in/on cabinet_2\n- book_1 in/on dining_table_1\n- book_2 in/on side_table_2\n- book_3 in/on side_table_2\n- book_4 in/on side_table_1\n- book_5 in/on side_table_1\n- cloth_1 in/on cabinet_3\n- cloth_1 is clean\n- handheld_vacuum_1 in/on shelf_1\n- handheld_vacuum_1 has an empty dust bin\n- robot at drawer_1\n- robot is holding mug_1\n",
+  "domain_desc": "The AI agent here is a household robot that can navigate to various large and normally immovable furniture pieces or appliances in the house to carry out household tasks. Note that the robot has only one gripper, so (a) it can only hold one object; (b) it shouldn't hold any other irrelevant objects in its gripper while performing some manipulation tasks (e.g., opening a drawer or closing a window); (c) operations on small household items should be carried out on furniture with a flat surface to get enough space for manipulation. In this domain, the locations of the robot and small household items (e.g., apples, oranges, bowls, lunch boxes or lamps) are determined by large and normally immovable furniture pieces or appliances.",
+  "domain_name": "household",
+  "task_name": "hard-task",
+  "types": [
+    {
+      "name": "furniture",
+      "description": "Base type for large, normally immovable pieces in the house"
+    },
+    {
+      "name": "storage_furniture",
+      "description": "Furniture that can be opened/closed to store items (drawers, cabinets, fridge)"
+    },
+    {
+      "name": "surface_furniture",
+      "description": "Furniture with flat surfaces for placing items (tables, countertops)"
+    },
+    {
+      "name": "appliance",
+      "description": "Base type for electronic or mechanical devices"
+    },
+    {
+      "name": "cooking_appliance",
+      "description": "Appliances used for food preparation (stove, microwave, toaster)"
+    },
+    {
+      "name": "cleaning_appliance",
+      "description": "Appliances used for cleaning (vacuum, dishwasher)"
+    },
+    {
+      "name": "holdable_item",
+      "description": "Base type for objects that can be picked up and moved"
+    },
+    {
+      "name": "container",
+      "description": "Holdable items that can contain other items (boxes, bowls, lunch boxes)"
+    },
+    {
+      "name": "cookware",
+      "description": "Holdable items used for cooking (pans, cutting boards)"
+    },
+    {
+      "name": "utensil",
+      "description": "Holdable tools used for eating or food preparation (forks, spoons, knives)"
+    },
+    {
+      "name": "food",
+      "description": "Holdable edible items that can be sliced, heated, or stored"
+    },
+    {
+      "name": "small_item",
+      "description": "Miscellaneous holdable objects (books, mugs, cloths)"
+    }
+  ],
+  "type_hierarchy": [
+    {
+      "parent_type": {
+        "name": "object",
+        "description": "Object is always root, everything is an object"
+      },
+      "child_types": [
+        {
+          "name": "furniture",
+          "description": "Base type for large, normally immovable pieces in the house"
+        },
+        {
+          "name": "appliance",
+          "description": "Base type for electronic or mechanical devices"
+        },
+        {
+          "name": "holdable_item",
+          "description": "Base type for objects that can be picked up and moved"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "furniture",
+        "description": "Base type for large, normally immovable pieces in the house"
+      },
+      "child_types": [
+        {
+          "name": "storage_furniture",
+          "description": "Furniture that can be opened/closed to store items (drawers, cabinets, fridge)"
+        },
+        {
+          "name": "surface_furniture",
+          "description": "Furniture with flat surfaces for placing items (tables, countertops)"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "appliance",
+        "description": "Base type for electronic or mechanical devices"
+      },
+      "child_types": [
+        {
+          "name": "cooking_appliance",
+          "description": "Appliances used for food preparation (stove, microwave, toaster)"
+        },
+        {
+          "name": "cleaning_appliance",
+          "description": "Appliances used for cleaning (vacuum, dishwasher)"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "holdable_item",
+        "description": "Base type for objects that can be picked up and moved"
+      },
+      "child_types": [
+        {
+          "name": "container",
+          "description": "Holdable items that can contain other items (boxes, bowls, lunch boxes)"
+        },
+        {
+          "name": "cookware",
+          "description": "Holdable items used for cooking (pans, cutting boards)"
+        },
+        {
+          "name": "utensil",
+          "description": "Holdable tools used for eating or food preparation (forks, spoons, knives)"
+        },
+        {
+          "name": "food",
+          "description": "Holdable edible items that can be sliced, heated, or stored"
+        },
+        {
+          "name": "small_item",
+          "description": "Miscellaneous holdable objects (books, mugs, cloths)"
+        }
+      ]
+    }
+  ],
+  "nominated_actions": [
+    {
+      "related_type": "furniture",
+      "name": "move_to",
+      "description": "Robot moves from its current location to another furniture or appliance location. The destination must be accessible.",
+      "usage_example": "Robot moves from drawer_1 to dining_table_1"
+    },
+    {
+      "related_type": "holdable_item",
+      "name": "pick_up",
+      "description": "Robot picks up a holdable item from its current location. Requires the robot's gripper to be empty, the item to be at the same location as the robot, and if the item is in a storage furniture, that storage furniture must be opened.",
+      "usage_example": "Robot picks up pan_2 from dining_table_1"
+    },
+    {
+      "related_type": "holdable_item",
+      "name": "put_down",
+      "description": "Robot puts down the held item at its current location. Requires the robot to be holding something.",
+      "usage_example": "Robot puts down mug_1 on drawer_1"
+    },
+    {
+      "related_type": "storage_furniture",
+      "name": "open",
+      "description": "Robot opens a closed storage furniture or container. Requires the robot to be at the location and have an empty gripper.",
+      "usage_example": "Robot opens cabinet_2"
+    },
+    {
+      "related_type": "storage_furniture",
+      "name": "close",
+      "description": "Robot closes an opened storage furniture or container. Requires the robot to be at the location and have an empty gripper.",
+      "usage_example": "Robot closes drawer_1"
+    },
+    {
+      "related_type": "cooking_appliance",
+      "name": "turn_on",
+      "description": "Robot turns on a cooking appliance. Requires the robot to be at the location and have an empty gripper.",
+      "usage_example": "Robot turns on stove_burner_1"
+    },
+    {
+      "related_type": "cooking_appliance",
+      "name": "turn_off",
+      "description": "Robot turns off a cooking appliance. Requires the robot to be at the location and have an empty gripper.",
+      "usage_example": "Robot turns off stove_burner_1"
+    },
+    {
+      "related_type": "cookware",
+      "name": "heat_with",
+      "description": "Robot heats food using cookware on a cooking appliance. Requires the food to be in/on the cookware, the cookware to be on a cooking appliance that is turned on, and the robot to be at the cooking appliance location. Effect: the food becomes heated.",
+      "usage_example": "Robot heats pizza_1 with pan_2 on stove_burner_1 while at stove_burner_1"
+    },
+    {
+      "related_type": "cooking_appliance",
+      "name": "place_on",
+      "description": "Robot places cookware on a cooking appliance. Requires the robot to be holding the cookware and to be at the cooking appliance location.",
+      "usage_example": "Robot places pan_2 on stove_burner_1 while at stove_burner_1"
+    }
+  ],
+  "feedback": [
+    "Let me evaluate these types according to the checklist:\n\n1: Are there additional types needed?\n    No, the types cover all objects mentioned in the domain comprehensively.\n\n2: Are additional types needed for organizing the hierarchy?\n    Yes. Several types could benefit from better hierarchical organization:\n    - Both storage_furniture and surface_furniture should inherit from furniture\n    - cooking_appliance and cleaning_appliance should inherit from appliance\n    - cookware and container could benefit from a \"holdable_item\" parent type\n    - food and utensil could also be under \"holdable_item\"\n\n3: Are any of the types actually objects?\n    No, all types represent categories rather than specific instances.\n\n4: Are any of the types actually actions?\n    No, none of the types represent actions.\n\n5: Are any of the types actually properties?\n    No, all types represent physical objects rather than properties.\n\n6: Is the acting agent included?\n    Yes, \"robot\" is included as a type but since there's only one robot acting as the agent, it should be removed.\n\n7: Will any types only be used once?\n    Yes, \"robot\" will only be used once and should be removed.\n\n8: Better modeled differently?\n    No, all remaining types are appropriately modeled as types.\n\nI suggest reorganizing the types as follows:\n- furniture\n    - storage_furniture\n    - surface_furniture\n- appliance\n    - cooking_appliance\n    - cleaning_appliance\n- holdable_item\n    - container\n    - cookware\n    - utensil\n    - food\n    - small_item\n\nAnd remove:\n- robot (since it's the single acting agent)",
+    "Let me evaluate the type hierarchy:\n\n1: Is any child not a subtype of its parent? \n    All children are proper subtypes of their parents. For example, storage_furniture and surface_furniture are types of furniture, cooking_appliance and cleaning_appliance are types of appliance, and all the holdable items (container, cookware, utensil, food, small_item) are types of holdable_item. So: No.\n\n2: Is any subtype not a child of its parent type? \n    All subtypes are properly connected to their parent types. There are no missing connections. Therefore: No.\n\n3: Are any new types needed for organisation? \n    The types are well organized with clear parent-child relationships. The three main categories (furniture, appliance, holdable_item) cover all the types needed for the domain, and their subtypes are logically grouped. Due to this: No.\n\nTherefore: No feedback.\n\nThe hierarchy is well-structured for this household robot domain, with clear distinctions between immovable objects (furniture), electronic devices (appliances), and items that can be manipulated (holdable_items). The subtypes within each category are logical and properly organized.",
+    "Let me evaluate the actions for this household robot domain:\n\n1: Are there additional actions needed?\nNo additional actions are needed. The given actions cover all necessary operations for the task of heating pizza with a pan.\n\n2: Should any actions be split or combined?\nNo, all actions are atomic and well-defined.\n\n3: Should any actions be removed?\nNo, all actions are necessary for various household tasks.\n\n4: Should any preconditions be changed?\nYes, several actions need more precise preconditions:\n- \"heat_with\" should specify that the robot needs to be at the location of the cooking appliance\n- \"place_on\" should specify that the robot needs to be at the location of the cooking appliance\n- \"pick_up\" should specify that if the item is in a storage furniture, that storage furniture needs to be opened\n\n5: Should any effects be changed?\nYes, \"heat_with\" should specify that the food becomes heated as an effect.\n\n6: Should any action examples be modified?\nYes, \"heat_with\" example should be more specific about the location: \"Robot heats pizza_1 with pan_2 on stove_burner_1 while at stove_burner_1\"\n\nMy concrete suggestions are to modify these action descriptions:\n\n- heat_with: Robot heats food using cookware on a cooking appliance. Requires the food to be in/on the cookware, the cookware to be on a cooking appliance that is turned on, and the robot to be at the cooking appliance location. Effect: the food becomes heated. Example: Robot heats pizza_1 with pan_2 on stove_burner_1 while at stove_burner_1\n\n- place_on: Robot places cookware on a cooking appliance. Requires the robot to be holding the cookware and to be at the cooking appliance location. Example: Robot places pan_2 on stove_burner_1 while at stove_burner_1\n\n- pick_up: Robot picks up a holdable item from its current location. Requires the robot's gripper to be empty, the item to be at the same location as the robot, and if the item is in a storage furniture, that storage furniture must be opened. Example: Robot picks up pan_2 from dining_table_1"
+  ]
+}

@@ -108,11 +108,11 @@ class ObjectInstances(BaseModel):
 
 #Klasse für den Ausgangszustand
 class InitialState(BaseModel):
-    initial_state_predicates: List[Predicate_Instance] = Field(description="A list of predicates describing the initial state of the world, e.g., [{'at', {'L1': 'LStorage'}, The first London package location}, {'at', {'L2': 'LStorage'}, The second London package location}")
+    initial_state_predicates: List[Union[Predicate_Instance, Condition]] = Field(description="A list of predicates describing the initial state of the world, e.g., [{'at', {'L1': 'LStorage'}, The first London package location}, {'at', {'L2': 'LStorage'}, The second London package location}")
 
 #Klasse für den Zielzustand
 class GoalState(BaseModel):
-    goal_state_predicates: Dict[str, List[Predicate_Instance]] = Field(description="{'and': [Predicate(name='at', parameters={'package': 'L1', 'location': 'Addr1'}, description='L1 is delivered'), Predicate(name='at', parameters={'package': 'L2', 'location': 'Addr2'}, description='L2 is delivered')]}")
+    goal_state_predicates: Dict[str, List[Union[Predicate_Instance, Condition]]] = Field(description="{'and': [Predicate(name='at', parameters={'package': 'L1', 'location': 'Addr1'}, description='L1 is delivered'), Predicate(name='at', parameters={'package': 'L2', 'location': 'Addr2'}, description='L2 is delivered')]}")
 
 ##Diese Klasse ist nur für die Ausstattung des LLMs mit einem strukturierten Output (für die Taskgenerierung)
 class Task_Description(BaseModel):

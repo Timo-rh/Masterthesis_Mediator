@@ -1,15 +1,20 @@
 from __future__ import annotations
 from utils.pddl_parser import *
+import os
+from utils.paths import *
+from langchain import chat_models
+from langchain_core.prompts import ChatPromptTemplate
+from datetime import datetime
 
 # =============================================================================
 # Initialisierung
 # =============================================================================
 
 #Initalisierung des Mediator-LLMs (Temperatur = 0, Timeout nach 300 Sekunden)
-mediator_llm = chat_models.init_chat_model("anthropic:claude-3-5-sonnet-latest", temperature=0, timeout=300)
+mediator_llm = chat_models.init_chat_model("anthropic:claude-3-5-sonnet-latest", temperature=0.7)
 
 #Initalisierung des Feedback-LLMs (Temperatur = 0, Timeout nach 300 Sekunden)
-feedback_llm = chat_models.init_chat_model("anthropic:claude-3-5-sonnet-latest", temperature=0, timeout=300)
+feedback_llm = chat_models.init_chat_model("anthropic:claude-3-5-sonnet-latest", temperature=0)
 
 
 # =============================================================================
@@ -224,7 +229,7 @@ def construct_one_action(state: NL2PlanState, action: Nominated_Action):
          "nominated_actions": state.nominated_actions,
          "action_to_create": action,
          "predicates": state.predicates})
-
+    print(f"Constructed action: {action_construction_call}")
     # Gibt eine Aktion zurück
     return action_construction_call
 
@@ -522,12 +527,6 @@ def problem_to_state(state: NL2PlanState):
 def save_complete_state(state: NL2PlanState):
     """
     Speichert den kompletten State als JSON.
-
-    Args:
-        state (NL2PlanState): Der aktuelle State mit allen Komponenten.
-
-    Returns:
-        dict: Dictionary mit dem kompletten State.
     """
     # Erstelle Ordnername nach Schema DDMMYYYY-domain-task
     from datetime import datetime

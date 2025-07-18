@@ -174,56 +174,138 @@ def create_objects(state: NL2PlanState) -> dict[str, Constant]:
 
 
 # Erstellen des Initialzustands (InitialState)
-def create_initial_state(state: NL2PlanState, object_map: dict[str, Constant]) -> list[Predicate]:
-    """
-    Erstellt eine Liste von Prädikaten für den Initialzustand basierend auf dem initial_state.
-    """
-    initial_predicates = []
-    # Zugriff auf das InitialState-Objekt
-    for pred_inst in state.initial_state.initial_state_predicates:
-        name = pred_inst.name
-        parameters = pred_inst.parameters
+# def create_initial_state(state: NL2PlanState, object_map: dict[str, Constant]) -> list[Predicate]:
+#     """
+#     Erstellt eine Liste von Prädikaten für den Initialzustand basierend auf dem initial_state.
+#     """
+#     initial_predicates = []
+#     # Zugriff auf das InitialState-Objekt
+#     for pred_inst in state.initial_state.initial_state_predicates:
+#         name = pred_inst.name
+#         parameters = pred_inst.parameters
+#
+#         constants = []
+#         for p in parameters:
+#             key = p.lower()
+#             if key not in object_map:
+#                 raise ValueError(
+#                     f"Constant '{p}' (als '{key}') nicht in object_instances gefunden.")
+#             constants.append(object_map[key])
+#
+#         pred = Predicate(name, *constants)
+#         initial_predicates.append(pred)
+#     return initial_predicates
 
-        constants = []
-        for p in parameters:
-            key = p.lower()
-            if key not in object_map:
-                raise ValueError(
-                    f"Constant '{p}' (als '{key}') nicht in object_instances gefunden.")
-            constants.append(object_map[key])
-
-        pred = Predicate(name, *constants)
-        initial_predicates.append(pred)
-    return initial_predicates
 
 # Erstellen des Zielzustands (GoalState)
-def create_goal_state(state: NL2PlanState, object_map: dict[str, Constant]) -> And:
+# def create_goal_state(state: NL2PlanState, object_map: dict[str, Constant]) -> And:
+#     """
+#     Erstellt eine And-Bedingung für den Zielzustand basierend auf dem goal_state.
+#     """
+#     predicates = []
+#     # Zugriff auf das GoalState-Objekt
+#     if "and" in state.goal_state.goal_state_predicates:
+#         goal_predicates = state.goal_state.goal_state_predicates["and"]
+#     else:
+#         raise ValueError("Goal state muss einen 'and'-Schlüssel mit einer Liste von Prädikaten enthalten.")
+#
+#     for pred_inst in goal_predicates:
+#         name = pred_inst.name
+#         parameters = pred_inst.parameters
+#
+#         constants = []
+#         for p in parameters:
+#             key = p.lower()
+#             if key not in object_map:
+#                 raise ValueError(
+#                     f"Objekt '{p}' (als '{key}') nicht in object_instances gefunden")
+#             constants.append(object_map[key])
+#
+#         pred = Predicate(name, *constants)
+#         predicates.append(pred)
+#     return And(*predicates)
+
+
+# def parse_condition(condition, object_map):
+#     """
+#     Parst verschiedene Arten von Bedingungen rekursiv.
+#     """
+#     if not condition:
+#         return None
+#
+#     # Einfaches Prädikat
+#     if hasattr(condition, "name") and hasattr(condition, "parameters"):
+#         name = condition.name
+#         parameters = []
+#         for p in condition.parameters:
+#             key = p.lower()
+#             if key not in object_map:
+#                 raise ValueError(f"Konstante '{p}' nicht in object_map gefunden")
+#             parameters.append(object_map[key])
+#         return Predicate(name, *parameters)
+#
+#     # Komplexe Bedingung
+#     elif hasattr(condition, "type"):
+#         if condition.type == "not":
+#             inner = parse_condition(condition.conditions, object_map)
+#             return Not(inner) if inner else None
+#         elif condition.type == "and":
+#             parts = []
+#             for c in condition.conditions:
+#                 part = parse_condition(c, object_map)
+#                 if part:
+#                     parts.append(part)
+#             return And(*parts) if parts else None
+#         elif condition.type == "or":
+#             parts = []
+#             for c in condition.conditions:
+#                 part = parse_condition(c, object_map)
+#                 if part:
+#                     parts.append(part)
+#             return Or(*parts) if parts else None
+#
+#     return None
+
+
+def create_initial_state(state: NL2PlanState, object_map: dict[str, Constant]) -> list:
     """
-    Erstellt eine And-Bedingung für den Zielzustand basierend auf dem goal_state.
+    Erstellt Initialzustand - prüft auf Conditions und normale Prädikate.
     """
     predicates = []
-    # Zugriff auf das GoalState-Objekt
-    if "and" in state.goal_state.goal_state_predicates:
-        goal_predicates = state.goal_state.goal_state_predicates["and"]
-    else:
-        raise ValueError("Goal state muss einen 'and'-Schlüssel mit einer Liste von Prädikaten enthalten.")
+    for pred in state.initial_state.initial_state_predicates:
+        # Prüfe ob es eine Condition ist (hat 'type' Attribut)
+        if hasattr(pred, 'type') and pred.type == "not":
+            # Negatives Prädikat - hole das innere Prädikat aus 'conditions'
+            inner = pred.conditions
+            name = inner.name
+            params = [object_map[p.lower()] for p in inner.parameters if p.lower() in object_map]
+            predicates.append(Not(Predicate(name, *params)))
+        else:
+            # Normales Prädikat (Predicate_Instance)
+            name = pred.name
+            params = [object_map[p.lower()] for p in pred.parameters if p.lower() in object_map]
+            predicates.append(Predicate(name, *params))
+    return predicates
 
-    for pred_inst in goal_predicates:
-        name = pred_inst.name
-        parameters = pred_inst.parameters
 
-        constants = []
-        for p in parameters:
-            key = p.lower()
-            if key not in object_map:
-                raise ValueError(
-                    f"Objekt '{p}' (als '{key}') nicht in object_instances gefunden")
-            constants.append(object_map[key])
-
-        pred = Predicate(name, *constants)
-        predicates.append(pred)
+def create_goal_state(state: NL2PlanState, object_map: dict[str, Constant]) -> And:
+    """
+    Erstellt Zielzustand - direkte Liste ohne "and".
+    """
+    predicates = []
+    for pred in state.goal_state.goal_state_predicates:
+        if pred.get("type") == "not":
+            # Negatives Prädikat
+            inner = pred["conditions"]
+            name = inner["name"]
+            params = [object_map[p.lower()] for p in inner["parameters"] if p.lower() in object_map]
+            predicates.append(Not(Predicate(name, *params)))
+        else:
+            # Positives Prädikat
+            name = pred["name"]
+            params = [object_map[p.lower()] for p in pred["parameters"] if p.lower() in object_map]
+            predicates.append(Predicate(name, *params))
     return And(*predicates)
-
 
 def create_problem(state: NL2PlanState):
     # 1. Erstelle alle Constant-Objekte (als dict)

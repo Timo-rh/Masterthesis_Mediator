@@ -1,0 +1,363 @@
+{
+  "natural_language_task": "There are four blocks in two piles. The first has blue on red and the second has green on yellow. I want a single stack ordered (lowest first): red, green, blue, yellow.",
+  "domain_desc": "The AI agent here is a mechanical robot arm that can pick and place the blocks. Only one block may be moved at a time: it may either be placed on the table or placed atop another block. Because of this, any blocks that are, at a given time, under another block cannot be moved.",
+  "domain_name": "blocksworld",
+  "task_name": "medium-task",
+  "types": [
+    {
+      "name": "block",
+      "description": "A physical block that can be stacked on other blocks or the table. Has a color and can only be moved if nothing is on top of it."
+    },
+    {
+      "name": "table",
+      "description": "The surface on which blocks can be placed. Acts as the bottom-most position for any stack."
+    },
+    {
+      "name": "stack",
+      "description": "A vertical arrangement of blocks, where each block is placed directly on top of another block or the table."
+    },
+    {
+      "name": "position",
+      "description": "A location where a block can be placed, either on the table or on top of another block."
+    }
+  ],
+  "type_hierarchy": [
+    {
+      "parent_type": {
+        "name": "object",
+        "description": "Object is always root, everything is an object"
+      },
+      "child_types": [
+        {
+          "name": "position",
+          "description": "A location where a block can be placed, either on the table or on top of another block."
+        },
+        {
+          "name": "block",
+          "description": "A physical block that can be stacked on other blocks or the table. Has a color and can only be moved if nothing is on top of it."
+        },
+        {
+          "name": "stack",
+          "description": "A vertical arrangement of blocks, where each block is placed directly on top of another block or the table."
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "position",
+        "description": "A location where a block can be placed, either on the table or on top of another block."
+      },
+      "child_types": [
+        {
+          "name": "table",
+          "description": "The surface on which blocks can be placed. Acts as the bottom-most position for any stack."
+        }
+      ]
+    }
+  ],
+  "nominated_actions": [
+    {
+      "related_type": "block",
+      "name": "pick_up",
+      "description": "The robot arm picks up a block. Requires that no other block is on top of the target block.",
+      "usage_example": "Pick up the blue block from its current position"
+    },
+    {
+      "related_type": "block",
+      "name": "put_down_on_table",
+      "description": "The robot arm places a block it is holding onto the table.",
+      "usage_example": "Put the red block down on the table"
+    },
+    {
+      "related_type": "block",
+      "name": "stack",
+      "description": "The robot arm places a block it is holding on top of another block. Requires that no other block is on top of the target block.",
+      "usage_example": "Stack the blue block on top of the red block"
+    }
+  ],
+  "predicates": [
+    {
+      "name": "clear",
+      "predicate_parameters": {
+        "b": "block"
+      },
+      "description": "true if no block is on top of block b"
+    },
+    {
+      "name": "on_table",
+      "predicate_parameters": {
+        "b": "block"
+      },
+      "description": "true if block b is directly on the table"
+    },
+    {
+      "name": "on",
+      "predicate_parameters": {
+        "b1": "block",
+        "b2": "block"
+      },
+      "description": "true if block b1 is directly on top of block b2"
+    },
+    {
+      "name": "holding",
+      "predicate_parameters": {
+        "b": "block"
+      },
+      "description": "true if the robot arm is holding block b"
+    },
+    {
+      "name": "hand_empty",
+      "predicate_parameters": {},
+      "description": "true if the robot arm is not holding any block"
+    },
+    {
+      "name": "arm_empty",
+      "predicate_parameters": {},
+      "description": "true if the robot arm is not holding any block"
+    }
+  ],
+  "actions": [
+    {
+      "name": "pick_up",
+      "description": "The robot arm picks up a block. Requires that no other block is on top of the target block.",
+      "action_parameters": {
+        "b": "block"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "clear",
+            "parameters": [
+              "b"
+            ]
+          },
+          {
+            "name": "on_table_or_block",
+            "parameters": [
+              "b"
+            ]
+          },
+          {
+            "name": "hand_empty",
+            "parameters": []
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "holding",
+            "parameters": [
+              "b"
+            ]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "on_table_or_block",
+              "parameters": [
+                "b"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "put_down_on_table",
+      "description": "The robot arm places a block it is holding onto the table.",
+      "action_parameters": {
+        "block": "block"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "holding",
+            "parameters": [
+              "block"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": "not",
+            "conditions": {
+              "name": "holding",
+              "parameters": [
+                "block"
+              ]
+            }
+          },
+          {
+            "name": "on_table",
+            "parameters": [
+              "block"
+            ]
+          },
+          {
+            "name": "clear",
+            "parameters": [
+              "block"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "stack",
+      "description": "The robot arm places a block it is holding on top of another block. Requires that no other block is on top of the target block.",
+      "action_parameters": {
+        "block_to_move": "block",
+        "destination_block": "block"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "holding",
+            "parameters": [
+              "block_to_move"
+            ]
+          },
+          {
+            "name": "clear",
+            "parameters": [
+              "destination_block"
+            ]
+          },
+          {
+            "name": "not_equal",
+            "parameters": [
+              "block_to_move",
+              "destination_block"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "on",
+            "parameters": [
+              "block_to_move",
+              "destination_block"
+            ]
+          },
+          {
+            "name": "clear",
+            "parameters": [
+              "block_to_move"
+            ]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "holding",
+              "parameters": [
+                "block_to_move"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "object_instances": {
+    "objects": {
+      "table1": "table",
+      "red_block": "block",
+      "blue_block": "block",
+      "green_block": "block",
+      "yellow_block": "block"
+    }
+  },
+  "initial_state": {
+    "initial_state_predicates": [
+      {
+        "name": "on",
+        "parameters": [
+          "blue_block",
+          "red_block"
+        ]
+      },
+      {
+        "name": "on",
+        "parameters": [
+          "green_block",
+          "yellow_block"
+        ]
+      },
+      {
+        "name": "on_table",
+        "parameters": [
+          "red_block"
+        ]
+      },
+      {
+        "name": "on_table",
+        "parameters": [
+          "yellow_block"
+        ]
+      },
+      {
+        "name": "clear",
+        "parameters": [
+          "blue_block"
+        ]
+      },
+      {
+        "name": "clear",
+        "parameters": [
+          "green_block"
+        ]
+      },
+      {
+        "name": "hand_empty",
+        "parameters": []
+      }
+    ]
+  },
+  "goal_state": {
+    "goal_state_predicates": {
+      "and": [
+        {
+          "name": "on_table",
+          "parameters": [
+            "red_block"
+          ]
+        },
+        {
+          "name": "on",
+          "parameters": [
+            "green_block",
+            "red_block"
+          ]
+        },
+        {
+          "name": "on",
+          "parameters": [
+            "blue_block",
+            "green_block"
+          ]
+        },
+        {
+          "name": "on",
+          "parameters": [
+            "yellow_block",
+            "blue_block"
+          ]
+        },
+        {
+          "name": "clear",
+          "parameters": [
+            "yellow_block"
+          ]
+        }
+      ]
+    }
+  },
+  "feedback": [],
+  "pddl_domain": null,
+  "pddl_problem": null
+}

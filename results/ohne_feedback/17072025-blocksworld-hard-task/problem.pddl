@@ -1,0 +1,7 @@
+(define (problem hard-task)
+    (:domain blocksworld)
+    (:requirements :conditional-effects :disjunctive-preconditions :equality :negative-preconditions :strips :typing :universal-preconditions)
+    (:objects block1 block2 block3 block4 block5 - block blue green red - color table1 - table)
+    (:init (arm_empty) (clear block3) (clear block5) (has_color block1 red) (has_color block2 blue) (has_color block3 green) (has_color block4 red) (has_color block5 green) (on block2 block1) (on block3 block2) (on block5 block4) (on_table block1) (on_table block4))
+    (:goal (and (on_table block1) (has_color block1 red) (on block2 block1) (has_color block2 red) (on block3 block2) (has_color block3 blue) (on block4 block3) (has_color block4 green) (on block5 block4) (has_color block5 green) (clear block5)))
+)

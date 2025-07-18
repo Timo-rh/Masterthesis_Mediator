@@ -39,21 +39,6 @@ Additionally, "house" and "depot" are both types of locations which can be visit
 ## Hierarchy
 So, all in all the hierarchy becomes:
 ```
-- object: Object is always root, everything is an object
-    - worker: A type of object consisting of humans who do things.
-        - administrator: A type of worker.
-        - general_worker: A type of worker.
-    - order: A type of object consisting of instructions.
-    - vehicle: A type of object consisting of vehicles.
-    - house_component: A type of object consisting of the components of a house.
-        - wall: A type of house_component.
-        - floor: A type of house_component.
-        - roof: A type of house_component.
-    - location: A type of object consisting of places which can be visited.
-        - house: A type of location.
-            - mansion: A type of house.
-            - library: A type of house.
-    - depot: A type of location.
 Hierarchy(
     hierarchy=[
         Hierarchy_Object(

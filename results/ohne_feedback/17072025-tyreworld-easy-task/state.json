@@ -1,0 +1,620 @@
+{
+  "natural_language_task": "The robot is already holding all the tools and has a whole, but uninflated, wheel. The flat tire is already loosened and jacked up, but still left on the hub. Safely replace the flat tire with the whole one and prepare it.",
+  "domain_desc": "The AI agent here is a robot that has to replace a flat tyre with a spare one. This involves fetching the tools (wrench, jack, pump) from the boot, undoing the nuts on the flat tyre, jacking up the (appropriate) hub(s), removing the tyre, doing up the spare one, etc. Note that there is no restriction on how many objects the AI agent (i.e., the robot) can carry. Also note that each hub has only one nut.",
+  "domain_name": "tyreworld",
+  "task_name": "easy-task",
+  "types": [
+    {
+      "name": "tool",
+      "description": "Tools that can be used to work on the car"
+    },
+    {
+      "name": "wrench",
+      "description": "A tool used to loosen or tighten nuts on wheels"
+    },
+    {
+      "name": "jack",
+      "description": "A tool used to lift parts of the car off the ground"
+    },
+    {
+      "name": "pump",
+      "description": "A tool used to inflate tires"
+    },
+    {
+      "name": "wheel",
+      "description": "A complete assembly including tire, rim and mounting points"
+    },
+    {
+      "name": "tire",
+      "description": "The rubber part of a wheel that contacts the road"
+    },
+    {
+      "name": "hub",
+      "description": "The part of the car where wheels are mounted"
+    },
+    {
+      "name": "nut",
+      "description": "A fastener that secures a wheel to a hub"
+    },
+    {
+      "name": "car",
+      "description": "The vehicle being worked on"
+    },
+    {
+      "name": "boot",
+      "description": "Storage compartment of the car where tools are kept"
+    }
+  ],
+  "type_hierarchy": [
+    {
+      "parent_type": {
+        "name": "object",
+        "description": "Object is always root, everything is an object"
+      },
+      "child_types": [
+        {
+          "name": "tool",
+          "description": "Tools that can be used to work on the car"
+        },
+        {
+          "name": "car_part",
+          "description": "Parts that make up a car"
+        },
+        {
+          "name": "car",
+          "description": "The vehicle being worked on"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "tool",
+        "description": "Tools that can be used to work on the car"
+      },
+      "child_types": [
+        {
+          "name": "wrench",
+          "description": "A tool used to loosen or tighten nuts on wheels"
+        },
+        {
+          "name": "jack",
+          "description": "A tool used to lift parts of the car off the ground"
+        },
+        {
+          "name": "pump",
+          "description": "A tool used to inflate tires"
+        }
+      ]
+    },
+    {
+      "parent_type": {
+        "name": "car_part",
+        "description": "Parts that make up a car"
+      },
+      "child_types": [
+        {
+          "name": "wheel",
+          "description": "A complete assembly including tire, rim and mounting points"
+        },
+        {
+          "name": "hub",
+          "description": "The part of the car where wheels are mounted"
+        },
+        {
+          "name": "nut",
+          "description": "A fastener that secures a wheel to a hub"
+        },
+        {
+          "name": "boot",
+          "description": "Storage compartment of the car where tools are kept"
+        },
+        {
+          "name": "tire",
+          "description": "The rubber part of a wheel that contacts the road"
+        }
+      ]
+    }
+  ],
+  "nominated_actions": [
+    {
+      "related_type": "wheel",
+      "name": "remove_wheel",
+      "description": "Remove a wheel from a hub. Requires the hub to be jacked up and the wheel's nut to be loosened.",
+      "usage_example": "Remove the flat wheel from the front left hub"
+    },
+    {
+      "related_type": "wheel",
+      "name": "mount_wheel",
+      "description": "Mount a wheel onto a hub. Requires the hub to be jacked up.",
+      "usage_example": "Mount the spare wheel onto the front left hub"
+    },
+    {
+      "related_type": "nut",
+      "name": "tighten_nut",
+      "description": "Tighten a nut on a wheel using a wrench. Requires the wheel to be mounted and the robot to have a wrench.",
+      "usage_example": "Tighten the nut on the front left wheel"
+    },
+    {
+      "related_type": "jack",
+      "name": "lower_jack",
+      "description": "Lower the jack, returning the hub to the ground. Requires the hub to be jacked up and the wheel to be mounted and its nut tightened.",
+      "usage_example": "Lower the jack from under the front left hub"
+    },
+    {
+      "related_type": "tire",
+      "name": "inflate_tire",
+      "description": "Inflate a tire using the pump. Requires the robot to have a pump.",
+      "usage_example": "Inflate the tire on the spare wheel"
+    }
+  ],
+  "predicates": [
+    {
+      "name": "has",
+      "predicate_parameters": {
+        "agent": "object",
+        "item": "object"
+      },
+      "description": "true if the agent is holding/carrying the item"
+    },
+    {
+      "name": "on",
+      "predicate_parameters": {
+        "wheel": "wheel",
+        "hub": "hub"
+      },
+      "description": "true if the wheel is mounted on the hub"
+    },
+    {
+      "name": "jacked_up",
+      "predicate_parameters": {
+        "hub": "hub"
+      },
+      "description": "true if the hub is raised off the ground by a jack"
+    },
+    {
+      "name": "nut_loose",
+      "predicate_parameters": {
+        "wheel": "wheel"
+      },
+      "description": "true if the nut securing the wheel is loosened"
+    },
+    {
+      "name": "holding",
+      "predicate_parameters": {
+        "robot": "object",
+        "item": "object"
+      },
+      "description": "true if the robot is holding the specified item"
+    },
+    {
+      "name": "mounted",
+      "predicate_parameters": {
+        "w": "wheel",
+        "h": "hub"
+      },
+      "description": "true if the wheel is mounted on the hub"
+    },
+    {
+      "name": "inflated",
+      "predicate_parameters": {
+        "w": "wheel"
+      },
+      "description": "true if the wheel's tire is properly inflated"
+    },
+    {
+      "name": "has_tool",
+      "predicate_parameters": {
+        "robot": "object",
+        "tool": "tool"
+      },
+      "description": "true if the robot is holding the specified tool"
+    },
+    {
+      "name": "nut_tight",
+      "predicate_parameters": {
+        "nut": "nut",
+        "wheel": "wheel"
+      },
+      "description": "true if the nut is tightened on the specified wheel"
+    },
+    {
+      "name": "wheel_has_nut",
+      "predicate_parameters": {
+        "wheel": "wheel",
+        "nut": "nut"
+      },
+      "description": "true if the nut belongs to the specified wheel"
+    },
+    {
+      "name": "on_wheel",
+      "predicate_parameters": {
+        "tire": "tire",
+        "wheel": "wheel"
+      },
+      "description": "true if the tire is part of the specified wheel"
+    }
+  ],
+  "actions": [
+    {
+      "name": "remove_wheel",
+      "description": "Remove a wheel from a hub. Requires the hub to be jacked up and the wheel's nut to be loosened.",
+      "action_parameters": {
+        "w": "wheel",
+        "h": "hub"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "on",
+            "parameters": [
+              "w",
+              "h"
+            ]
+          },
+          {
+            "name": "jacked_up",
+            "parameters": [
+              "h"
+            ]
+          },
+          {
+            "name": "nut_loosened",
+            "parameters": [
+              "w"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": "not",
+            "conditions": {
+              "name": "on",
+              "parameters": [
+                "w",
+                "h"
+              ]
+            }
+          },
+          {
+            "name": "holding",
+            "parameters": [
+              "w"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "mount_wheel",
+      "description": "Mount a wheel onto a hub. Requires the hub to be jacked up.",
+      "action_parameters": {
+        "w": "wheel",
+        "h": "hub"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "jacked_up",
+            "parameters": [
+              "h"
+            ]
+          },
+          {
+            "name": "has",
+            "parameters": [
+              "robot",
+              "w"
+            ]
+          },
+          {
+            "name": "clear",
+            "parameters": [
+              "h"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "mounted",
+            "parameters": [
+              "w",
+              "h"
+            ]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "has",
+              "parameters": [
+                "robot",
+                "w"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "tighten_nut",
+      "description": "Tighten a nut on a wheel using a wrench. Requires the wheel to be mounted and the robot to have a wrench.",
+      "action_parameters": {
+        "n": "nut",
+        "w": "wheel",
+        "wr": "wrench"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "has",
+            "parameters": [
+              "robot",
+              "wr"
+            ]
+          },
+          {
+            "name": "mounted",
+            "parameters": [
+              "w"
+            ]
+          },
+          {
+            "name": "loose",
+            "parameters": [
+              "n"
+            ]
+          },
+          {
+            "name": "attached_to",
+            "parameters": [
+              "n",
+              "w"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "tight",
+            "parameters": [
+              "n"
+            ]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "loose",
+              "parameters": [
+                "n"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "lower_jack",
+      "description": "Lower the jack, returning the hub to the ground. Requires the hub to be jacked up and the wheel to be mounted and its nut tightened.",
+      "action_parameters": {
+        "h": "hub",
+        "j": "jack",
+        "w": "wheel",
+        "n": "nut"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "jacked_up",
+            "parameters": [
+              "h"
+            ]
+          },
+          {
+            "name": "using_jack",
+            "parameters": [
+              "j",
+              "h"
+            ]
+          },
+          {
+            "name": "mounted",
+            "parameters": [
+              "w",
+              "h"
+            ]
+          },
+          {
+            "name": "has_nut",
+            "parameters": [
+              "w",
+              "n"
+            ]
+          },
+          {
+            "name": "tightened",
+            "parameters": [
+              "n"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "type": "not",
+            "conditions": {
+              "name": "jacked_up",
+              "parameters": [
+                "h"
+              ]
+            }
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "using_jack",
+              "parameters": [
+                "j",
+                "h"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "inflate_tire",
+      "description": "Inflate a tire using the pump. Requires the robot to have a pump.",
+      "action_parameters": {
+        "t": "tire",
+        "p": "pump"
+      },
+      "preconditions": {
+        "and": [
+          {
+            "name": "has",
+            "parameters": [
+              "robot",
+              "p"
+            ]
+          },
+          {
+            "name": "deflated",
+            "parameters": [
+              "t"
+            ]
+          }
+        ]
+      },
+      "effects": {
+        "and": [
+          {
+            "name": "inflated",
+            "parameters": [
+              "t"
+            ]
+          },
+          {
+            "type": "not",
+            "conditions": {
+              "name": "deflated",
+              "parameters": [
+                "t"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "object_instances": {
+    "objects": {
+      "robot": "object",
+      "wrench": "wrench",
+      "jack": "jack",
+      "pump": "pump",
+      "flat_wheel": "wheel",
+      "spare_wheel": "wheel",
+      "hub1": "hub",
+      "nut1": "nut"
+    }
+  },
+  "initial_state": {
+    "initial_state_predicates": [
+      {
+        "name": "has_tool",
+        "parameters": [
+          "robot",
+          "wrench"
+        ]
+      },
+      {
+        "name": "has_tool",
+        "parameters": [
+          "robot",
+          "jack"
+        ]
+      },
+      {
+        "name": "has_tool",
+        "parameters": [
+          "robot",
+          "pump"
+        ]
+      },
+      {
+        "name": "holding",
+        "parameters": [
+          "robot",
+          "spare_wheel"
+        ]
+      },
+      {
+        "name": "mounted",
+        "parameters": [
+          "flat_wheel",
+          "hub1"
+        ]
+      },
+      {
+        "name": "jacked_up",
+        "parameters": [
+          "hub1"
+        ]
+      },
+      {
+        "name": "nut_loose",
+        "parameters": [
+          "flat_wheel"
+        ]
+      },
+      {
+        "name": "wheel_has_nut",
+        "parameters": [
+          "flat_wheel",
+          "nut1"
+        ]
+      }
+    ]
+  },
+  "goal_state": {
+    "goal_state_predicates": {
+      "and": [
+        {
+          "name": "mounted",
+          "parameters": [
+            "spare_wheel",
+            "hub1"
+          ]
+        },
+        {
+          "name": "inflated",
+          "parameters": [
+            "spare_wheel"
+          ]
+        },
+        {
+          "name": "nut_tight",
+          "parameters": [
+            "nut1",
+            "spare_wheel"
+          ]
+        },
+        {
+          "name": "wheel_has_nut",
+          "parameters": [
+            "spare_wheel",
+            "nut1"
+          ]
+        }
+      ]
+    }
+  },
+  "feedback": [],
+  "pddl_domain": null,
+  "pddl_problem": null
+}

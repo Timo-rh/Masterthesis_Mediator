@@ -34,16 +34,45 @@ Therefore: No feedback.
 In this domain, the AI agent is a wildlife conservation management system. It monitors animal populations within a reserve, tracks their movements using GPS collars, analyzes habitat condition, guides anti-poaching patrols, and generates relocation strategies for animals in overpopulated areas to ensure ecological balance.
 
 ### Hierarchy
-- object: Object is always root, everything is an object
-    - location: Places which can be travelled between.
-        - habitat: Habitats are a type of location.
-    - animal: A parent type for all animals.
-        - deer: A type of animal.
-    - fish: Live in schools in lake habitats.   
-        - salmon: A type of fish.
-        - trout: A type of fish.
-    - ranger: A type of worker.
-    - veterinarian: A type of worker.
+Hierarchy(
+    hierarchy=[
+        Hierarchy_Object(
+            parent_type=Type_(name="object", description="Object is always root, everything is an object"),
+            child_types=[
+                Type_(name="location", description="Places which can be travelled between."),
+                Type_(name="animal", description="A parent type for all animals."),
+                Type_(name="ranger", description="A type of worker."),
+                Type_(name="veterinarian", description="A type of worker.")
+            ],
+        ),
+        Hierarchy_Object(
+            parent_type=Type_(name="location", description="Places which can be travelled between."),
+            child_types=[
+                Type_(name="habitat", description="Habitats are a type of location.")
+            ],
+        ),
+        Hierarchy_Object(
+            parent_type=Type_(name="animal", description="A parent type for all animals."),
+            child_types=[
+                Type_(name="deer", description="A type of animal."),
+                Type_(name="fish", description="Live in schools in lake habitats.")
+            ],
+        ),
+        Hierarchy_Object(
+            parent_type=Type_(name="fish", description="Live in schools in lake habitats."),
+            child_types=[
+                Type_(name="salmon", description="A type of fish."),
+                Type_(name="trout", description="A type of fish.")
+            ],
+        ),
+        Hierarchy_Object(
+            parent_type=Type_(name="ranger", description="A type of worker.")
+        ),
+        Hierarchy_Object(
+            parent_type=Type_(name="veterinarian", description="A type of worker.")
+        )
+    ]
+)
 
 ### Feedback
 1: Is any child not a subtype of its parent? 
@@ -64,11 +93,24 @@ My advice is that you perform the following concrete changes:
 The AI agent is here a scheduling system for a house construction company.
 
 ### Hierarchy
-- object: Object is always root, everything is an object
-    - city: Contain houses.
-        - house: Buildings which are found in cities
-    - vehicle: Used for transportation.
-    - worker: Construct buildings
+Hierarchy(
+    hierarchy=[
+        Hierarchy_Object(
+            parent_type=Type_(name="object", description="Object is always root, everything is an object"),
+            child_types=[
+                Type_(name="city", description="Contain houses."),
+                Type_(name="vehicle", description="Used for transportation."),
+                Type_(name="worker", description="Construct buildings")
+            ],
+        ),
+        Hierarchy_Object(
+            parent_type=Type_(name="city", description="Contain houses."),
+            child_types=[
+                Type_(name="house", description="Buildings which are found in cities.")
+            ],
+        )
+    ]
+)
 
 ### Feedback
 1: Is any child not a subtype of its parent? 

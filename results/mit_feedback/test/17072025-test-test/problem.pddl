@@ -1,0 +1,7 @@
+(define (problem test)
+    (:domain test)
+    (:requirements :conditional-effects :disjunctive-preconditions :equality :negative-preconditions :strips :typing :universal-preconditions)
+    (:objects test1 test2 - test)
+    (:init (can_test test1) (can_test test2))
+    (:goal (and (tested test1) (tested test2)))
+)
