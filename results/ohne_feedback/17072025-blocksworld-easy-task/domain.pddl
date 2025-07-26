@@ -2,7 +2,6 @@
     (:requirements :conditional-effects :disjunctive-preconditions :equality :negative-preconditions :strips :typing :universal-preconditions)
     (:types
         block position stack - object
-        table - position
     )
     (:predicates (arm_empty) (clear ?position - position)  (holding ?block)  (on ?block1 - block ?position - position)  (on_table ?b - block))
     (:action pick_up
